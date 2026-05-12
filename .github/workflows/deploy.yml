@@ -27,8 +27,13 @@ jobs:
 
       - name: Inject Railway API URL
         run: |
-          sed -i "s|RAILWAY_API_URL|${{ secrets.API_URL }}|g" src/environments/environment.prod.ts
-          echo "API URL set."
+          API_URL="${{ secrets.API_URL }}"
+          if [ -z "$API_URL" ]; then
+            echo "WARNING: API_URL secret not set — using placeholder. Set it after Railway deployment."
+            API_URL="https://your-railway-api-url-here"
+          fi
+          sed -i "s|RAILWAY_API_URL|${API_URL}|g" src/environments/environment.prod.ts
+          echo "API URL injected: $API_URL"
 
       - name: Build
         run: npx ng build --configuration production --base-href /scouts-attendance/
