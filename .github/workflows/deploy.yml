@@ -25,15 +25,20 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Inject Railway API URL
+      - name: Write production environment file
         run: |
           API_URL="${{ secrets.API_URL }}"
           if [ -z "$API_URL" ]; then
-            echo "WARNING: API_URL secret not set — using placeholder. Set it after Railway deployment."
-            API_URL="https://your-railway-api-url-here"
+            API_URL="https://scouts-attendance-api-production.up.railway.app"
           fi
-          sed -i "s|RAILWAY_API_URL|${API_URL}|g" src/environments/environment.prod.ts
-          echo "API URL injected: $API_URL"
+          cat > src/environments/environment.prod.ts <<EOF
+          export const environment = {
+            production: true,
+            apiUrl: '${API_URL}/api'
+          };
+          EOF
+          echo "environment.prod.ts:"
+          cat src/environments/environment.prod.ts
 
       - name: Build
         run: npx ng build --configuration production --base-href /scouts-attendance/
