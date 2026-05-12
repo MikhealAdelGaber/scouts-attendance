@@ -1,0 +1,189 @@
+.page-header {
+  mat-icon { vertical-align: middle; margin-right: 8px; }
+  .welcome { color: #666; }
+}
+
+/* ── Stat cards ────────────────────────────────────────────── */
+.stats-grid {
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+}
+
+.stat-card {
+  position: relative;
+  overflow: hidden;
+
+  mat-card-content {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px 20px 16px !important;
+  }
+
+  .stat-icon-wrapper {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    mat-icon {
+      font-size: 28px;
+      width: 28px;
+      height: 28px;
+    }
+  }
+
+  .stat-text {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .stat-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    line-height: 1.1;
+    color: #1a237e;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .stat-label {
+    font-size: 0.78rem;
+    color: #777;
+    margin-top: 4px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+}
+
+/* ── Dashboard two-column grid ─────────────────────────────── */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+
+  @media (max-width: 768px) { grid-template-columns: 1fr; }
+}
+
+/* ── Quick actions ─────────────────────────────────────────── */
+.quick-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 8px 0;
+
+  a, button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border-radius: 10px !important;
+    font-weight: 600 !important;
+    padding: 0 20px !important;
+    height: 44px !important;
+  }
+}
+
+/* ── Troop breakdown section ───────────────────────────────── */
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  h2 { margin: 0; font-size: 1.1rem; font-weight: 600; color: #444; }
+  mat-icon { color: #5c6bc0; }
+}
+
+.troop-breakdown-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.troop-stat-card {
+  .troop-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+  }
+
+  .troop-name {
+    font-weight: 600;
+    font-size: 1rem;
+    color: #333;
+  }
+
+  .group-name {
+    font-size: 0.78rem;
+    color: #777;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    margin-top: 2px;
+  }
+
+  .troop-rate-badge {
+    color: white;
+    font-size: 0.85rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+
+  .rate-bar-wrapper {
+    background: #eee;
+    border-radius: 4px;
+    height: 6px;
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+
+  .rate-bar {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.6s ease;
+    min-width: 4px;
+  }
+
+  .troop-card-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    font-size: 0.8rem;
+    color: #555;
+
+    span {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+  }
+}
+
+/* ── Rank badges ───────────────────────────────────────────── */
+.rank-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  font-size: 0.75rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.rank-1 { background: #ffd700; color: #5a3e00; }
+.rank-2 { background: #c0c0c0; color: #3a3a3a; }
+.rank-3 { background: #cd7f32; color: white; }
+.rank-other { background: #e8eaf6; color: #3949ab; }
+
+.flex-gap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}

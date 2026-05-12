@@ -1,0 +1,94 @@
+<div class="page-container">
+  @if (loading) { <app-loading-spinner></app-loading-spinner> }
+  @else if (troop) {
+    <div class="page-header">
+      <h1><mat-icon>groups</mat-icon> {{ troop.name }}</h1>
+      <div class="flex-gap">
+        <button mat-button routerLink="/troops"><mat-icon>arrow_back</mat-icon> Back</button>
+        <a mat-raised-button color="primary" [routerLink]="['..', troop.id, 'edit']" *ngIf="auth.isGroupLeader() || auth.isSystemAdmin()">
+          <mat-icon>edit</mat-icon> Edit
+        </a>
+      </div>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="card-grid stats-grid mb-24">
+      <mat-card class="stat-card" style="border-top:4px solid #3f51b5">
+        <mat-card-content>
+          <mat-icon class="stat-icon" style="color:#3f51b5">people</mat-icon>
+          <div><div class="stat-value">{{ troop.memberCount }}</div><div class="stat-label">Members</div></div>
+        </mat-card-content>
+      </mat-card>
+      <mat-card class="stat-card" style="border-top:4px solid #f9a825">
+        <mat-card-content>
+          <mat-icon class="stat-icon" style="color:#f9a825">star</mat-icon>
+          <div><div class="stat-value">{{ pointsSummary?.totalPoints | number:'1.0-1' }}</div><div class="stat-label">Total Points</div></div>
+        </mat-card-content>
+      </mat-card>
+      <mat-card class="stat-card" style="border-top:4px solid #4caf50">
+        <mat-card-content>
+          <mat-icon class="stat-icon" style="color:#4caf50">people</mat-icon>
+          <div><div class="stat-value">{{ pointsSummary?.memberContributionPoints | number:'1.0-1' }}</div><div class="stat-label">From Members</div></div>
+        </mat-card-content>
+      </mat-card>
+      <mat-card class="stat-card" style="border-top:4px solid #e53935">
+        <mat-card-content>
+          <mat-icon class="stat-icon" style="color:#e53935">emoji_events</mat-icon>
+          <div><div class="stat-value">{{ pointsSummary?.manualPoints | number:'1.0-1' }}</div><div class="stat-label">Bonus Points</div></div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Add Troop Points quick-link -->
+    @if (auth.canManagePoints()) {
+      <div class="mb-16">
+        <a mat-raised-button style="background:#9c27b0;color:white" [routerLink]="['/points/troop']" [queryParams]="{troopId: troop.id}">
+          <mat-icon>add</mat-icon> Add Troop Points
+        </a>
+      </div>
+    }
+
+    <div class="detail-grid">
+      <!-- Member Contributions -->
+      <mat-card>
+        <mat-card-header><mat-card-title>Member Contributions</mat-card-title></mat-card-header>
+        <mat-card-content>
+          <table mat-table [dataSource]="pointsSummary?.memberContributions || []" class="full-width">
+            <ng-container matColumnDef="rank">
+              <th mat-header-cell *matHeaderCellDef>#</th>
+              <td mat-cell *matCellDef="let c; let i = index">
+                <span [class]="'rank-badge rank-' + (i < 3 ? i+1 : 'other')">{{ i+1 }}</span>
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="member">
+              <th mat-header-cell *matHeaderCellDef>Member</th>
+              <td mat-cell *matCellDef="let c"><a [routerLink]="['/members', c.memberId]" style="color:#3f51b5;text-decoration:none">{{ c.memberName }}</a></td>
+            </ng-container>
+            <ng-container matColumnDef="points">
+              <th mat-header-cell *matHeaderCellDef>Points</th>
+              <td mat-cell *matCellDef="let c"><app-points-badge [points]="c.points"></app-points-badge></td>
+            </ng-container>
+            <tr mat-header-row *matHeaderRowDef="contributionColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: contributionColumns;"></tr>
+          </table>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Points History -->
+      <mat-card>
+        <mat-card-header><mat-card-title>Troop Points History</mat-card-title></mat-card-header>
+        <mat-card-content>
+          <table mat-table [dataSource]="pointsSummary?.history || []" class="full-width">
+            <ng-container matColumnDef="date"><th mat-header-cell *matHeaderCellDef>Date</th><td mat-cell *matCellDef="let p">{{ p.date | date:'shortDate' }}</td></ng-container>
+            <ng-container matColumnDef="category"><th mat-header-cell *matHeaderCellDef>Category</th><td mat-cell *matCellDef="let p">{{ p.categoryName }}</td></ng-container>
+            <ng-container matColumnDef="points"><th mat-header-cell *matHeaderCellDef>Points</th><td mat-cell *matCellDef="let p"><app-points-badge [points]="p.points"></app-points-badge></td></ng-container>
+            <ng-container matColumnDef="note"><th mat-header-cell *matHeaderCellDef>Note</th><td mat-cell *matCellDef="let p">{{ p.note || '—' }}</td></ng-container>
+            <tr mat-header-row *matHeaderRowDef="historyColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: historyColumns;"></tr>
+            <tr class="mat-row" *matNoDataRow><td class="mat-cell text-center" colspan="4" style="padding:24px">No manual points yet</td></tr>
+          </table>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  }
+</div>

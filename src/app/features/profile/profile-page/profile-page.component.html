@@ -1,0 +1,110 @@
+<div class="page-container">
+  <div class="page-header">
+    <h1><mat-icon>account_circle</mat-icon> My Profile</h1>
+  </div>
+
+  @if (loading) {
+    <app-loading-spinner></app-loading-spinner>
+  }
+
+  @if (profile) {
+    <div class="profile-grid">
+      <!-- Info Card -->
+      <mat-card>
+        <mat-card-header>
+          <mat-icon mat-card-avatar style="font-size:40px;width:40px;height:40px;color:#3f51b5">account_circle</mat-icon>
+          <mat-card-title>{{ profile.username }}</mat-card-title>
+          <mat-card-subtitle>{{ profile.email }}</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <mat-list>
+            <mat-list-item>
+              <mat-icon matListItemIcon>badge</mat-icon>
+              <div matListItemTitle>Role</div>
+              <div matListItemLine>{{ profile.role }}</div>
+            </mat-list-item>
+            @if (profile.groupName) {
+              <mat-list-item>
+                <mat-icon matListItemIcon>group_work</mat-icon>
+                <div matListItemTitle>Group</div>
+                <div matListItemLine>{{ profile.groupName }}</div>
+              </mat-list-item>
+            }
+            @if (profile.troopName) {
+              <mat-list-item>
+                <mat-icon matListItemIcon>groups</mat-icon>
+                <div matListItemTitle>Troop</div>
+                <div matListItemLine>{{ profile.troopName }}</div>
+              </mat-list-item>
+            }
+            <mat-list-item>
+              <mat-icon matListItemIcon>calendar_today</mat-icon>
+              <div matListItemTitle>Member Since</div>
+              <div matListItemLine>{{ profile.createdAt | date:'mediumDate' }}</div>
+            </mat-list-item>
+          </mat-list>
+
+          <mat-divider style="margin:16px 0"></mat-divider>
+          <p style="font-weight:500;margin-bottom:8px">Permissions</p>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            @if (profile.canTakeAttendance) {
+              <mat-chip color="primary" selected><mat-icon>fact_check</mat-icon> Take Attendance</mat-chip>
+            }
+            @if (profile.canEditMembers) {
+              <mat-chip color="primary" selected><mat-icon>edit</mat-icon> Edit Members</mat-chip>
+            }
+            @if (profile.canCreateEvents) {
+              <mat-chip color="primary" selected><mat-icon>event</mat-icon> Create Events</mat-chip>
+            }
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Change Password Card -->
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>Change Password</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <form [formGroup]="passwordForm" (ngSubmit)="changePassword()">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Current Password</mat-label>
+              <input matInput [type]="hideCurrentPw ? 'password' : 'text'" formControlName="currentPassword">
+              <button mat-icon-button matSuffix type="button" (click)="hideCurrentPw = !hideCurrentPw">
+                <mat-icon>{{ hideCurrentPw ? 'visibility_off' : 'visibility' }}</mat-icon>
+              </button>
+              <mat-error *ngIf="passwordForm.get('currentPassword')?.hasError('required')">Required</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>New Password</mat-label>
+              <input matInput [type]="hideNewPw ? 'password' : 'text'" formControlName="newPassword">
+              <button mat-icon-button matSuffix type="button" (click)="hideNewPw = !hideNewPw">
+                <mat-icon>{{ hideNewPw ? 'visibility_off' : 'visibility' }}</mat-icon>
+              </button>
+              <mat-error *ngIf="passwordForm.get('newPassword')?.hasError('minlength')">
+                Minimum 6 characters
+              </mat-error>
+            </mat-form-field>
+
+            <button mat-raised-button color="primary" type="submit"
+              [disabled]="saving || passwordForm.invalid" class="full-width">
+              <mat-icon>lock</mat-icon> Change Password
+            </button>
+          </form>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  }
+</div>
+
+<style>
+.profile-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+@media (max-width: 768px) {
+  .profile-grid { grid-template-columns: 1fr; }
+}
+</style>

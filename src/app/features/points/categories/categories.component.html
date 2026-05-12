@@ -1,0 +1,51 @@
+<div class="page-container">
+  <div class="page-header">
+    <h1><mat-icon>category</mat-icon> Point Categories</h1>
+    <button mat-button routerLink="/points"><mat-icon>arrow_back</mat-icon> Back</button>
+  </div>
+  <div style="display:grid;grid-template-columns:360px 1fr;gap:24px">
+    <mat-card>
+      <mat-card-header><mat-card-title>Create Category</mat-card-title></mat-card-header>
+      <mat-card-content>
+        <form [formGroup]="form" (ngSubmit)="submit()">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Name</mat-label>
+            <input matInput formControlName="name" placeholder="e.g. Game Win">
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Description</mat-label>
+            <input matInput formControlName="description">
+          </mat-form-field>
+          <div class="flex-gap mb-16">
+            <mat-form-field appearance="outline" style="flex:1">
+              <mat-label>Present Points</mat-label>
+              <input matInput type="number" formControlName="attendancePresentPoints" step="0.5">
+            </mat-form-field>
+            <mat-form-field appearance="outline" style="flex:1">
+              <mat-label>Late Points</mat-label>
+              <input matInput type="number" formControlName="attendanceLatePoints" step="0.5">
+            </mat-form-field>
+          </div>
+          <mat-checkbox formControlName="isGlobal">Global (visible to all groups)</mat-checkbox>
+          <button mat-raised-button color="primary" type="submit" class="full-width mt-16" [disabled]="saving || form.invalid">
+            <mat-icon>add</mat-icon> Create Category
+          </button>
+        </form>
+      </mat-card-content>
+    </mat-card>
+    <mat-card>
+      <mat-card-header><mat-card-title>Existing Categories</mat-card-title></mat-card-header>
+      <mat-card-content>
+        <table mat-table [dataSource]="categories" class="full-width">
+          <ng-container matColumnDef="name"><th mat-header-cell *matHeaderCellDef>Name</th><td mat-cell *matCellDef="let c"><strong>{{ c.name }}</strong></td></ng-container>
+          <ng-container matColumnDef="description"><th mat-header-cell *matHeaderCellDef>Description</th><td mat-cell *matCellDef="let c">{{ c.description || '—' }}</td></ng-container>
+          <ng-container matColumnDef="presentsPoints"><th mat-header-cell *matHeaderCellDef>Present Pts</th><td mat-cell *matCellDef="let c">{{ c.attendancePresentPoints }}</td></ng-container>
+          <ng-container matColumnDef="latePoints"><th mat-header-cell *matHeaderCellDef>Late Pts</th><td mat-cell *matCellDef="let c">{{ c.attendanceLatePoints }}</td></ng-container>
+          <ng-container matColumnDef="global"><th mat-header-cell *matHeaderCellDef>Global</th><td mat-cell *matCellDef="let c"><mat-icon [style.color]="c.isGlobal ? '#4caf50' : '#ccc'">{{ c.isGlobal ? 'check_circle' : 'remove_circle' }}</mat-icon></td></ng-container>
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        </table>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

@@ -1,0 +1,66 @@
+.page-header mat-icon { vertical-align: middle; margin-right: 8px; }
+.filter-card { .flex-wrap { flex-wrap: wrap; align-items: center; } }
+
+// ─── Podium ──────────────────────────────────────
+.podium {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 0;
+
+  .podium-slot {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 160px;
+  }
+
+  .podium-card {
+    background: white;
+    border-radius: 12px 12px 0 0;
+    padding: 16px 24px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    width: 100%;
+    &.champion { border: 2px solid #FFD700; background: linear-gradient(135deg, #fffde7, #fff9c4); }
+    .trophy { font-size: 40px; width: 40px; height: 40px; &.gold { color: #FFD700; } &.silver { color: #9E9E9E; } &.bronze { color: #CD7F32; } }
+    .podium-name { font-weight: 600; font-size: 0.95rem; margin: 4px 0; }
+    .podium-pts { font-size: 1rem; color: #666; &.champion-pts { color: #f9a825; font-weight: 700; font-size: 1.2rem; } }
+  }
+
+  .podium-base {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: white;
+    font-size: 1.1rem;
+    border-radius: 0 0 8px 8px;
+    &.h1 { height: 80px; background: linear-gradient(135deg, #FFD700, #FFA000); }
+    &.h2 { height: 60px; background: linear-gradient(135deg, #9E9E9E, #616161); }
+    &.h3 { height: 44px; background: linear-gradient(135deg, #CD7F32, #8D5524); }
+  }
+}
+
+// ─── Table ───────────────────────────────────────
+.leaderboard-table {
+  .top-row { background: linear-gradient(90deg, #fffde7, transparent); }
+  .rank-cell { display: flex; align-items: center; gap: 6px; }
+  .rank-icon {
+    font-size: 18px; width: 18px; height: 18px;
+    &.rank-1 { color: #FFD700; }
+    &.rank-2 { color: #9E9E9E; }
+    &.rank-3 { color: #CD7F32; }
+  }
+  .troop-name-cell { font-size: 1rem; }
+  .member-link { color: #3f51b5; text-decoration: none; &:hover { text-decoration: underline; } }
+  .pts-breakdown {
+    display: inline-flex; align-items: center; gap: 4px; font-size: 0.85rem;
+    mat-icon { font-size: 14px; width: 14px; height: 14px; }
+    &.attendance { color: #4caf50; }
+    &.bonus { color: #9c27b0; }
+  }
+}
+
+.leaderboard-tabs { background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }

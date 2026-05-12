@@ -1,0 +1,52 @@
+.page-header mat-icon { vertical-align: middle; margin-right: 8px; }
+
+.scanner-layout {
+  display: grid;
+  grid-template-columns: 400px 1fr;
+  gap: 24px;
+  @media (max-width: 900px) { grid-template-columns: 1fr; }
+}
+
+.scanner-card {
+  .qr-viewport {
+    width: 100%;
+    min-height: 300px;
+    background: #000;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .scanner-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+    background: #1a1a2e;
+    border-radius: 8px;
+    color: #fff;
+    mat-icon { font-size: 64px; width: 64px; height: 64px; opacity: 0.4; }
+    p { opacity: 0.5; }
+  }
+}
+
+.last-scan-card {
+  border-left: 4px solid #4caf50;
+  margin-bottom: 16px;
+  .last-scan-info {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    .member-name { font-size: 1.2rem; font-weight: 600; }
+    .troop-name { color: #666; }
+    .scan-time { font-size: 0.8rem; color: #999; }
+  }
+}
+
+.no-scans {
+  text-align: center;
+  padding: 32px;
+  mat-icon { font-size: 48px; width: 48px; height: 48px; color: #ccc; }
+  p { color: #999; }
+}
+
+.results-panel { display: flex; flex-direction: column; gap: 16px; }

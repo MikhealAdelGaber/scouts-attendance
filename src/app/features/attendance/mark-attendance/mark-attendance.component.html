@@ -1,0 +1,246 @@
+<div class="page-container">
+  <div class="page-header">
+    <h1><mat-icon>fact_check</mat-icon> Mark Attendance</h1>
+    <div class="flex-gap">
+      <button mat-stroked-button (click)="exportExcel()" [disabled]="exporting || !selectedEventId"
+        matTooltip="Export to Excel">
+        <mat-icon>download</mat-icon> Excel
+      </button>
+      <button mat-raised-button color="accent" (click)="goToQrScanner()" [disabled]="!selectedEventId">
+        <mat-icon>qr_code_scanner</mat-icon> QR Scanner
+      </button>
+    </div>
+  </div>
+
+  <!-- Event + Troop Selection -->
+  <mat-card class="mb-16">
+    <mat-card-content style="padding:16px 16px 0">
+      <div class="flex-gap">
+        <mat-form-field appearance="outline" style="flex:2">
+          <mat-label>Select Event</mat-label>
+          <mat-icon matPrefix>event</mat-icon>
+          <mat-select [(ngModel)]="selectedEventId" (selectionChange)="onEventChange()">
+            @for (e of events; track e.id) {
+              <mat-option [value]="e.id">{{ e.name }} — {{ e.eventDate | date:'mediumDate' }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" style="flex:1"
+          [class.active-troop-filter]="!!selectedTroopId">
+          <mat-label>Filter by Troop (الفرقة)</mat-label>
+          <mat-icon matPrefix [style.color]="selectedTroopId ? '#3f51b5' : ''">groups</mat-icon>
+          <mat-select [(ngModel)]="selectedTroopId" (selectionChange)="onTroopChange()">
+            <mat-option value="">All Troops</mat-option>
+            @for (t of troops; track t.id) {
+              <mat-option [value]="t.id">{{ t.name }}</mat-option>
+            }
+          </mat-select>
+          @if (selectedTroopId) {
+            <mat-hint style="color:#3f51b5;font-weight:500">
+              {{ filteredRows.length }} members
+            </mat-hint>
+          }
+        </mat-form-field>
+      </div>
+
+      <!-- Troop quick-select chips -->
+      @if (selectedEventId && troops.length > 0) {
+        <div class="troop-chips">
+          <button mat-stroked-button class="troop-chip"
+            [class.troop-chip-active]="selectedTroopId === ''"
+            (click)="selectedTroopId = ''; onTroopChange()">
+            <mat-icon>groups</mat-icon> All
+          </button>
+          @for (t of troops; track t.id) {
+            <button mat-stroked-button class="troop-chip"
+              [class.troop-chip-active]="selectedTroopId === t.id"
+              (click)="selectedTroopId = t.id; onTroopChange()">
+              {{ t.name }}
+            </button>
+          }
+        </div>
+      }
+    </mat-card-content>
+  </mat-card>
+
+  @if (selectedEventId) {
+    <!-- Summary Cards -->
+    @if (summary) {
+      <div class="summary-cards mb-16">
+        <mat-card class="summary-card present">
+          <mat-card-content>
+            <mat-icon>check_circle</mat-icon>
+            <div class="val">{{ summary.present }}</div>
+            <div class="lbl">Present</div>
+          </mat-card-content>
+        </mat-card>
+        <mat-card class="summary-card late">
+          <mat-card-content>
+            <mat-icon>schedule</mat-icon>
+            <div class="val">{{ summary.late }}</div>
+            <div class="lbl">Late</div>
+          </mat-card-content>
+        </mat-card>
+        <mat-card class="summary-card absent">
+          <mat-card-content>
+            <mat-icon>cancel</mat-icon>
+            <div class="val">{{ summary.absent }}</div>
+            <div class="lbl">Absent</div>
+          </mat-card-content>
+        </mat-card>
+        <mat-card class="summary-card rate">
+          <mat-card-content>
+            <mat-icon>percent</mat-icon>
+            <div class="val">{{ summary.attendanceRate | number:'1.0-1' }}%</div>
+            <div class="lbl">Rate</div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    }
+
+    <!-- Bulk Actions + Search -->
+    <mat-card class="mb-16">
+      <mat-card-content style="padding:12px 16px">
+        <!-- Search bar + Sort -->
+        <div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:4px">
+          <mat-form-field appearance="outline" style="flex:1">
+            <mat-label>Search Member</mat-label>
+            <mat-icon matPrefix>search</mat-icon>
+            <input matInput [(ngModel)]="memberSearch" placeholder="Type name, ID or troop to filter...">
+            @if (memberSearch) {
+              <button matSuffix mat-icon-button (click)="memberSearch = ''" matTooltip="Clear search">
+                <mat-icon>close</mat-icon>
+              </button>
+            }
+            <mat-hint>
+              Showing {{ filteredRows.length }} of {{ rows.length }} members
+              @if (selectedTroopId) {
+                · {{ selectedTroopName }}
+              }
+            </mat-hint>
+          </mat-form-field>
+
+          <!-- Alphabetical sort toggle -->
+          <button mat-stroked-button (click)="toggleSort()" class="sort-btn"
+            [matTooltip]="sortDir === 'asc' ? 'Sorted A → Z  (click for Z → A)' : 'Sorted Z → A  (click for A → Z)'">
+            <mat-icon>sort_by_alpha</mat-icon>
+            {{ sortDir === 'asc' ? 'A → Z' : 'Z → A' }}
+          </button>
+        </div>
+
+        <!-- Mark all buttons -->
+        <div class="flex-gap" style="flex-wrap:wrap;gap:8px;margin-top:8px">
+          <span style="font-weight:500;color:#555;align-self:center">Mark all as:</span>
+          @for (opt of statusOptions; track opt.value) {
+            <button mat-stroked-button (click)="markAll(opt.value)"
+              [style.color]="opt.color" [style.borderColor]="opt.color">
+              <mat-icon>{{ opt.icon }}</mat-icon> {{ opt.label }}
+            </button>
+          }
+          <span style="flex:1"></span>
+          <button mat-raised-button color="primary" (click)="saveAll()"
+            [disabled]="saving || rows.length === 0">
+            @if (saving) {
+              <mat-progress-spinner mode="indeterminate" diameter="18" style="display:inline-block"></mat-progress-spinner>
+            } @else {
+              <mat-icon>save</mat-icon>
+            }
+            Save All ({{ rows.length }})
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Attendance Table -->
+    <mat-card>
+      <mat-card-content>
+        @if (loading) {
+          <app-loading-spinner></app-loading-spinner>
+        } @else {
+          <div class="table-scroll-wrapper">
+            <table mat-table [dataSource]="filteredRows" class="full-width attendance-table">
+              <ng-container matColumnDef="member">
+                <th mat-header-cell *matHeaderCellDef>Member</th>
+                <td mat-cell *matCellDef="let row">
+                  <div class="flex-gap">
+                    @if (row.saving) {
+                      <mat-progress-spinner mode="indeterminate" diameter="16"></mat-progress-spinner>
+                    } @else {
+                      <mat-icon [style.color]="row.saved ? '#4caf50' : '#ccc'">
+                        {{ row.saved ? 'check_circle' : 'radio_button_unchecked' }}
+                      </mat-icon>
+                    }
+                    <span style="display:flex;flex-direction:column;line-height:1.2">
+                      <span>{{ row.member.fullName }}</span>
+                      <span style="font-size:0.75rem;color:#888;font-family:'Courier New',monospace;font-weight:600">
+                        #{{ row.member.customId }}
+                        <mat-icon style="font-size:11px;vertical-align:middle"
+                          [style.color]="row.member.gender === 1 ? '#1565c0' : '#ad1457'">
+                          {{ row.member.gender === 1 ? 'male' : 'female' }}
+                        </mat-icon>
+                      </span>
+                    </span>
+                    @if (row.member.hasActiveExcuse) {
+                      <mat-chip style="font-size:11px;height:20px" color="accent" selected>Excused</mat-chip>
+                    }
+                  </div>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="troop">
+                <th mat-header-cell *matHeaderCellDef>Troop</th>
+                <td mat-cell *matCellDef="let row">{{ row.member.troopName }}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="status">
+                <th mat-header-cell *matHeaderCellDef>Status</th>
+                <td mat-cell *matCellDef="let row">
+                  <mat-button-toggle-group [(ngModel)]="row.status"
+                    (change)="onStatusChange(row)" class="status-toggle">
+                    @for (opt of statusOptions; track opt.value) {
+                      <mat-button-toggle [value]="opt.value"
+                        [style.color]="row.status === opt.value ? opt.color : ''"
+                        [matTooltip]="opt.label">
+                        <mat-icon>{{ opt.icon }}</mat-icon>
+                      </mat-button-toggle>
+                    }
+                  </mat-button-toggle-group>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="notes">
+                <th mat-header-cell *matHeaderCellDef>Notes</th>
+                <td mat-cell *matCellDef="let row">
+                  <input class="notes-input" [(ngModel)]="row.notes"
+                    placeholder="Optional notes..."
+                    (blur)="onStatusChange(row)">
+                </td>
+              </ng-container>
+
+              <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+              <tr mat-row *matRowDef="let row; columns: displayedColumns;"
+                [class.saved-row]="row.saved"></tr>
+              <tr class="mat-row" *matNoDataRow>
+                <td class="mat-cell text-center" colspan="4" style="padding:32px">
+                  @if (memberSearch) {
+                    No members match "{{ memberSearch }}".
+                  } @else {
+                    No members found. Select a troop or add members first.
+                  }
+                </td>
+              </tr>
+            </table>
+          </div>
+        }
+      </mat-card-content>
+    </mat-card>
+  } @else {
+    <mat-card>
+      <mat-card-content style="padding:48px;text-align:center">
+        <mat-icon style="font-size:64px;width:64px;height:64px;color:#ccc">event</mat-icon>
+        <p style="color:#999;margin-top:16px">Please select an event to start marking attendance.</p>
+      </mat-card-content>
+    </mat-card>
+  }
+</div>

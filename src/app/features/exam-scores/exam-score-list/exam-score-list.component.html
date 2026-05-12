@@ -1,0 +1,215 @@
+<div class="page-container">
+  <div class="page-header">
+    <h1><mat-icon>school</mat-icon> End-of-Year Exam Scores</h1>
+    <div class="flex-gap">
+      <button mat-stroked-button (click)="exportExcel()" [disabled]="exporting || !selectedTroopId"
+        matTooltip="Export to Excel">
+        <mat-icon>download</mat-icon> Excel
+      </button>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <mat-card class="mb-16">
+    <mat-card-content style="padding:12px 16px">
+      <div class="flex-gap" style="flex-wrap:wrap">
+        <mat-form-field appearance="outline" style="min-width:200px">
+          <mat-label>Troop (الفرقة)</mat-label>
+          <mat-select [(ngModel)]="selectedTroopId" (selectionChange)="onTroopChange()">
+            <mat-option value="">— Select troop —</mat-option>
+            @for (t of troops; track t.id) {
+              <mat-option [value]="t.id">{{ t.name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline" style="width:130px">
+          <mat-label>Year</mat-label>
+          <mat-select [(ngModel)]="selectedYear" (selectionChange)="onYearChange()">
+            @for (y of years; track y) {
+              <mat-option [value]="y">{{ y }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  @if (selectedTroopId) {
+    <!-- Summary bar -->
+    @if (scores.length > 0) {
+      <div class="summary-cards mb-16">
+        <mat-card class="summary-card">
+          <mat-card-content>
+            <mat-icon>people</mat-icon>
+            <div class="val">{{ scores.length }}</div>
+            <div class="lbl">Scored</div>
+          </mat-card-content>
+        </mat-card>
+        <mat-card class="summary-card">
+          <mat-card-content>
+            <mat-icon style="color:#3f51b5">bar_chart</mat-icon>
+            <div class="val">{{ averageScore | number:'1.1-1' }}</div>
+            <div class="lbl">Average</div>
+          </mat-card-content>
+        </mat-card>
+        <mat-card class="summary-card present">
+          <mat-card-content>
+            <mat-icon>check_circle</mat-icon>
+            <div class="val">{{ scores | passCount }}</div>
+            <div class="lbl">Passed (≥50)</div>
+          </mat-card-content>
+        </mat-card>
+        <mat-card class="summary-card absent">
+          <mat-card-content>
+            <mat-icon>cancel</mat-icon>
+            <div class="val">{{ scores.length - (scores | passCount) }}</div>
+            <div class="lbl">Failed</div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    }
+
+    <!-- Add Score Form -->
+    @if (auth.canEditMembers() && unscoredMembers.length > 0) {
+      <mat-card class="mb-16">
+        <mat-card-header><mat-card-title>Add Score</mat-card-title></mat-card-header>
+        <mat-card-content>
+          <form [formGroup]="form" (ngSubmit)="addScore()"
+            class="flex-gap" style="flex-wrap:wrap;align-items:flex-start">
+            <mat-form-field appearance="outline" style="flex:1;min-width:200px">
+              <mat-label>Member</mat-label>
+              <mat-select formControlName="memberId">
+                @for (m of unscoredMembers; track m.id) {
+                  <mat-option [value]="m.id">{{ m.fullName }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field appearance="outline" style="width:140px">
+              <mat-label>Score (0–100)</mat-label>
+              <input matInput type="number" formControlName="score" min="0" max="100">
+            </mat-form-field>
+            <mat-form-field appearance="outline" style="flex:1;min-width:150px">
+              <mat-label>Notes (optional)</mat-label>
+              <input matInput formControlName="notes">
+            </mat-form-field>
+            <button mat-raised-button color="primary" type="submit"
+              [disabled]="form.invalid" style="height:56px">
+              <mat-icon>save</mat-icon> Save
+            </button>
+          </form>
+        </mat-card-content>
+      </mat-card>
+    }
+
+    <!-- Scores Table -->
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>Scores — {{ selectedYear }}</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        @if (loading) {
+          <app-loading-spinner></app-loading-spinner>
+        } @else {
+          <div class="table-scroll-wrapper">
+            <table mat-table [dataSource]="scores" class="full-width">
+
+              <ng-container matColumnDef="member">
+                <th mat-header-cell *matHeaderCellDef>Member</th>
+                <td mat-cell *matCellDef="let s">
+                  <strong>{{ s.memberName }}</strong>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="score">
+                <th mat-header-cell *matHeaderCellDef>Score /100</th>
+                <td mat-cell *matCellDef="let s">
+                  @if (editingId === s.id) {
+                    <mat-form-field appearance="outline" style="width:100px" [formGroup]="editForm">
+                      <input matInput type="number" formControlName="score" min="0" max="100">
+                    </mat-form-field>
+                  } @else {
+                    <span class="score-badge" [style.background]="getGrade(s.score).color + '22'"
+                      [style.color]="getGrade(s.score).color">
+                      {{ s.score }}
+                    </span>
+                  }
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="grade">
+                <th mat-header-cell *matHeaderCellDef>Grade</th>
+                <td mat-cell *matCellDef="let s">
+                  <mat-chip [style.background]="getGrade(s.score).color + '33'"
+                    [style.color]="getGrade(s.score).color">
+                    {{ getGrade(s.score).label }}
+                  </mat-chip>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="notes">
+                <th mat-header-cell *matHeaderCellDef>Notes</th>
+                <td mat-cell *matCellDef="let s">
+                  @if (editingId === s.id) {
+                    <mat-form-field appearance="outline" style="width:160px" [formGroup]="editForm">
+                      <input matInput formControlName="notes">
+                    </mat-form-field>
+                  } @else {
+                    {{ s.notes || '—' }}
+                  }
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="actions">
+                <th mat-header-cell *matHeaderCellDef></th>
+                <td mat-cell *matCellDef="let s">
+                  @if (editingId === s.id) {
+                    <button mat-icon-button color="primary" (click)="saveEdit(s)" matTooltip="Save">
+                      <mat-icon>check</mat-icon>
+                    </button>
+                    <button mat-icon-button (click)="cancelEdit()" matTooltip="Cancel">
+                      <mat-icon>close</mat-icon>
+                    </button>
+                  } @else {
+                    @if (auth.canEditMembers()) {
+                      <button mat-icon-button (click)="startEdit(s)" matTooltip="Edit">
+                        <mat-icon>edit</mat-icon>
+                      </button>
+                      <button mat-icon-button color="warn" (click)="deleteScore(s.id)" matTooltip="Delete">
+                        <mat-icon>delete</mat-icon>
+                      </button>
+                    }
+                  }
+                </td>
+              </ng-container>
+
+              <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+              <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+              <tr class="mat-row" *matNoDataRow>
+                <td colspan="5" style="padding:32px;text-align:center;color:#999">
+                  No scores recorded for {{ selectedYear }}. Use the form above to add them.
+                </td>
+              </tr>
+            </table>
+          </div>
+        }
+      </mat-card-content>
+    </mat-card>
+  } @else {
+    <mat-card>
+      <mat-card-content style="padding:48px;text-align:center">
+        <mat-icon style="font-size:64px;width:64px;height:64px;color:#ccc">school</mat-icon>
+        <p style="color:#999;margin-top:16px">Select a troop to view and enter exam scores.</p>
+      </mat-card-content>
+    </mat-card>
+  }
+</div>
+
+<style>
+.score-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 1rem;
+}
+</style>

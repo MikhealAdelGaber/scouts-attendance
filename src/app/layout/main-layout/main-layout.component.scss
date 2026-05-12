@@ -1,0 +1,128 @@
+.sidenav-container { height: 100vh; }
+
+.sidenav {
+  width: 260px;
+  background: linear-gradient(180deg, #1a237e 0%, #283593 100%);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 4px 0 16px rgba(0,0,0,0.18);
+
+  .sidenav-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 24px 20px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    margin-bottom: 8px;
+
+    .sidenav-logo { width: 44px; height: 44px; flex-shrink: 0; border-radius: 10px; filter: invert(1); mix-blend-mode: screen; }
+    .logo-text {
+      .title { display: block; font-size: 1.05rem; font-weight: 700; color: white; letter-spacing: 0.3px; }
+      .subtitle { display: block; font-size: 0.68rem; color: rgba(255,255,255,0.6); margin-top: 2px; letter-spacing: 0.5px; text-transform: uppercase; }
+    }
+  }
+
+  .nav-section-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.4);
+    padding: 12px 20px 4px;
+  }
+
+  mat-nav-list {
+    padding: 0 8px;
+    flex: 1;
+  }
+
+  // Force white text on Angular Material's encapsulated list-item internals
+  ::ng-deep mat-nav-list {
+    padding-top: 4px !important;
+
+    a[mat-list-item] {
+      color: rgba(255,255,255,0.87) !important;
+      border-radius: 10px !important;
+      margin-bottom: 2px !important;
+      height: 48px !important;
+      transition: background 0.15s ease, transform 0.1s ease !important;
+
+      .mdc-list-item__primary-text,
+      [matListItemTitle],
+      .mat-mdc-list-item-title,
+      span { color: rgba(255,255,255,0.87) !important; font-size: 0.9rem !important; font-weight: 500 !important; }
+
+      mat-icon,
+      .mat-mdc-list-item-icon,
+      .mdc-list-item__start { color: rgba(255,255,255,0.6) !important; margin-right: 12px !important; }
+
+      &.active-link {
+        background: rgba(255,255,255,0.15) !important;
+        box-shadow: inset 3px 0 0 #ffd740 !important;
+
+        .mdc-list-item__primary-text,
+        [matListItemTitle],
+        .mat-mdc-list-item-title,
+        span { color: #ffd740 !important; font-weight: 600 !important; }
+
+        mat-icon,
+        .mat-mdc-list-item-icon,
+        .mdc-list-item__start { color: #ffd740 !important; }
+      }
+
+      &:hover {
+        background: rgba(255,255,255,0.1) !important;
+        transform: translateX(2px) !important;
+      }
+    }
+  }
+
+  .sidenav-footer {
+    border-top: 1px solid rgba(255,255,255,0.1);
+    margin-top: auto;
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 20px;
+      color: rgba(255,255,255,0.87);
+
+      .user-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        mat-icon { font-size: 22px; width: 22px; height: 22px; color: white !important; }
+      }
+
+      mat-icon { font-size: 36px; width: 36px; height: 36px; }
+      .user-details {
+        overflow: hidden;
+        .username { font-weight: 600; font-size: 0.88rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .role { font-size: 0.72rem; color: rgba(255,255,255,0.55); margin-top: 2px; }
+      }
+    }
+  }
+}
+
+.toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12) !important;
+
+  .toolbar-spacer { flex: 1; }
+  .toolbar-logo   { width: 30px; height: 30px; margin-left: 8px; border-radius: 6px; filter: invert(1); mix-blend-mode: screen; }
+  .toolbar-title  { font-weight: 700; margin-left: 8px; font-size: 1rem; letter-spacing: 0.3px; }
+}
+
+.content-area {
+  min-height: calc(100vh - 64px);
+  background: #f0f2f8;
+}

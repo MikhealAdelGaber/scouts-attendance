@@ -1,0 +1,29 @@
+<div class="page-container">
+  <div class="page-header">
+    <h1><mat-icon>group_work</mat-icon> فرقة</h1>
+    <a mat-raised-button color="primary" routerLink="new"><mat-icon>add</mat-icon> Create Group</a>
+  </div>
+  <mat-card>
+    <mat-card-content>
+      @if (loading) { <app-loading-spinner></app-loading-spinner> }
+      @else {
+        <table mat-table [dataSource]="groups" class="full-width">
+          <ng-container matColumnDef="name"><th mat-header-cell *matHeaderCellDef>Group Name</th><td mat-cell *matCellDef="let g"><strong>{{ g.name }}</strong><br><small style="color:#999">{{ g.description }}</small></td></ng-container>
+          <ng-container matColumnDef="leader"><th mat-header-cell *matHeaderCellDef>Leader</th><td mat-cell *matCellDef="let g">{{ g.leaderName }}</td></ng-container>
+          <ng-container matColumnDef="troops"><th mat-header-cell *matHeaderCellDef>Troops</th><td mat-cell *matCellDef="let g"><mat-chip>{{ g.troopCount }}</mat-chip></td></ng-container>
+          <ng-container matColumnDef="members"><th mat-header-cell *matHeaderCellDef>Members</th><td mat-cell *matCellDef="let g"><mat-chip color="primary">{{ g.memberCount }}</mat-chip></td></ng-container>
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef class="mat-column-actions">Actions</th>
+            <td mat-cell *matCellDef="let g" class="mat-column-actions">
+              <button mat-icon-button [routerLink]="[g.id, 'edit']"><mat-icon>edit</mat-icon></button>
+              <button mat-icon-button color="warn" (click)="delete(g)"><mat-icon>delete</mat-icon></button>
+            </td>
+          </ng-container>
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+          <tr class="mat-row" *matNoDataRow><td class="mat-cell text-center" colspan="5" style="padding:32px">No groups found.</td></tr>
+        </table>
+      }
+    </mat-card-content>
+  </mat-card>
+</div>

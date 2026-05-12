@@ -1,0 +1,523 @@
+<div class="page-container">
+  @if (loading) {
+    <app-loading-spinner></app-loading-spinner>
+  } @else if (member) {
+
+    <!-- ── Page Header ─────────────────────────────────────────────── -->
+    <div class="page-header">
+      <h1><mat-icon>person</mat-icon> {{ member.fullName }}</h1>
+      <div class="flex-gap">
+        <button mat-button routerLink="/members">
+          <mat-icon>arrow_back</mat-icon> Back
+        </button>
+        @if (auth.canEditMembers()) {
+          <a mat-raised-button color="primary" [routerLink]="['..', member.id, 'edit']">
+            <mat-icon>edit</mat-icon> Edit
+          </a>
+        }
+      </div>
+    </div>
+
+    <!-- ── Excuse Banner ──────────────────────────────────────────── -->
+    @if (member.hasActiveExcuse) {
+      <div class="excuse-banner mb-16">
+        <mat-icon>event_busy</mat-icon>
+        <span>This member currently has an <strong>active excuse</strong> on file.</span>
+      </div>
+    }
+
+    <!-- ── Main Grid ──────────────────────────────────────────────── -->
+    <div class="detail-grid">
+
+      <!-- ── LEFT: Profile Sidebar ─────────────────────────────────── -->
+      <div class="profile-sidebar">
+
+        <!-- Avatar + name -->
+        <mat-card class="profile-card">
+          <mat-card-content>
+            <div class="avatar-wrap">
+              <mat-icon class="avatar-icon">account_circle</mat-icon>
+              @if (member.hasNeckerchief) {
+                <span class="neckerchief-badge" matTooltip="Has Foulard / Neckerchief">
+                  <mat-icon>checkroom</mat-icon>
+                </span>
+              }
+            </div>
+            <h2 class="member-name">{{ member.fullName }}</h2>
+
+            <!-- CustomId + Gender badge -->
+            <div class="id-gender-row">
+              <span class="custom-id-chip">
+                <mat-icon style="font-size:14px;vertical-align:middle">badge</mat-icon>
+                {{ member.customId }}
+              </span>
+              <span class="gender-chip" [class.gender-male]="member.gender === 1" [class.gender-female]="member.gender === 2">
+                <mat-icon style="font-size:14px;vertical-align:middle">{{ member.gender === 1 ? 'male' : 'female' }}</mat-icon>
+                {{ member.gender === 1 ? 'Male' : 'Female' }}
+              </span>
+            </div>
+
+            <!-- Troop & Group -->
+            <div class="tag-row">
+              <span class="tag troop"><mat-icon>groups</mat-icon> {{ member.troopName }}</span>
+            </div>
+            @if (member.groupName) {
+              <div class="tag-row">
+                <span class="tag group"><mat-icon>group_work</mat-icon> {{ member.groupName }}</span>
+              </div>
+            }
+
+            <mat-divider class="my-12"></mat-divider>
+
+            <!-- Info rows -->
+            <div class="info-list">
+
+              <!-- Phone: member -->
+              <div class="info-row">
+                <mat-icon class="info-icon">phone</mat-icon>
+                <div class="info-body">
+                  <span class="info-label">Member Phone</span>
+                  @if (member.phoneNumber) {
+                    <a class="info-value phone-link" href="tel:{{ member.phoneNumber }}">
+                      {{ member.phoneNumber }}
+                    </a>
+                  } @else {
+                    <span class="info-value muted">—</span>
+                  }
+                </div>
+              </div>
+
+              <!-- Phone: father -->
+              <div class="info-row">
+                <mat-icon class="info-icon">man</mat-icon>
+                <div class="info-body">
+                  <span class="info-label">Father Phone</span>
+                  @if (member.fatherPhone) {
+                    <a class="info-value phone-link" href="tel:{{ member.fatherPhone }}">
+                      {{ member.fatherPhone }}
+                    </a>
+                  } @else {
+                    <span class="info-value muted">—</span>
+                  }
+                </div>
+              </div>
+
+              <!-- Phone: mother -->
+              <div class="info-row">
+                <mat-icon class="info-icon">woman</mat-icon>
+                <div class="info-body">
+                  <span class="info-label">Mother Phone</span>
+                  @if (member.motherPhone) {
+                    <a class="info-value phone-link" href="tel:{{ member.motherPhone }}">
+                      {{ member.motherPhone }}
+                    </a>
+                  } @else {
+                    <span class="info-value muted">—</span>
+                  }
+                </div>
+              </div>
+
+              <!-- Date of Birth -->
+              <div class="info-row">
+                <mat-icon class="info-icon">cake</mat-icon>
+                <div class="info-body">
+                  <span class="info-label">Date of Birth</span>
+                  <span class="info-value">{{ member.dateOfBirth | date:'mediumDate' }}</span>
+                </div>
+              </div>
+
+              <!-- Academic Year -->
+              @if (member.academicYear) {
+                <div class="info-row">
+                  <mat-icon class="info-icon">school</mat-icon>
+                  <div class="info-body">
+                    <span class="info-label">Academic Grade (المرحلة)</span>
+                    <span class="info-value grade-pill">{{ member.academicYear }}</span>
+                  </div>
+                </div>
+              }
+
+              <!-- Foulard / Neckerchief -->
+              <div class="info-row">
+                <mat-icon class="info-icon">checkroom</mat-icon>
+                <div class="info-body">
+                  <span class="info-label">Foulard (الكوفية)</span>
+                  @if (member.hasNeckerchief) {
+                    <span class="info-value" style="color:#4caf50;display:flex;align-items:center;gap:4px">
+                      <mat-icon style="font-size:16px;width:16px;height:16px">check_circle</mat-icon> Yes
+                    </span>
+                  } @else {
+                    <span class="info-value" style="color:#f44336;display:flex;align-items:center;gap:4px">
+                      <mat-icon style="font-size:16px;width:16px;height:16px">cancel</mat-icon> No
+                    </span>
+                  }
+                </div>
+              </div>
+
+              <!-- Year Joined -->
+              @if (member.yearJoined) {
+                <div class="info-row">
+                  <mat-icon class="info-icon">event</mat-icon>
+                  <div class="info-body">
+                    <span class="info-label">Year Joined</span>
+                    <span class="info-value">{{ member.yearJoined }}</span>
+                  </div>
+                </div>
+              }
+
+              <!-- Region -->
+              @if (member.region) {
+                <div class="info-row">
+                  <mat-icon class="info-icon">map</mat-icon>
+                  <div class="info-body">
+                    <span class="info-label">Region (المنطقة)</span>
+                    <span class="info-value">{{ member.region }}</span>
+                  </div>
+                </div>
+              }
+
+              <!-- Address -->
+              @if (member.address) {
+                <div class="info-row">
+                  <mat-icon class="info-icon">location_on</mat-icon>
+                  <div class="info-body">
+                    <span class="info-label">Address</span>
+                    <span class="info-value">{{ member.address }}</span>
+                  </div>
+                </div>
+              }
+
+              <!-- Created At -->
+              <div class="info-row">
+                <mat-icon class="info-icon">calendar_today</mat-icon>
+                <div class="info-body">
+                  <span class="info-label">Record Created</span>
+                  <span class="info-value">{{ member.createdAt | date:'mediumDate' }}</span>
+                </div>
+              </div>
+
+            </div><!-- /info-list -->
+
+            <!-- QR Code -->
+            @if (qrImageUrl) {
+              <mat-divider class="my-12"></mat-divider>
+              <div class="qr-wrap">
+                <p class="qr-label"><mat-icon>qr_code</mat-icon> QR Code</p>
+                <img [src]="qrImageUrl" alt="QR Code" class="qr-img">
+                <p class="qr-text">{{ member.qrCode }}</p>
+              </div>
+            }
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Quick stats mini-card -->
+        <mat-card class="stats-mini-card">
+          <mat-card-content>
+            <div class="mini-stat">
+              <mat-icon style="color:#f9a825">star</mat-icon>
+              <span class="mini-val">{{ pointsSummary?.totalPoints | number:'1.0-1' }}</span>
+              <span class="mini-lbl">Total Points</span>
+            </div>
+            <mat-divider vertical style="height:40px"></mat-divider>
+            <div class="mini-stat">
+              <mat-icon style="color:#4caf50">check_circle</mat-icon>
+              <span class="mini-val">{{ attendanceRate }}%</span>
+              <span class="mini-lbl">Attendance</span>
+            </div>
+            <mat-divider vertical style="height:40px"></mat-divider>
+            <div class="mini-stat">
+              <mat-icon style="color:#1a237e">school</mat-icon>
+              <span class="mini-val">{{ examScores.length > 0 ? examScores[0].score : '—' }}</span>
+              <span class="mini-lbl">Latest Exam</span>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+      </div><!-- /profile-sidebar -->
+
+      <!-- ── RIGHT: Tabbed Details ──────────────────────────────── -->
+      <div class="right-panel">
+
+        <mat-tab-group animationDuration="200ms" class="detail-tabs">
+
+          <!-- ── TAB 1: Points ──────────────────────────────────── -->
+          <mat-tab>
+            <ng-template mat-tab-label>
+              <mat-icon class="tab-icon">star</mat-icon> Points
+            </ng-template>
+
+            <!-- Points category summary -->
+            <mat-card class="tab-card">
+              <mat-card-header>
+                <mat-card-title>Points Summary</mat-card-title>
+                <mat-card-subtitle>
+                  Total: <strong>{{ pointsSummary?.totalPoints | number:'1.0-1' }}</strong> pts
+                </mat-card-subtitle>
+              </mat-card-header>
+              <mat-card-content>
+                @if (categoryKeys.length > 0) {
+                  <div class="category-chips">
+                    @for (key of categoryKeys; track key) {
+                      <mat-chip>
+                        {{ key }}: <strong>&nbsp;{{ pointsSummary!.byCategory[key] | number:'1.0-1' }}</strong>
+                      </mat-chip>
+                    }
+                  </div>
+                } @else {
+                  <p class="empty-msg">No points by category yet.</p>
+                }
+                @if (auth.canManagePoints()) {
+                  <a mat-stroked-button color="primary"
+                     [routerLink]="['/points']" [queryParams]="{memberId: member.id}"
+                     class="mt-12 full-width">
+                    <mat-icon>add</mat-icon> Add Points
+                  </a>
+                }
+              </mat-card-content>
+            </mat-card>
+
+            <!-- Points history table -->
+            <mat-card class="tab-card mt-12">
+              <mat-card-header><mat-card-title>Points History</mat-card-title></mat-card-header>
+              <mat-card-content>
+                <div class="table-scroll">
+                  <table mat-table [dataSource]="pointsSummary?.history || []" class="full-width">
+                    <ng-container matColumnDef="date">
+                      <th mat-header-cell *matHeaderCellDef>Date</th>
+                      <td mat-cell *matCellDef="let p">{{ p.date | date:'shortDate' }}</td>
+                    </ng-container>
+                    <ng-container matColumnDef="category">
+                      <th mat-header-cell *matHeaderCellDef>Category</th>
+                      <td mat-cell *matCellDef="let p">{{ p.categoryName }}</td>
+                    </ng-container>
+                    <ng-container matColumnDef="points">
+                      <th mat-header-cell *matHeaderCellDef>Points</th>
+                      <td mat-cell *matCellDef="let p">
+                        <app-points-badge [points]="p.points"></app-points-badge>
+                      </td>
+                    </ng-container>
+                    <ng-container matColumnDef="note">
+                      <th mat-header-cell *matHeaderCellDef>Note</th>
+                      <td mat-cell *matCellDef="let p">{{ p.note || '—' }}</td>
+                    </ng-container>
+                    <ng-container matColumnDef="type">
+                      <th mat-header-cell *matHeaderCellDef>Type</th>
+                      <td mat-cell *matCellDef="let p">
+                        <span class="type-chip"
+                          [style.background]="p.isAutomatic ? '#e8eaf6' : '#f3e5f5'"
+                          [style.color]="p.isAutomatic ? '#3f51b5' : '#9c27b0'">
+                          {{ p.isAutomatic ? 'Auto' : 'Manual' }}
+                        </span>
+                      </td>
+                    </ng-container>
+                    <tr mat-header-row *matHeaderRowDef="pointsColumns"></tr>
+                    <tr mat-row *matRowDef="let row; columns: pointsColumns;"></tr>
+                    <tr class="mat-row" *matNoDataRow>
+                      <td colspan="5" class="empty-cell">No points history yet.</td>
+                    </tr>
+                  </table>
+                </div>
+              </mat-card-content>
+            </mat-card>
+          </mat-tab>
+
+          <!-- ── TAB 2: Attendance ─────────────────────────────── -->
+          <mat-tab>
+            <ng-template mat-tab-label>
+              <mat-icon class="tab-icon">fact_check</mat-icon> Attendance
+            </ng-template>
+
+            <!-- Attendance summary chips -->
+            <mat-card class="tab-card">
+              <mat-card-header>
+                <mat-card-title>Attendance Summary</mat-card-title>
+                <mat-card-subtitle>{{ attendanceHistory.length }} events recorded</mat-card-subtitle>
+              </mat-card-header>
+              <mat-card-content>
+                <div class="attendance-summary-row">
+                  <div class="att-stat present">
+                    <mat-icon>check_circle</mat-icon>
+                    <span class="att-val">{{ presentCount }}</span>
+                    <span class="att-lbl">Present</span>
+                  </div>
+                  <div class="att-stat late">
+                    <mat-icon>schedule</mat-icon>
+                    <span class="att-val">{{ lateCount }}</span>
+                    <span class="att-lbl">Late</span>
+                  </div>
+                  <div class="att-stat absent">
+                    <mat-icon>cancel</mat-icon>
+                    <span class="att-val">{{ absentCount }}</span>
+                    <span class="att-lbl">Absent</span>
+                  </div>
+                  <div class="att-stat excused">
+                    <mat-icon>info</mat-icon>
+                    <span class="att-val">{{ excusedCount }}</span>
+                    <span class="att-lbl">Excused</span>
+                  </div>
+                  <div class="att-stat rate">
+                    <mat-icon>trending_up</mat-icon>
+                    <span class="att-val">{{ attendanceRate }}%</span>
+                    <span class="att-lbl">Rate</span>
+                  </div>
+                </div>
+              </mat-card-content>
+            </mat-card>
+
+            <!-- Attendance history table -->
+            <mat-card class="tab-card mt-12">
+              <mat-card-header><mat-card-title>Event History</mat-card-title></mat-card-header>
+              <mat-card-content>
+                <div class="table-scroll">
+                  <table mat-table [dataSource]="attendanceHistory" class="full-width">
+                    <ng-container matColumnDef="date">
+                      <th mat-header-cell *matHeaderCellDef>Date</th>
+                      <td mat-cell *matCellDef="let a">{{ a.markedAt | date:'shortDate' }}</td>
+                    </ng-container>
+                    <ng-container matColumnDef="event">
+                      <th mat-header-cell *matHeaderCellDef>Event</th>
+                      <td mat-cell *matCellDef="let a">{{ a.eventName }}</td>
+                    </ng-container>
+                    <ng-container matColumnDef="status">
+                      <th mat-header-cell *matHeaderCellDef>Status</th>
+                      <td mat-cell *matCellDef="let a">
+                        <span class="att-badge"
+                          [style.background]="getAttendanceColor(a.status) + '22'"
+                          [style.color]="getAttendanceColor(a.status)">
+                          <mat-icon style="font-size:14px;width:14px;height:14px">{{ getAttendanceIcon(a.status) }}</mat-icon>
+                          {{ a.statusName }}
+                        </span>
+                      </td>
+                    </ng-container>
+                    <ng-container matColumnDef="points">
+                      <th mat-header-cell *matHeaderCellDef>Points</th>
+                      <td mat-cell *matCellDef="let a">
+                        @if (a.pointsAwarded != null) {
+                          <span style="color:#4caf50;font-weight:600">+{{ a.pointsAwarded }}</span>
+                        } @else { — }
+                      </td>
+                    </ng-container>
+                    <tr mat-header-row *matHeaderRowDef="attendanceColumns"></tr>
+                    <tr mat-row *matRowDef="let row; columns: attendanceColumns;"></tr>
+                    <tr class="mat-row" *matNoDataRow>
+                      <td colspan="4" class="empty-cell">No attendance records yet.</td>
+                    </tr>
+                  </table>
+                </div>
+              </mat-card-content>
+            </mat-card>
+          </mat-tab>
+
+          <!-- ── TAB 3: Exam Scores ────────────────────────────── -->
+          <mat-tab>
+            <ng-template mat-tab-label>
+              <mat-icon class="tab-icon">school</mat-icon> Exam Scores
+            </ng-template>
+
+            <mat-card class="tab-card">
+              <mat-card-header>
+                <mat-card-title>End-of-Year Exam Scores</mat-card-title>
+                <mat-card-subtitle>
+                  @if (examScores.length > 0) {
+                    Latest ({{ examScores[0].year }}):
+                    <strong [style.color]="getGrade(examScores[0].score).color">
+                      {{ examScores[0].score }}/100 — {{ getGrade(examScores[0].score).label }}
+                    </strong>
+                  } @else {
+                    No scores recorded
+                  }
+                </mat-card-subtitle>
+              </mat-card-header>
+              <mat-card-content>
+                @if (examScores.length > 0) {
+                  <div class="table-scroll">
+                    <table mat-table [dataSource]="examScores" class="full-width">
+                      <ng-container matColumnDef="year">
+                        <th mat-header-cell *matHeaderCellDef>Year</th>
+                        <td mat-cell *matCellDef="let s"><strong>{{ s.year }}</strong></td>
+                      </ng-container>
+                      <ng-container matColumnDef="score">
+                        <th mat-header-cell *matHeaderCellDef>Score /100</th>
+                        <td mat-cell *matCellDef="let s">
+                          <span class="score-badge"
+                            [style.background]="getGrade(s.score).color + '22'"
+                            [style.color]="getGrade(s.score).color">
+                            {{ s.score }}
+                          </span>
+                        </td>
+                      </ng-container>
+                      <ng-container matColumnDef="grade">
+                        <th mat-header-cell *matHeaderCellDef>Grade</th>
+                        <td mat-cell *matCellDef="let s">
+                          <mat-chip [style.background]="getGrade(s.score).color + '33'"
+                            [style.color]="getGrade(s.score).color">
+                            {{ getGrade(s.score).label }}
+                          </mat-chip>
+                        </td>
+                      </ng-container>
+                      <ng-container matColumnDef="notes">
+                        <th mat-header-cell *matHeaderCellDef>Notes</th>
+                        <td mat-cell *matCellDef="let s">{{ s.notes || '—' }}</td>
+                      </ng-container>
+                      <tr mat-header-row *matHeaderRowDef="examScoreColumns"></tr>
+                      <tr mat-row *matRowDef="let row; columns: examScoreColumns;"></tr>
+                    </table>
+                  </div>
+                } @else {
+                  <div class="empty-state">
+                    <mat-icon style="font-size:48px;width:48px;height:48px;color:#ccc">school</mat-icon>
+                    <p>No exam scores recorded yet.</p>
+                    @if (auth.canEditMembers()) {
+                      <a mat-stroked-button routerLink="/exam-scores">
+                        <mat-icon>add</mat-icon> Add Score
+                      </a>
+                    }
+                  </div>
+                }
+              </mat-card-content>
+            </mat-card>
+          </mat-tab>
+
+          <!-- ── TAB 4: Notes ─────────────────────────────────── -->
+          <mat-tab>
+            <ng-template mat-tab-label>
+              <mat-icon class="tab-icon">notes</mat-icon> Notes
+            </ng-template>
+
+            <mat-card class="tab-card">
+              <mat-card-header>
+                <mat-card-title>Member Notes</mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                @if (member.notes) {
+                  <div class="notes-box">{{ member.notes }}</div>
+                } @else {
+                  <div class="empty-state">
+                    <mat-icon style="font-size:48px;width:48px;height:48px;color:#ccc">notes</mat-icon>
+                    <p>No notes recorded for this member.</p>
+                    @if (auth.canEditMembers()) {
+                      <a mat-stroked-button [routerLink]="['..', member.id, 'edit']">
+                        <mat-icon>edit</mat-icon> Edit Member to Add Notes
+                      </a>
+                    }
+                  </div>
+                }
+              </mat-card-content>
+            </mat-card>
+          </mat-tab>
+
+        </mat-tab-group>
+      </div><!-- /right-panel -->
+
+    </div><!-- /detail-grid -->
+
+  } @else if (!loading) {
+    <mat-card>
+      <mat-card-content class="empty-state" style="padding:48px">
+        <mat-icon style="font-size:64px;width:64px;height:64px;color:#ccc">person_off</mat-icon>
+        <p>Member not found.</p>
+        <a mat-raised-button routerLink="/members">Back to Members</a>
+      </mat-card-content>
+    </mat-card>
+  }
+</div>

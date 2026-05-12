@@ -1,0 +1,47 @@
+<div class="page-container">
+  <div class="page-header">
+    <h1><mat-icon>{{ isEdit ? 'edit' : 'add' }}</mat-icon> {{ isEdit ? 'Edit Troop' : 'Create Troop' }}</h1>
+    <button mat-button routerLink="/troops"><mat-icon>arrow_back</mat-icon> Back</button>
+  </div>
+  <mat-card style="max-width:500px">
+    <mat-card-content>
+      <form [formGroup]="form" (ngSubmit)="submit()">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Troop Name</mat-label>
+          <input matInput formControlName="name">
+          <mat-error *ngIf="form.get('name')?.hasError('required')">Required</mat-error>
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Group</mat-label>
+          <mat-select formControlName="groupId" [disabled]="!auth.isSystemAdmin()">
+            @for (g of groups; track g.id) { <mat-option [value]="g.id">{{ g.name }}</mat-option> }
+          </mat-select>
+        </mat-form-field>
+        <!-- Leader search + select -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Search Leader</mat-label>
+          <mat-icon matPrefix>search</mat-icon>
+          <input matInput [(ngModel)]="leaderSearch" [ngModelOptions]="{standalone:true}"
+            (input)="filterLeaders()" placeholder="Type name or email...">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Troop Leader (optional)</mat-label>
+          <mat-icon matPrefix>person</mat-icon>
+          <mat-select formControlName="leaderId">
+            <mat-option value="">— No leader —</mat-option>
+            @for (l of filteredLeaders; track l.id) {
+              <mat-option [value]="l.id">{{ l.display }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <div class="flex-gap mt-16">
+          <button mat-button type="button" routerLink="/troops">Cancel</button>
+          <button mat-raised-button color="primary" type="submit" [disabled]="loading || form.invalid">
+            <mat-icon>save</mat-icon> {{ isEdit ? 'Update' : 'Create' }}
+          </button>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div>

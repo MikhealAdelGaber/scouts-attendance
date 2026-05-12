@@ -1,0 +1,126 @@
+.page-header mat-icon { vertical-align: middle; margin-right: 8px; }
+
+// ── Filter panel ────────────────────────────────────────────────────────────
+
+.filter-card mat-card-content { padding: 16px 16px 0; }
+
+.filter-top-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+
+  .search-field { flex: 1; min-width: 200px; }
+}
+
+.advanced-filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+  padding: 12px 0 4px;
+  border-top: 1px solid rgba(0,0,0,.06);
+  margin-top: 4px;
+
+  mat-form-field { width: 100%; }
+
+  @media (max-width: 600px) { grid-template-columns: 1fr; }
+}
+
+.active-filter-btn {
+  border-color: #3f51b5 !important;
+  color: #3f51b5 !important;
+}
+
+.filter-badge {
+  font-size: 10px;
+  color: #f44336;
+  margin-left: 2px;
+  line-height: 1;
+}
+
+// ── Table cells ─────────────────────────────────────────────────────────────
+
+.member-link {
+  color: #3f51b5;
+  text-decoration: none;
+  font-weight: 600;
+  &:hover { text-decoration: underline; }
+}
+
+.grade-badge {
+  display: inline-block;
+  background: #e3f2fd;
+  color: #1565c0;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.78rem;
+  font-weight: 500;
+}
+
+.region-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  background: #f3e5f5;
+  color: #6a1b9a;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.78rem;
+  font-weight: 500;
+}
+
+.phone-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.phone-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: #1976d2;
+  text-decoration: none;
+  font-size: 0.85rem;
+  &:hover { text-decoration: underline; color: #0d47a1; }
+  mat-icon { font-size: 16px; width: 16px; height: 16px; }
+}
+
+.phone-parent { color: #546e7a; font-size: 0.78rem; }
+
+.text-muted { color: #9e9e9e; }
+
+.custom-id-badge {
+  font-family: 'Courier New', monospace;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: #37474f;
+  letter-spacing: 0.5px;
+}
+
+.excuse-row td { background: rgba(255, 193, 7, 0.06) !important; }
+
+.members-table {
+  .mat-column-neckerchief { width: 60px; text-align: center !important; }
+  .mat-column-academicYear { min-width: 110px; }
+  .mat-column-region { min-width: 120px; }
+}
+
+// ── Pagination row ─────────────────────────────────────────────────────────
+.pagination-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16px;
+  padding: 8px 0 0;
+  flex-wrap: wrap;
+  font-size: 0.875rem;
+  color: #666;
+
+  .page-info { white-space: nowrap; }
+
+  @media (max-width: 600px) {
+    justify-content: center;
+  }
+}

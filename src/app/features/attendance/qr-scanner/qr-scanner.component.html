@@ -1,0 +1,134 @@
+<div class="page-container">
+  <div class="page-header">
+    <h1><mat-icon>qr_code_scanner</mat-icon> QR Attendance Scanner</h1>
+    <button mat-button routerLink="/attendance"><mat-icon>arrow_back</mat-icon> Back</button>
+  </div>
+
+  <div class="scanner-layout">
+    <!-- Scanner Panel -->
+    <mat-card class="scanner-card">
+      <mat-card-header>
+        <mat-card-title>Camera Scanner</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <mat-form-field appearance="outline" class="full-width mb-16">
+          <mat-label>Select Event</mat-label>
+          <mat-icon matPrefix>event</mat-icon>
+          <mat-select [(ngModel)]="selectedEventId" [disabled]="scanning">
+            @for (e of events; track e.id) {
+              <mat-option [value]="e.id">{{ e.name }} — {{ e.eventDate | date:'shortDate' }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <div id="qr-reader" class="qr-viewport"></div>
+
+        @if (!scanning) {
+          <div class="scanner-placeholder">
+            <mat-icon>qr_code</mat-icon>
+            <p>Camera inactive</p>
+          </div>
+        }
+
+        <div class="scanner-controls mt-16">
+          @if (!scanning) {
+            <button mat-raised-button color="primary" (click)="startScanning()" [disabled]="!selectedEventId" class="full-width">
+              <mat-icon>play_arrow</mat-icon> Start Scanning
+            </button>
+          } @else {
+            <button mat-raised-button color="warn" (click)="stopScanning()" class="full-width">
+              <mat-icon>stop</mat-icon> Stop Scanner
+            </button>
+          }
+        </div>
+
+        @if (scanning) {
+          <div class="scanning-indicator mt-16">
+            <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+            <p class="text-center" style="color:#3f51b5;margin-top:8px">
+              <mat-icon style="vertical-align:middle">wifi_tethering</mat-icon>
+              Scanning for QR codes...
+            </p>
+          </div>
+        }
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Results Panel -->
+    <div class="results-panel">
+      <!-- Last Scan -->
+      @if (lastScanned) {
+        <mat-card class="last-scan-card">
+          <mat-card-header>
+            <mat-icon mat-card-avatar style="color:#4caf50">check_circle</mat-icon>
+            <mat-card-title>Last Scan</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="last-scan-info">
+              <div class="member-name">{{ lastScanned.memberName }}</div>
+              <div class="troop-name">{{ lastScanned.troopName }}</div>
+              <mat-chip [style.background]="getStatusColor(lastScanned.status)" style="color:white">
+                {{ lastScanned.statusName }}
+              </mat-chip>
+              @if (lastScanned.pointsAwarded) {
+                <app-points-badge [points]="lastScanned.pointsAwarded"></app-points-badge>
+              }
+              <div class="scan-time">{{ lastScanned.markedAt | date:'shortTime' }}</div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      }
+
+      <!-- Recent Scans -->
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>Recent Scans</mat-card-title>
+          <mat-card-subtitle>{{ recentScans.length }} scanned this session</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          @if (recentScans.length === 0) {
+            <div class="no-scans">
+              <mat-icon>qr_code</mat-icon>
+              <p>No scans yet</p>
+            </div>
+          } @else {
+            <mat-list>
+              @for (scan of recentScans; track scan.id) {
+                <mat-list-item>
+                  <mat-icon matListItemIcon [style.color]="getStatusColor(scan.status)">person</mat-icon>
+                  <span matListItemTitle>{{ scan.memberName }}</span>
+                  <span matListItemLine>{{ scan.troopName }} · {{ scan.markedAt | date:'shortTime' }}</span>
+                  <mat-chip matListItemMeta [style.background]="getStatusColor(scan.status)" style="color:white;font-size:0.75rem">
+                    {{ scan.statusName }}
+                  </mat-chip>
+                </mat-list-item>
+                <mat-divider></mat-divider>
+              }
+            </mat-list>
+          }
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Manual QR Input -->
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>Manual QR Input</mat-card-title>
+          <mat-card-subtitle>Type or paste a QR token manually</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>QR Token</mat-label>
+            <mat-icon matPrefix>qr_code</mat-icon>
+            <input matInput [(ngModel)]="manualQrToken"
+              placeholder="SCOUT-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+              (keyup.enter)="submitManualQr()">
+          </mat-form-field>
+          <button mat-raised-button color="primary" (click)="submitManualQr()"
+            [disabled]="!manualQrToken || !selectedEventId" class="full-width">
+            <mat-icon>how_to_reg</mat-icon> Mark Attendance
+          </button>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+</div>

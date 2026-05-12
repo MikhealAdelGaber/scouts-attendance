@@ -1,0 +1,81 @@
+.page-header mat-icon { vertical-align: middle; margin-right: 8px; }
+
+// ── Attendance settings card ─────────────────────────────────────────────────
+.attendance-settings-card {
+  border-left: 4px solid #f57c00;
+}
+
+.attendance-settings-form {
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 4px 0;
+
+  mat-form-field { width: 200px; }
+
+  .absent-info {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.875rem;
+    color: #555;
+    align-self: center;
+    padding: 0 4px;
+  }
+
+  button[mat-raised-button] {
+    align-self: center;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+}
+.points-layout {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 24px;
+  @media (max-width: 900px) { grid-template-columns: 1fr; }
+}
+.total-card {
+  border-top: 4px solid #f9a825;
+  .total-layout { display: flex; align-items: center; justify-content: space-between; }
+  .member-name { font-size: 1.1rem; font-weight: 600; }
+  .troop { color: #666; font-size: 0.9rem; }
+  .total-points { display: flex; align-items: center; gap: 4px; font-size: 2rem; font-weight: 700; color: #f9a825; mat-icon { font-size: 2rem; width: 2rem; height: 2rem; } small { font-size: 1rem; font-weight: 400; color: #666; } }
+  .category-breakdown { display: flex; flex-direction: column; gap: 8px; }
+  .category-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; }
+}
+.summary-panel { display: flex; flex-direction: column; gap: 16px; }
+
+// ── Award / Deduct toggle ──────────────────────────────────────────────────────
+.mode-toggle-row {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.mode-toggle {
+  border-radius: 8px !important;
+  overflow: hidden;
+  width: 100%;
+
+  mat-button-toggle { flex: 1; font-weight: 600; font-size: 0.95rem; }
+
+  .award-toggle.mat-button-toggle-checked {
+    background: #e8f5e9 !important;
+    color: #2e7d32 !important;
+  }
+  .deduct-toggle.mat-button-toggle-checked {
+    background: #fce4ec !important;
+    color: #c62828 !important;
+  }
+}
+
+// ── Submit button variants ────────────────────────────────────────────────────
+.btn-award  { background: #4caf50 !important; color: white !important; }
+.btn-deduct { background: #e53935 !important; color: white !important; }
+
+// ── Deduction row highlight ───────────────────────────────────────────────────
+.deduction-row td { background: rgba(229,57,53,.04) !important; }

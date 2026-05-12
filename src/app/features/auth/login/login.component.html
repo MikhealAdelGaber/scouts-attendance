@@ -1,0 +1,57 @@
+<div class="login-page">
+  <div class="login-card-wrapper">
+    <mat-card class="login-card">
+      <div class="login-header">
+        <img src="assets/logo.png" alt="Scouts Logo" class="login-logo">
+        <h1>Scouts Attendance</h1>
+        <p>Sign in to your account</p>
+      </div>
+
+      <mat-card-content>
+        <form [formGroup]="form" (ngSubmit)="submit()">
+          @if (error) {
+            <mat-card class="error-card">
+              <mat-icon>error_outline</mat-icon> {{ error }}
+            </mat-card>
+          }
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Username</mat-label>
+            <mat-icon matPrefix>person</mat-icon>
+            <input matInput formControlName="username" autocomplete="username" placeholder="Enter username">
+            @if (form.get('username')?.hasError('required')) {
+              <mat-error>Username is required</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Password</mat-label>
+            <mat-icon matPrefix>lock</mat-icon>
+            <input matInput formControlName="password" [type]="hidePassword ? 'password' : 'text'" autocomplete="current-password">
+            <button type="button" mat-icon-button matSuffix (click)="hidePassword = !hidePassword">
+              <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+            </button>
+            @if (form.get('password')?.hasError('required')) {
+              <mat-error>Password is required</mat-error>
+            }
+          </mat-form-field>
+
+          <button mat-raised-button color="primary" type="submit" class="full-width login-btn" [disabled]="loading || form.invalid">
+            @if (loading) {
+              <mat-progress-spinner mode="indeterminate" diameter="20" style="display:inline-block"></mat-progress-spinner>
+            } @else {
+              <ng-container><mat-icon>login</mat-icon> Sign In</ng-container>
+            }
+          </button>
+        </form>
+
+        <div class="demo-creds mt-16">
+          <p><strong>Demo credentials:</strong></p>
+          <p>Admin: <code>admin / Admin&#64;123</code></p>
+          <p>GroupLeader: <code>groupleader / Leader&#64;123</code></p>
+          <p>AttendanceOnly: <code>attendance / Attend&#64;123</code></p>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

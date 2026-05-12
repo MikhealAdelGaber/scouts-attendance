@@ -1,0 +1,202 @@
+<div class="page-container">
+  <div class="page-header">
+    <h1><mat-icon>leaderboard</mat-icon> Leaderboard</h1>
+    <span style="color:#666;font-size:0.9rem">Updated in real-time</span>
+  </div>
+
+  <!-- Filters -->
+  <mat-card class="filter-card mb-16">
+    <mat-card-content style="padding:16px 16px 0">
+      <div class="flex-gap flex-wrap">
+        @if (auth.isSystemAdmin() && groups.length) {
+          <mat-form-field appearance="outline">
+            <mat-label>Filter by Group</mat-label>
+            <mat-select [(ngModel)]="selectedGroupId" (selectionChange)="load()">
+              <mat-option value="">All Groups</mat-option>
+              @for (g of groups; track g.id) {
+                <mat-option [value]="g.id">{{ g.name }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        }
+        <mat-form-field appearance="outline">
+          <mat-label>Filter Members by Troop</mat-label>
+          <mat-select [(ngModel)]="selectedTroopId" (selectionChange)="load()">
+            <mat-option value="">All Troops</mat-option>
+            @for (t of troops; track t.id) {
+              <mat-option [value]="t.id">{{ t.name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline" style="width:120px">
+          <mat-label>Top N</mat-label>
+          <mat-select [(ngModel)]="topN" (selectionChange)="load()">
+            <mat-option [value]="10">Top 10</mat-option>
+            <mat-option [value]="25">Top 25</mat-option>
+            <mat-option [value]="50">Top 50</mat-option>
+            <mat-option [value]="100">Top 100</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <button mat-icon-button (click)="load()" matTooltip="Refresh" color="primary">
+          <mat-icon>refresh</mat-icon>
+        </button>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  @if (loading) {
+    <app-loading-spinner></app-loading-spinner>
+  } @else {
+
+    <!-- Podium (Top 3 Troops) -->
+    @if (troopRankings.length >= 3) {
+      <div class="podium mb-24">
+        <!-- 2nd Place -->
+        <div class="podium-slot second">
+          <div class="podium-card">
+            <mat-icon class="trophy silver">workspace_premium</mat-icon>
+            <div class="podium-name">{{ troopRankings[1].troopName }}</div>
+            <div class="podium-pts">{{ troopRankings[1].totalPoints | number:'1.0-1' }}</div>
+          </div>
+          <div class="podium-base h2">2nd</div>
+        </div>
+        <!-- 1st Place -->
+        <div class="podium-slot first">
+          <div class="podium-card champion">
+            <mat-icon class="trophy gold">emoji_events</mat-icon>
+            <div class="podium-name">{{ troopRankings[0].troopName }}</div>
+            <div class="podium-pts champion-pts">{{ troopRankings[0].totalPoints | number:'1.0-1' }}</div>
+          </div>
+          <div class="podium-base h1">1st</div>
+        </div>
+        <!-- 3rd Place -->
+        <div class="podium-slot third">
+          <div class="podium-card">
+            <mat-icon class="trophy bronze">military_tech</mat-icon>
+            <div class="podium-name">{{ troopRankings[2].troopName }}</div>
+            <div class="podium-pts">{{ troopRankings[2].totalPoints | number:'1.0-1' }}</div>
+          </div>
+          <div class="podium-base h3">3rd</div>
+        </div>
+      </div>
+    }
+
+    <mat-tab-group class="leaderboard-tabs" animationDuration="200ms">
+      <!-- ─── TROOPS TAB ─────────────────────────────────── -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon>groups</mat-icon>&nbsp; Troop Rankings
+          <mat-badge [matBadge]="troopRankings.length" matBadgeSize="small" style="margin-left:8px"></mat-badge>
+        </ng-template>
+
+        <div style="padding:16px 0">
+          <table mat-table [dataSource]="troopRankings" class="full-width leaderboard-table">
+            <ng-container matColumnDef="rank">
+              <th mat-header-cell *matHeaderCellDef class="mat-column-rank">Rank</th>
+              <td mat-cell *matCellDef="let t" class="mat-column-rank">
+                <div class="rank-cell">
+                  <span [class]="'rank-badge ' + getRankClass(t.rank)">{{ t.rank }}</span>
+                  @if (getRankIcon(t.rank)) {
+                    <mat-icon [class]="'rank-icon ' + getRankClass(t.rank)">{{ getRankIcon(t.rank) }}</mat-icon>
+                  }
+                </div>
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="troopName">
+              <th mat-header-cell *matHeaderCellDef>Troop</th>
+              <td mat-cell *matCellDef="let t">
+                <strong class="troop-name-cell">{{ t.troopName }}</strong>
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="groupName">
+              <th mat-header-cell *matHeaderCellDef>Group</th>
+              <td mat-cell *matCellDef="let t">{{ t.groupName }}</td>
+            </ng-container>
+            <ng-container matColumnDef="memberCount">
+              <th mat-header-cell *matHeaderCellDef>Members</th>
+              <td mat-cell *matCellDef="let t">
+                <span class="flex-gap"><mat-icon style="font-size:16px">people</mat-icon>{{ t.memberCount }}</span>
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="totalPoints">
+              <th mat-header-cell *matHeaderCellDef>Total Points</th>
+              <td mat-cell *matCellDef="let t">
+                <app-points-badge [points]="t.totalPoints"></app-points-badge>
+              </td>
+            </ng-container>
+            <tr mat-header-row *matHeaderRowDef="troopColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: troopColumns;" [class.top-row]="row.rank <= 3"></tr>
+            <tr class="mat-row" *matNoDataRow>
+              <td class="mat-cell text-center" colspan="5" style="padding:32px">No troops ranked yet.</td>
+            </tr>
+          </table>
+        </div>
+      </mat-tab>
+
+      <!-- ─── MEMBERS TAB ────────────────────────────────── -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon>person</mat-icon>&nbsp; Member Rankings
+          <mat-badge [matBadge]="memberRankings.length" matBadgeSize="small" style="margin-left:8px"></mat-badge>
+        </ng-template>
+
+        <div style="padding:16px 0">
+          <table mat-table [dataSource]="memberRankings" class="full-width leaderboard-table">
+            <ng-container matColumnDef="rank">
+              <th mat-header-cell *matHeaderCellDef class="mat-column-rank">Rank</th>
+              <td mat-cell *matCellDef="let m" class="mat-column-rank">
+                <div class="rank-cell">
+                  <span [class]="'rank-badge ' + getRankClass(m.rank)">{{ m.rank }}</span>
+                  @if (getRankIcon(m.rank)) {
+                    <mat-icon [class]="'rank-icon ' + getRankClass(m.rank)">{{ getRankIcon(m.rank) }}</mat-icon>
+                  }
+                </div>
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="memberName">
+              <th mat-header-cell *matHeaderCellDef>Member</th>
+              <td mat-cell *matCellDef="let m">
+                <a [routerLink]="['/members', m.memberId]" class="member-link">
+                  <strong>{{ m.memberName }}</strong>
+                </a>
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="troopName">
+              <th mat-header-cell *matHeaderCellDef>Troop</th>
+              <td mat-cell *matCellDef="let m">
+                <mat-chip style="font-size:0.8rem">{{ m.troopName }}</mat-chip>
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="attendancePoints">
+              <th mat-header-cell *matHeaderCellDef>Attendance</th>
+              <td mat-cell *matCellDef="let m">
+                <span class="pts-breakdown attendance">
+                  <mat-icon>fact_check</mat-icon>{{ m.attendancePoints | number:'1.0-1' }}
+                </span>
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="bonusPoints">
+              <th mat-header-cell *matHeaderCellDef>Bonus</th>
+              <td mat-cell *matCellDef="let m">
+                <span class="pts-breakdown bonus">
+                  <mat-icon>add_circle</mat-icon>{{ m.bonusPoints | number:'1.0-1' }}
+                </span>
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="totalPoints">
+              <th mat-header-cell *matHeaderCellDef>Total</th>
+              <td mat-cell *matCellDef="let m">
+                <app-points-badge [points]="m.totalPoints"></app-points-badge>
+              </td>
+            </ng-container>
+            <tr mat-header-row *matHeaderRowDef="memberColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: memberColumns;" [class.top-row]="row.rank <= 3"></tr>
+            <tr class="mat-row" *matNoDataRow>
+              <td class="mat-cell text-center" colspan="6" style="padding:32px">No members ranked yet.</td>
+            </tr>
+          </table>
+        </div>
+      </mat-tab>
+    </mat-tab-group>
+  }
+</div>

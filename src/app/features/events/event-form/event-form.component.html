@@ -1,0 +1,84 @@
+<div class="page-container">
+  <div class="page-header">
+    <h1><mat-icon>{{ isEdit ? 'edit' : 'add' }}</mat-icon> {{ isEdit ? 'Edit Event' : 'Create Event' }}</h1>
+    <button mat-button routerLink="/events"><mat-icon>arrow_back</mat-icon> Back</button>
+  </div>
+  <mat-card style="max-width:600px">
+    <mat-card-content>
+      <form [formGroup]="form" (ngSubmit)="submit()">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Event Name</mat-label>
+          <input matInput formControlName="name">
+          <mat-error *ngIf="form.get('name')?.hasError('required')">Required</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Description</mat-label>
+          <textarea matInput formControlName="description" rows="3"></textarea>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Event Date</mat-label>
+          <input matInput [matDatepicker]="picker" formControlName="eventDate">
+          <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+          <mat-datepicker #picker></mat-datepicker>
+        </mat-form-field>
+
+        <!-- Group selector — only visible to SystemAdmin when creating -->
+        @if (auth.isSystemAdmin() && !isEdit) {
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Group</mat-label>
+            <mat-icon matPrefix>group_work</mat-icon>
+            <mat-select formControlName="groupId">
+              <mat-option value="">— Select group —</mat-option>
+              @for (g of groups; track g.id) {
+                <mat-option [value]="g.id">{{ g.name }}</mat-option>
+              }
+            </mat-select>
+            <mat-hint>Admin must select a group</mat-hint>
+          </mat-form-field>
+        }
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Troop (optional — leave blank for all troops)</mat-label>
+          <mat-select formControlName="troopId">
+            <mat-option value="">All Troops</mat-option>
+            @for (t of filteredTroops; track t.id) {
+              <mat-option [value]="t.id">{{ t.name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <!-- Attendance Points row -->
+        <div class="points-row" style="display:flex;gap:16px;width:100%">
+          <mat-form-field appearance="outline" style="flex:1">
+            <mat-label>Present / Excused Points</mat-label>
+            <mat-icon matPrefix style="color:#4caf50">check_circle</mat-icon>
+            <input matInput type="number" formControlName="pointValue" min="0" max="10000">
+            <mat-hint>Awarded when Present or Excused</mat-hint>
+            <mat-error *ngIf="form.get('pointValue')?.hasError('required')">Required</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" style="flex:1">
+            <mat-label>Late Points</mat-label>
+            <mat-icon matPrefix style="color:#ff9800">schedule</mat-icon>
+            <input matInput type="number" formControlName="latePointValue" min="0" max="10000">
+            <mat-hint>Awarded when marked Late</mat-hint>
+            <mat-error *ngIf="form.get('latePointValue')?.hasError('required')">Required</mat-error>
+          </mat-form-field>
+        </div>
+
+        @if (isEdit) {
+          <mat-checkbox formControlName="isActive" style="margin-bottom:16px;display:block">Active</mat-checkbox>
+        }
+
+        <div class="form-actions mt-16">
+          <button mat-button type="button" routerLink="/events">Cancel</button>
+          <button mat-raised-button color="primary" type="submit" [disabled]="loading || form.invalid">
+            <mat-icon>save</mat-icon> {{ isEdit ? 'Update' : 'Create' }}
+          </button>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div>

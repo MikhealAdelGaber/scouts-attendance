@@ -1,0 +1,77 @@
+<div class="page-container">
+  <div class="page-header">
+    <h1><mat-icon>event_busy</mat-icon> Grant Excuse</h1>
+    <button mat-button routerLink="/excuses"><mat-icon>arrow_back</mat-icon> Back</button>
+  </div>
+
+  <mat-card style="max-width:520px">
+    <mat-card-content>
+      <form [formGroup]="form" (ngSubmit)="submit()">
+
+        <!-- Member search + select -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Search Member</mat-label>
+          <mat-icon matPrefix>search</mat-icon>
+          <input matInput [(ngModel)]="memberSearch" [ngModelOptions]="{standalone:true}"
+            (input)="filterMembers()" placeholder="Type name...">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Member</mat-label>
+          <mat-select formControlName="memberId">
+            @for (m of filteredMembers; track m.id) {
+              <mat-option [value]="m.id">{{ m.fullName }} — {{ m.troopName }}</mat-option>
+            }
+          </mat-select>
+          <mat-error *ngIf="form.get('memberId')?.hasError('required')">Required</mat-error>
+        </mat-form-field>
+
+        <!-- Start date — Material datepicker -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Start Date</mat-label>
+          <input matInput [matDatepicker]="startPicker" formControlName="startDate">
+          <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
+          <mat-datepicker #startPicker></mat-datepicker>
+          <mat-error *ngIf="form.get('startDate')?.hasError('required')">Required</mat-error>
+        </mat-form-field>
+
+        <!-- Permanent toggle -->
+        <div class="checkbox-row" style="margin-bottom:16px">
+          <mat-checkbox [ngModel]="isPermanent" [ngModelOptions]="{standalone:true}"
+            (ngModelChange)="togglePermanent($event)">
+            Permanent / Open-ended Excuse (no end date)
+          </mat-checkbox>
+        </div>
+
+        <!-- End date — only shown when not permanent -->
+        @if (!isPermanent) {
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>End Date</mat-label>
+            <input matInput [matDatepicker]="endPicker" formControlName="endDate">
+            <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
+            <mat-datepicker #endPicker></mat-datepicker>
+          </mat-form-field>
+        }
+
+        <!-- Reason -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Reason *</mat-label>
+          <mat-icon matPrefix>description</mat-icon>
+          <textarea matInput formControlName="reason" rows="3"
+            placeholder="Explain the reason for this excuse..."></textarea>
+          <mat-error *ngIf="form.get('reason')?.hasError('required')">Reason is required</mat-error>
+          <mat-error *ngIf="form.get('reason')?.hasError('minlength')">
+            Reason must be at least 3 characters
+          </mat-error>
+        </mat-form-field>
+
+        <div class="form-actions">
+          <button mat-button type="button" routerLink="/excuses">Cancel</button>
+          <button mat-raised-button color="primary" type="submit" [disabled]="loading || form.invalid">
+            <mat-icon>check</mat-icon> Grant Excuse
+          </button>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div>

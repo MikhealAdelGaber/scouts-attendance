@@ -1,0 +1,81 @@
+<div class="page-container">
+  <div class="page-header">
+    <h1><mat-icon>groups</mat-icon> Talaea (Sub-groups)</h1>
+    @if (auth.canEditMembers()) {
+      <button mat-raised-button color="primary" routerLink="new">
+        <mat-icon>add</mat-icon> New Talaea
+      </button>
+    }
+  </div>
+
+  <mat-card class="mb-16">
+    <mat-card-content style="padding:12px 16px">
+      <mat-form-field appearance="outline" style="width:300px">
+        <mat-label>Filter by Troop</mat-label>
+        <mat-select [(ngModel)]="selectedTroopId" (selectionChange)="load()">
+          <mat-option value="">All Troops</mat-option>
+          @for (t of troops; track t.id) {
+            <mat-option [value]="t.id">{{ t.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card>
+    <mat-card-content>
+      @if (loading) {
+        <app-loading-spinner></app-loading-spinner>
+      } @else {
+        <div class="table-scroll-wrapper">
+          <table mat-table [dataSource]="talaeas" class="full-width">
+            <ng-container matColumnDef="name">
+              <th mat-header-cell *matHeaderCellDef>Name</th>
+              <td mat-cell *matCellDef="let t">
+                <strong>{{ t.name }}</strong>
+                @if (t.description) {
+                  <br><small style="color:#888">{{ t.description }}</small>
+                }
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="troop">
+              <th mat-header-cell *matHeaderCellDef>Troop</th>
+              <td mat-cell *matCellDef="let t">{{ t.troopName }}</td>
+            </ng-container>
+            <ng-container matColumnDef="memberCount">
+              <th mat-header-cell *matHeaderCellDef>Members</th>
+              <td mat-cell *matCellDef="let t">{{ t.memberCount }}</td>
+            </ng-container>
+            <ng-container matColumnDef="totalPoints">
+              <th mat-header-cell *matHeaderCellDef>Points</th>
+              <td mat-cell *matCellDef="let t">
+                <span class="points-badge">{{ t.totalPoints | number }}</span>
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef></th>
+              <td mat-cell *matCellDef="let t">
+                <button mat-icon-button color="primary" [routerLink]="[t.id, 'points']" matTooltip="Points">
+                  <mat-icon>star</mat-icon>
+                </button>
+                @if (auth.canEditMembers()) {
+                  <button mat-icon-button [routerLink]="[t.id, 'edit']" matTooltip="Edit">
+                    <mat-icon>edit</mat-icon>
+                  </button>
+                  <button mat-icon-button color="warn" (click)="delete(t.id)" matTooltip="Delete">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                }
+              </td>
+            </ng-container>
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+            <tr class="mat-row" *matNoDataRow>
+              <td colspan="5" style="padding:32px;text-align:center;color:#999">No Talaea found.</td>
+            </tr>
+          </table>
+        </div>
+      }
+    </mat-card-content>
+  </mat-card>
+</div>

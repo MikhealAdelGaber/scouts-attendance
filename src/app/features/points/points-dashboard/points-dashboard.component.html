@@ -1,0 +1,210 @@
+<div class="page-container">
+  <div class="page-header">
+    <h1><mat-icon>person</mat-icon> Member Points</h1>
+    <div class="flex-gap">
+      <button mat-stroked-button (click)="exportMemberPointsExcel()" [disabled]="exporting"
+        matTooltip="Export Member Points to Excel">
+        <mat-icon>download</mat-icon> Excel
+      </button>
+      <a mat-raised-button color="accent" routerLink="troop">
+        <mat-icon>groups</mat-icon> Troop Points →
+      </a>
+      <a mat-stroked-button routerLink="member-categories" *ngIf="auth.isGroupLeader() || auth.isSystemAdmin()">
+        <mat-icon>category</mat-icon> Member Categories
+      </a>
+    </div>
+  </div>
+
+  <!-- Separation notice -->
+  <div style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:8px;padding:10px 16px;margin-bottom:20px;display:flex;align-items:center;gap:8px;font-size:0.85rem;color:#2e7d32">
+    <mat-icon style="font-size:18px;width:18px;height:18px">info</mat-icon>
+    <span>
+      <strong>Member Points</strong> and <strong>Troop Points</strong> are completely independent.
+      Points awarded here go to individual members only and do <em>not</em> affect the Troop Points leaderboard.
+    </span>
+  </div>
+
+  <div class="points-layout">
+    <!-- Add / Deduct Points Form -->
+    <mat-card class="form-card">
+      <mat-card-header>
+        <mat-icon mat-card-avatar [style.color]="isAwarding ? '#f9a825' : '#e53935'">
+          {{ isAwarding ? 'add_circle' : 'remove_circle' }}
+        </mat-icon>
+        <mat-card-title>{{ isAwarding ? 'Award Points' : 'Deduct Points' }} — Member</mat-card-title>
+        <mat-card-subtitle>{{ isAwarding ? 'Add positive points to a member' : 'Subtract points from a member' }}</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+
+        <!-- Award / Deduct toggle -->
+        <div class="mode-toggle-row">
+          <mat-button-toggle-group [value]="isAwarding" (change)="toggleMode()" class="mode-toggle">
+            <mat-button-toggle [value]="true" class="award-toggle">
+              <mat-icon>add_circle</mat-icon> Award
+            </mat-button-toggle>
+            <mat-button-toggle [value]="false" class="deduct-toggle">
+              <mat-icon>remove_circle</mat-icon> Deduct
+            </mat-button-toggle>
+          </mat-button-toggle-group>
+        </div>
+
+        <form [formGroup]="form" (ngSubmit)="submit()">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Select Member</mat-label>
+            <mat-icon matPrefix>person</mat-icon>
+            <mat-select formControlName="memberId" (selectionChange)="onMemberSelect($event.value)">
+              @for (m of members; track m.id) {
+                <mat-option [value]="m.id">{{ m.fullName }} — {{ m.troopName }}</mat-option>
+              }
+            </mat-select>
+            <mat-error *ngIf="form.get('memberId')?.hasError('required')">Required</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Category</mat-label>
+            <mat-icon matPrefix>category</mat-icon>
+            <mat-select formControlName="categoryId">
+              @for (c of categories; track c.id) {
+                <mat-option [value]="c.id">{{ c.name }}</mat-option>
+              }
+            </mat-select>
+            <mat-hint>Member point categories only</mat-hint>
+            <mat-error *ngIf="form.get('categoryId')?.hasError('required')">Required</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Points Amount</mat-label>
+            <span matPrefix [style.color]="isAwarding ? '#4caf50' : '#e53935'"
+              style="font-size:1.3rem;font-weight:700;padding-left:8px;padding-right:4px;line-height:1">
+              {{ isAwarding ? '+' : '−' }}
+            </span>
+            <input matInput type="number" formControlName="points" min="0.1" step="0.5">
+            <mat-error *ngIf="form.get('points')?.hasError('min')">Must be > 0</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Note (optional)</mat-label>
+            <mat-icon matPrefix>notes</mat-icon>
+            <input matInput formControlName="note"
+              [placeholder]="isAwarding ? 'Reason for awarding...' : 'Reason for deduction...'">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Date</mat-label>
+            <input matInput [matDatepicker]="picker" formControlName="date">
+            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-datepicker #picker></mat-datepicker>
+          </mat-form-field>
+
+          <button mat-raised-button type="submit" class="full-width submit-btn"
+            [class.btn-award]="isAwarding" [class.btn-deduct]="!isAwarding"
+            [disabled]="saving || form.invalid" style="height:48px">
+            @if (saving) {
+              <mat-progress-spinner mode="indeterminate" diameter="20" style="display:inline-block"></mat-progress-spinner>
+            } @else {
+              <mat-icon>{{ isAwarding ? 'add' : 'remove' }}</mat-icon>
+              {{ isAwarding ? 'Award Points' : 'Deduct Points' }}
+            }
+          </button>
+        </form>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Member Summary Panel -->
+    <div class="summary-panel">
+      @if (loadingSummary) {
+        <app-loading-spinner height="100px"></app-loading-spinner>
+      } @else if (pointsSummary) {
+        <!-- Total Points Card -->
+        <mat-card class="total-card">
+          <mat-card-content>
+            <div class="total-layout">
+              <div>
+                <div class="member-name">{{ pointsSummary.memberName }}</div>
+                <div class="troop">{{ pointsSummary.troopName }}</div>
+              </div>
+              <div class="total-points">
+                <mat-icon>star</mat-icon>
+                <span>{{ pointsSummary.totalPoints | number:'1.0-1' }}</span>
+                <small>pts</small>
+              </div>
+            </div>
+            <mat-divider class="mt-16 mb-16"></mat-divider>
+            <div class="category-breakdown">
+              @for (key of objectKeys(pointsSummary.byCategory); track key) {
+                <div class="category-row">
+                  <span>{{ key }}</span>
+                  <app-points-badge [points]="pointsSummary!.byCategory[key]"></app-points-badge>
+                </div>
+              }
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Points History Table -->
+        <mat-card>
+          <mat-card-header><mat-card-title>Points History</mat-card-title></mat-card-header>
+          <mat-card-content>
+            <table mat-table [dataSource]="pointsSummary.history" class="full-width">
+              <ng-container matColumnDef="date">
+                <th mat-header-cell *matHeaderCellDef>Date</th>
+                <td mat-cell *matCellDef="let p">{{ p.date | date:'shortDate' }}</td>
+              </ng-container>
+              <ng-container matColumnDef="category">
+                <th mat-header-cell *matHeaderCellDef>Category</th>
+                <td mat-cell *matCellDef="let p">{{ p.categoryName }}</td>
+              </ng-container>
+              <ng-container matColumnDef="points">
+                <th mat-header-cell *matHeaderCellDef>Points</th>
+                <td mat-cell *matCellDef="let p"><app-points-badge [points]="p.points"></app-points-badge></td>
+              </ng-container>
+              <ng-container matColumnDef="note">
+                <th mat-header-cell *matHeaderCellDef>Note</th>
+                <td mat-cell *matCellDef="let p">{{ p.note || '—' }}</td>
+              </ng-container>
+              <ng-container matColumnDef="type">
+                <th mat-header-cell *matHeaderCellDef>Type</th>
+                <td mat-cell *matCellDef="let p">
+                  <div style="display:flex;flex-direction:column;gap:3px;align-items:flex-start">
+                    <mat-chip [style.background]="p.isAutomatic ? '#3f51b5' : '#9c27b0'" style="color:white;font-size:0.75rem;min-height:20px">
+                      {{ p.isAutomatic ? 'Auto' : 'Manual' }}
+                    </mat-chip>
+                    @if (p.points < 0) {
+                      <mat-chip style="background:#fce4ec;color:#c62828;font-size:0.75rem;min-height:20px">
+                        <mat-icon style="font-size:12px;width:12px;height:12px;margin-right:2px">remove_circle</mat-icon>
+                        Deduction
+                      </mat-chip>
+                    }
+                  </div>
+                </td>
+              </ng-container>
+              <ng-container matColumnDef="actions">
+                <th mat-header-cell *matHeaderCellDef></th>
+                <td mat-cell *matCellDef="let p">
+                  <button mat-icon-button color="warn" (click)="deletePoints(p.id)"
+                    *ngIf="!p.isAutomatic && (auth.isGroupLeader() || auth.isSystemAdmin())"
+                    matTooltip="Remove points">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </td>
+              </ng-container>
+              <tr mat-header-row *matHeaderRowDef="pointsColumns"></tr>
+              <tr mat-row *matRowDef="let row; columns: pointsColumns;"
+                [class.deduction-row]="row.points < 0"></tr>
+              <tr class="mat-row" *matNoDataRow>
+                <td class="mat-cell text-center" colspan="6" style="padding:24px">No points history</td>
+              </tr>
+            </table>
+          </mat-card-content>
+        </mat-card>
+      } @else {
+        <mat-card>
+          <mat-card-content style="padding:48px;text-align:center">
+            <mat-icon style="font-size:64px;width:64px;height:64px;color:#ffd740">star</mat-icon>
+            <p style="color:#999;margin-top:16px">Select a member to view their points.</p>
+          </mat-card-content>
+        </mat-card>
+      }
+    </div>
+  </div>
+</div>

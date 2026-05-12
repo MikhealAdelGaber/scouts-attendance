@@ -1,0 +1,285 @@
+<div class="page-container">
+  <!-- Hidden file input for import -->
+  <input #fileInput type="file" accept=".xlsx" style="display:none" (change)="onFileSelected($event)">
+
+  <div class="page-header">
+    <h1><mat-icon>people</mat-icon> Members</h1>
+    <div class="flex-gap" style="flex-wrap:wrap">
+
+      <!-- Export -->
+      <button mat-stroked-button (click)="exportExcel()" [disabled]="exporting" matTooltip="Export to Excel">
+        <mat-icon>download</mat-icon> Excel
+      </button>
+
+      @if (auth.canEditMembers()) {
+        <!-- Download Template -->
+        <button mat-stroked-button (click)="downloadTemplate()" matTooltip="Download blank import template (.xlsx)">
+          <mat-icon>file_download</mat-icon> Template
+        </button>
+
+        <!-- Import -->
+        <button mat-stroked-button color="accent"
+          (click)="openImportPicker()" [disabled]="importing"
+          matTooltip="Bulk import members from Excel (.xlsx)">
+          @if (importing) {
+            <mat-progress-spinner mode="indeterminate" diameter="18" style="display:inline-block;margin-right:4px"></mat-progress-spinner>
+          } @else {
+            <mat-icon>upload_file</mat-icon>
+          }
+          {{ importing ? 'Importing…' : 'Import' }}
+        </button>
+
+        <!-- Add single -->
+        <a mat-raised-button color="primary" routerLink="new">
+          <mat-icon>person_add</mat-icon> Add Member
+        </a>
+      }
+    </div>
+  </div>
+
+  <!-- Filter panel -->
+  <mat-card class="filter-card mb-16">
+    <mat-card-content>
+      <!-- Search bar + toggle -->
+      <div class="filter-top-row">
+        <mat-form-field appearance="outline" class="search-field">
+          <mat-label>Search</mat-label>
+          <mat-icon matPrefix>search</mat-icon>
+          <input matInput [value]="search" (input)="onSearch($any($event.target).value)"
+            placeholder="Name, ID or phone...">
+          @if (search) {
+            <button matSuffix mat-icon-button (click)="search=''; onSearch('')">
+              <mat-icon>close</mat-icon>
+            </button>
+          }
+        </mat-form-field>
+
+        <button mat-stroked-button (click)="filtersExpanded = !filtersExpanded"
+          [class.active-filter-btn]="hasActiveFilters">
+          <mat-icon>{{ filtersExpanded ? 'expand_less' : 'filter_list' }}</mat-icon>
+          Filters
+          @if (hasActiveFilters) {
+            <span class="filter-badge">●</span>
+          }
+        </button>
+
+        @if (hasActiveFilters) {
+          <button mat-button color="warn" (click)="clearFilters()">
+            <mat-icon>clear</mat-icon> Clear Filters
+          </button>
+        }
+      </div>
+
+      <!-- Collapsible advanced filters -->
+      @if (filtersExpanded) {
+        <div class="advanced-filters">
+          <!-- Troop filter -->
+          <mat-form-field appearance="outline">
+            <mat-label>Troop (الفرقة)</mat-label>
+            <mat-icon matPrefix>groups</mat-icon>
+            <mat-select [(ngModel)]="selectedTroopId" (selectionChange)="onFilterChange()">
+              <mat-option value="">All Troops</mat-option>
+              @for (t of troops; track t.id) {
+                <mat-option [value]="t.id">{{ t.name }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+
+          <!-- Academic year filter -->
+          <mat-form-field appearance="outline">
+            <mat-label>Academic Grade (المرحلة)</mat-label>
+            <mat-icon matPrefix>school</mat-icon>
+            <mat-select [(ngModel)]="selectedAcademicYear" (selectionChange)="onFilterChange()">
+              <mat-option value="">All Grades</mat-option>
+              @for (y of academicYears; track y) {
+                <mat-option [value]="y">{{ y }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+
+          <!-- Region filter -->
+          <mat-form-field appearance="outline">
+            <mat-label>Region (المنطقة)</mat-label>
+            <mat-icon matPrefix>location_on</mat-icon>
+            <input matInput [(ngModel)]="selectedRegion"
+              (ngModelChange)="onFilterChange()" placeholder="Type to filter...">
+            @if (selectedRegion) {
+              <button matSuffix mat-icon-button (click)="selectedRegion=''; onFilterChange()">
+                <mat-icon>close</mat-icon>
+              </button>
+            }
+          </mat-form-field>
+
+          <!-- Neckerchief filter -->
+          <mat-form-field appearance="outline">
+            <mat-label>Neckerchief (الفولار)</mat-label>
+            <mat-icon matPrefix>checkroom</mat-icon>
+            <mat-select [(ngModel)]="selectedNeckerchief" (selectionChange)="onFilterChange()">
+              <mat-option [value]="null">All</mat-option>
+              <mat-option [value]="true">Has Neckerchief ✓</mat-option>
+              <mat-option [value]="false">No Neckerchief ✗</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+      }
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Table -->
+  <mat-card>
+    <mat-card-content>
+      @if (loading) {
+        <app-loading-spinner></app-loading-spinner>
+      } @else {
+        <div class="table-scroll-wrapper">
+          <table mat-table [dataSource]="members" class="full-width members-table">
+
+            <!-- Custom ID -->
+            <ng-container matColumnDef="customId">
+              <th mat-header-cell *matHeaderCellDef style="width:90px">ID</th>
+              <td mat-cell *matCellDef="let m">
+                <span class="custom-id-badge">{{ m.customId }}</span>
+                <mat-icon style="font-size:14px;vertical-align:middle;margin-left:2px"
+                  [style.color]="m.gender === 1 ? '#1565c0' : '#ad1457'"
+                  [matTooltip]="m.gender === 1 ? 'Male' : 'Female'">
+                  {{ m.gender === 1 ? 'male' : 'female' }}
+                </mat-icon>
+              </td>
+            </ng-container>
+
+            <!-- Name -->
+            <ng-container matColumnDef="fullName">
+              <th mat-header-cell *matHeaderCellDef>Name</th>
+              <td mat-cell *matCellDef="let m">
+                <a [routerLink]="m.id" class="member-link">
+                  <strong>{{ m.fullName }}</strong>
+                </a>
+              </td>
+            </ng-container>
+
+            <!-- Troop -->
+            <ng-container matColumnDef="troop">
+              <th mat-header-cell *matHeaderCellDef>Troop</th>
+              <td mat-cell *matCellDef="let m">
+                <mat-chip style="font-size:0.8rem">{{ m.troopName }}</mat-chip>
+              </td>
+            </ng-container>
+
+            <!-- Region -->
+            <ng-container matColumnDef="region">
+              <th mat-header-cell *matHeaderCellDef>Region (المنطقة)</th>
+              <td mat-cell *matCellDef="let m">
+                @if (m.region) {
+                  <span class="region-badge">
+                    <mat-icon style="font-size:14px;vertical-align:middle">location_on</mat-icon>
+                    {{ m.region }}
+                  </span>
+                } @else {
+                  <span class="text-muted">—</span>
+                }
+              </td>
+            </ng-container>
+
+            <!-- Academic Year -->
+            <ng-container matColumnDef="academicYear">
+              <th mat-header-cell *matHeaderCellDef>Grade (المرحلة)</th>
+              <td mat-cell *matCellDef="let m">
+                @if (m.academicYear) {
+                  <span class="grade-badge">{{ m.academicYear }}</span>
+                } @else {
+                  <span class="text-muted">—</span>
+                }
+              </td>
+            </ng-container>
+
+            <!-- Neckerchief -->
+            <ng-container matColumnDef="neckerchief">
+              <th mat-header-cell *matHeaderCellDef matTooltip="Has Neckerchief / الفولار">
+                <mat-icon style="font-size:18px">checkroom</mat-icon>
+              </th>
+              <td mat-cell *matCellDef="let m">
+                @if (m.hasNeckerchief) {
+                  <mat-icon style="color:#4caf50" matTooltip="Has neckerchief">check_circle</mat-icon>
+                } @else {
+                  <mat-icon style="color:#e0e0e0" matTooltip="No neckerchief">cancel</mat-icon>
+                }
+              </td>
+            </ng-container>
+
+            <!-- Phone -->
+            <ng-container matColumnDef="phone">
+              <th mat-header-cell *matHeaderCellDef>Phone</th>
+              <td mat-cell *matCellDef="let m">
+                <div class="phone-cell">
+                  @if (m.phoneNumber) {
+                    <a [href]="'tel:' + m.phoneNumber" class="phone-link" matTooltip="Call member">
+                      <mat-icon>phone</mat-icon>{{ m.phoneNumber }}
+                    </a>
+                  }
+                  @if (m.fatherPhone) {
+                    <a [href]="'tel:' + m.fatherPhone" class="phone-link phone-parent"
+                      matTooltip="Father's phone">
+                      <mat-icon style="font-size:14px">person</mat-icon>{{ m.fatherPhone }}
+                    </a>
+                  }
+                  @if (m.motherPhone) {
+                    <a [href]="'tel:' + m.motherPhone" class="phone-link phone-parent"
+                      matTooltip="Mother's phone">
+                      <mat-icon style="font-size:14px">person</mat-icon>{{ m.motherPhone }}
+                    </a>
+                  }
+                  @if (!m.phoneNumber && !m.fatherPhone && !m.motherPhone) {
+                    <span class="text-muted">—</span>
+                  }
+                </div>
+              </td>
+            </ng-container>
+
+            <!-- Points -->
+            <ng-container matColumnDef="totalPoints">
+              <th mat-header-cell *matHeaderCellDef>Points</th>
+              <td mat-cell *matCellDef="let m">
+                <app-points-badge [points]="m.totalPoints"></app-points-badge>
+              </td>
+            </ng-container>
+
+            <!-- Actions -->
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef class="mat-column-actions"></th>
+              <td mat-cell *matCellDef="let m" class="mat-column-actions">
+                <button mat-icon-button [routerLink]="m.id" matTooltip="View">
+                  <mat-icon>visibility</mat-icon>
+                </button>
+                @if (auth.canEditMembers()) {
+                  <button mat-icon-button [routerLink]="[m.id, 'edit']" matTooltip="Edit">
+                    <mat-icon>edit</mat-icon>
+                  </button>
+                }
+                <button mat-icon-button (click)="viewQr(m)" matTooltip="QR Code" color="accent">
+                  <mat-icon>qr_code</mat-icon>
+                </button>
+                @if (auth.isAdmin()) {
+                  <button mat-icon-button color="warn" (click)="delete(m)" matTooltip="Delete">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                }
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"
+                [class.excuse-row]="row.hasActiveExcuse"></tr>
+            <tr class="mat-row" *matNoDataRow>
+              <td class="mat-cell text-center" [attr.colspan]="displayedColumns.length" style="padding:32px">
+                No members found.
+              </td>
+            </tr>
+          </table>
+        </div>
+
+        <mat-paginator [length]="totalCount" [pageSize]="pageSize" [pageSizeOptions]="[10,20,50]"
+          (page)="onPage($event)" showFirstLastButtons></mat-paginator>
+      }
+    </mat-card-content>
+  </mat-card>
+</div>

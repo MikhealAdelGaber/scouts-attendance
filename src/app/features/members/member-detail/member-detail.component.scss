@@ -1,0 +1,388 @@
+// ── Layout ────────────────────────────────────────────────────────────────────
+.detail-grid {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 24px;
+  align-items: start;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.profile-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  @media (max-width: 900px) {
+    order: 0;
+  }
+}
+
+.right-panel {
+  min-width: 0; // prevent overflow in grid
+}
+
+// ── Profile Card ─────────────────────────────────────────────────────────────
+.profile-card mat-card-content {
+  padding: 20px !important;
+}
+
+.avatar-wrap {
+  position: relative;
+  text-align: center;
+  margin-bottom: 8px;
+
+  .avatar-icon {
+    font-size: 80px;
+    width: 80px;
+    height: 80px;
+    color: #3f51b5;
+  }
+
+  .neckerchief-badge {
+    position: absolute;
+    bottom: 0;
+    right: calc(50% - 50px);
+    background: #4caf50;
+    color: white;
+    border-radius: 50%;
+    width: 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    mat-icon { font-size: 16px; width: 16px; height: 16px; }
+  }
+}
+
+.member-name {
+  text-align: center;
+  margin: 0 0 8px;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #1a237e;
+}
+
+.id-gender-row {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.custom-id-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: #eceff1;
+  color: #37474f;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.82rem;
+  font-family: 'Courier New', monospace;
+  font-weight: 700;
+}
+
+.gender-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.82rem;
+  font-weight: 600;
+
+  &.gender-male   { background: #e3f2fd; color: #1565c0; }
+  &.gender-female { background: #fce4ec; color: #ad1457; }
+}
+
+// ── Tags (troop / talaea / group) ────────────────────────────────────────────
+.tag-row { text-align: center; margin-bottom: 4px; }
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.82rem;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-weight: 500;
+
+  mat-icon { font-size: 14px; width: 14px; height: 14px; }
+
+  &.troop  { background: #e8eaf6; color: #3f51b5; }
+  &.talaea { background: #ede7f6; color: #673ab7; }
+  &.group  { background: #e0f2f1; color: #00695c; }
+}
+
+// ── Info List ────────────────────────────────────────────────────────────────
+.info-list { display: flex; flex-direction: column; gap: 10px; }
+
+.info-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+
+  .info-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    color: #757575;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .info-body {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .info-label {
+    font-size: 0.72rem;
+    color: #9e9e9e;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    line-height: 1.2;
+  }
+
+  .info-value {
+    font-size: 0.88rem;
+    color: #333;
+    word-break: break-word;
+
+    &.muted { color: #bdbdbd; }
+  }
+
+  .phone-link {
+    color: #1a237e;
+    text-decoration: none;
+    font-weight: 500;
+
+    &:hover { text-decoration: underline; }
+  }
+
+  .grade-pill {
+    display: inline-block;
+    background: #e8eaf6;
+    color: #3f51b5;
+    border-radius: 12px;
+    padding: 2px 10px;
+    font-size: 0.82rem;
+    font-weight: 600;
+  }
+}
+
+// ── Mini stats card ──────────────────────────────────────────────────────────
+.stats-mini-card mat-card-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 16px !important;
+  gap: 8px;
+}
+
+.mini-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+
+  mat-icon { font-size: 22px; width: 22px; height: 22px; }
+
+  .mini-val {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #212121;
+  }
+
+  .mini-lbl {
+    font-size: 0.7rem;
+    color: #9e9e9e;
+    text-align: center;
+  }
+}
+
+// ── QR Code ──────────────────────────────────────────────────────────────────
+.qr-wrap {
+  text-align: center;
+
+  .qr-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #555;
+    margin-bottom: 8px;
+
+    mat-icon { font-size: 18px; width: 18px; height: 18px; }
+  }
+
+  .qr-img {
+    width: 150px;
+    height: 150px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+  }
+
+  .qr-text {
+    font-size: 0.68rem;
+    color: #bdbdbd;
+    margin-top: 4px;
+    word-break: break-all;
+  }
+}
+
+// ── Tabs ─────────────────────────────────────────────────────────────────────
+.detail-tabs {
+  .tab-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    margin-right: 4px;
+    vertical-align: middle;
+  }
+}
+
+.tab-card {
+  margin-top: 16px;
+  margin-bottom: 0;
+
+  mat-card-content { padding: 16px !important; }
+}
+
+// ── Attendance summary row ────────────────────────────────────────────────────
+.attendance-summary-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  padding: 8px 0;
+}
+
+.att-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 60px;
+
+  mat-icon { font-size: 24px; width: 24px; height: 24px; }
+
+  .att-val {
+    font-size: 1.4rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .att-lbl {
+    font-size: 0.72rem;
+    color: #9e9e9e;
+  }
+
+  &.present { mat-icon, .att-val { color: #4caf50; } }
+  &.late    { mat-icon, .att-val { color: #ff9800; } }
+  &.absent  { mat-icon, .att-val { color: #f44336; } }
+  &.excused { mat-icon, .att-val { color: #2196f3; } }
+  &.rate    { mat-icon, .att-val { color: #9c27b0; } }
+}
+
+// ── Attendance badge ─────────────────────────────────────────────────────────
+.att-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+// ── Score badge ───────────────────────────────────────────────────────────────
+.score-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+// ── Type chip ─────────────────────────────────────────────────────────────────
+.type-chip {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+// ── Table scroll wrapper ─────────────────────────────────────────────────────
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+// ── Empty states ─────────────────────────────────────────────────────────────
+.empty-cell {
+  text-align: center;
+  padding: 32px !important;
+  color: #bdbdbd;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 32px 0;
+  color: #9e9e9e;
+}
+
+// ── Category chips ────────────────────────────────────────────────────────────
+.category-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+// ── Excuse banner ─────────────────────────────────────────────────────────────
+.excuse-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fff3e0;
+  border: 1px solid #ffcc80;
+  border-radius: 8px;
+  padding: 10px 16px;
+  color: #e65100;
+  font-size: 0.9rem;
+
+  mat-icon { color: #ff9800; }
+}
+
+// ── Notes box ────────────────────────────────────────────────────────────────
+.notes-box {
+  background: #fafafa;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 16px;
+  font-size: 0.9rem;
+  line-height: 1.7;
+  color: #424242;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+// ── Spacing helpers ───────────────────────────────────────────────────────────
+.my-12  { margin-top: 12px; margin-bottom: 12px; }
+.mt-12  { margin-top: 12px; }
+.mb-16  { margin-bottom: 16px; }
+.mt-16  { margin-top: 16px; }
+.full-width { width: 100%; }
