@@ -29,14 +29,19 @@ export class MemberListComponent implements OnInit {
   page = 1;
   pageSize = 20;
 
+  // Special sentinel value used in the troop dropdown to select "Unassigned" members
+  readonly UNASSIGNED = '__unassigned__';
+
   // Filter state
   search = '';
   selectedTroopId = '';
   selectedAcademicYear = '';
   selectedRegion = '';
   selectedNeckerchief: boolean | null = null;
-  showUnassigned = false;       // true = show only members with TroopId = null
   filtersExpanded = false;
+
+  /** True when the troop dropdown is set to the "Unassigned" option. */
+  get showUnassigned(): boolean { return this.selectedTroopId === this.UNASSIGNED; }
 
   readonly academicYears = [
     'Grade 1','Grade 2','Grade 3','Grade 4','Grade 5','Grade 6',
@@ -50,7 +55,7 @@ export class MemberListComponent implements OnInit {
 
   get hasActiveFilters(): boolean {
     return !!(this.selectedTroopId || this.selectedAcademicYear ||
-              this.selectedRegion || this.selectedNeckerchief !== null || this.showUnassigned);
+              this.selectedRegion  || this.selectedNeckerchief !== null);
   }
 
   constructor(
@@ -76,6 +81,9 @@ export class MemberListComponent implements OnInit {
   load(): void {
     this.loading = true;
     this.memberService.getAll({
+      // When the "Unassigned" option is selected in the troop dropdown, pass
+      // unassigned=true and omit troopId so the API returns only members with
+      // TroopId = null.  Otherwise pass the selected troop (if any).
       troopId:        this.showUnassigned ? undefined : (this.selectedTroopId || undefined),
       page:           this.page,
       pageSize:       this.pageSize,
@@ -95,11 +103,10 @@ export class MemberListComponent implements OnInit {
   onFilterChange(): void { this.filterSubject.next(); }
 
   clearFilters(): void {
-    this.selectedTroopId      = '';
+    this.selectedTroopId      = '';   // also resets showUnassigned (it's a getter)
     this.selectedAcademicYear = '';
     this.selectedRegion       = '';
     this.selectedNeckerchief  = null;
-    this.showUnassigned       = false;
     this.search               = '';
     this.page = 1;
     this.load();
@@ -128,8 +135,10 @@ export class MemberListComponent implements OnInit {
   }
 
   openImportPicker(): void {
-    // Resolve the troop that will receive the imported members
-    const troopId = (this.auth.currentUser?.troopId ?? this.selectedTroopId) || '';
+    // Resolve the troop that will receive the imported members.
+    // "__unassigned__" is a UI sentinel and is NOT a valid troop ID — treat it as empty.
+    const effectiveFilter = this.showUnassigned ? '' : (this.selectedTroopId || '');
+    const troopId = (this.auth.currentUser?.troopId ?? effectiveFilter) || '';
     if (!troopId) {
       // GroupLeaders / Admins must pick a troop first
       this.snack.open(

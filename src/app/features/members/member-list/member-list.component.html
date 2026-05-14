@@ -73,32 +73,24 @@
       <!-- Collapsible advanced filters -->
       @if (filtersExpanded) {
         <div class="advanced-filters">
-          <!-- Troop filter -->
+          <!-- Troop filter (includes "Unassigned" as a first-class option) -->
           <mat-form-field appearance="outline">
             <mat-label>Troop (الفرقة)</mat-label>
             <mat-icon matPrefix>groups</mat-icon>
-            <mat-select [(ngModel)]="selectedTroopId"
-              (selectionChange)="showUnassigned = false; onFilterChange()"
-              [disabled]="showUnassigned">
+            <mat-select [(ngModel)]="selectedTroopId" (selectionChange)="onFilterChange()">
               <mat-option value="">All Troops</mat-option>
+              <!-- Special option: show only members whose troop was deleted / never assigned -->
+              <mat-option [value]="UNASSIGNED">
+                <span style="display:inline-flex;align-items:center;gap:6px;color:#c62828">
+                  <mat-icon style="font-size:16px;width:16px;height:16px">person_off</mat-icon>
+                  Unassigned (No Troop)
+                </span>
+              </mat-option>
               @for (t of troops; track t.id) {
                 <mat-option [value]="t.id">{{ t.name }}</mat-option>
               }
             </mat-select>
           </mat-form-field>
-
-          <!-- Unassigned members filter -->
-          <div class="unassigned-toggle">
-            <mat-slide-toggle
-              [(ngModel)]="showUnassigned"
-              (ngModelChange)="selectedTroopId = ''; onFilterChange()"
-              color="warn">
-              <span class="unassigned-label">
-                <mat-icon>person_off</mat-icon>
-                Unassigned members only
-              </span>
-            </mat-slide-toggle>
-          </div>
 
           <!-- Academic year filter -->
           <mat-form-field appearance="outline">
