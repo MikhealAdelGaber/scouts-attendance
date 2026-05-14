@@ -1,139 +1,149 @@
 <div class="page-container">
+
+  <!-- Page Header -->
   <div class="page-header">
-    <h1>
-      <mat-icon>dashboard</mat-icon>
-      Dashboard
-    </h1>
+    <h1><mat-icon>dashboard</mat-icon> Dashboard</h1>
     <span *ngIf="currentUser$ | async as user" class="welcome">
       Welcome, <strong>{{ user.username }}</strong>
     </span>
   </div>
-      <!-- Quick Actions -->
-    <mat-card class="mt-24">
-      <mat-card-header>
-        <mat-card-title>Quick Actions</mat-card-title>
-      </mat-card-header>
-      <mat-card-content>
-        <div class="quick-actions">
-          <a mat-raised-button color="primary" routerLink="/attendance">
-            <mat-icon>fact_check</mat-icon> Mark Attendance
-          </a>
-          <a mat-raised-button routerLink="/members/new" style="background:#4caf50;color:white">
-            <mat-icon>person_add</mat-icon> Add Member
-          </a>
-          <a mat-raised-button routerLink="/events/new" style="background:#ff9800;color:white">
-            <mat-icon>event</mat-icon> Create Event
-          </a>
-          <a mat-raised-button routerLink="/points" style="background:#9c27b0;color:white">
-            <mat-icon>star</mat-icon> Add Points
-          </a>
-        </div>
-      </mat-card-content>
-    </mat-card>
 
+  <!-- ① Quick Actions ─────────────────────────────────────── -->
+  <mat-card class="quick-actions-card">
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon>bolt</mat-icon> Quick Actions
+      </mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="quick-actions">
+        <a mat-raised-button class="qa-btn qa-attendance" routerLink="/attendance">
+          <mat-icon>fact_check</mat-icon>
+          <span>Mark Attendance</span>
+        </a>
+        <a mat-raised-button class="qa-btn qa-member" routerLink="/members/new">
+          <mat-icon>person_add</mat-icon>
+          <span>Add Member</span>
+        </a>
+        <a mat-raised-button class="qa-btn qa-event" routerLink="/events/new">
+          <mat-icon>event</mat-icon>
+          <span>Create Event</span>
+        </a>
+        <a mat-raised-button class="qa-btn qa-points" routerLink="/points">
+          <mat-icon>star</mat-icon>
+          <span>Add Points</span>
+        </a>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- ② Stat Cards ────────────────────────────────────────── -->
   @if (loading) {
-    <div class="card-grid stats-grid">
-      @for (_ of [1,2,3,4]; track $index) {
+    <div class="stats-grid mt-24">
+      @for (_ of [1,2,3,4,5]; track $index) {
         <div class="skeleton-card"></div>
       }
     </div>
   } @else {
-    <!-- Stats Row -->
-    <div class="card-grid stats-grid">
-      <mat-card class="stat-card" style="border-top: 4px solid #3f51b5">
+    <div class="stats-grid mt-24">
+
+      <mat-card class="stat-card" style="border-top:4px solid #3f51b5">
         <mat-card-content>
-          <div class="stat-icon-wrapper" style="background: #e8eaf6">
+          <div class="stat-icon-wrap" style="background:#e8eaf6">
             <mat-icon style="color:#3f51b5">people</mat-icon>
           </div>
-          <div class="stat-text">
-            <div class="stat-value">{{ dashboardStats?.totalMembers ?? 0 }}</div>
+          <div class="stat-body">
+            <div class="stat-number">{{ dashboardStats?.totalMembers ?? 0 }}</div>
             <div class="stat-label">Total Members</div>
           </div>
         </mat-card-content>
       </mat-card>
 
-      <mat-card class="stat-card" style="border-top: 4px solid #009688">
+      <mat-card class="stat-card" style="border-top:4px solid #009688">
         <mat-card-content>
-          <div class="stat-icon-wrapper" style="background: #e0f2f1">
+          <div class="stat-icon-wrap" style="background:#e0f2f1">
             <mat-icon style="color:#009688">groups</mat-icon>
           </div>
-          <div class="stat-text">
-            <div class="stat-value">{{ dashboardStats?.totalTroops ?? 0 }}</div>
+          <div class="stat-body">
+            <div class="stat-number">{{ dashboardStats?.totalTroops ?? 0 }}</div>
             <div class="stat-label">Active Troops</div>
           </div>
         </mat-card-content>
       </mat-card>
 
-      <mat-card class="stat-card" style="border-top: 4px solid #ff9800">
+      <mat-card class="stat-card" style="border-top:4px solid #ff9800">
         <mat-card-content>
-          <div class="stat-icon-wrapper" style="background: #fff3e0">
+          <div class="stat-icon-wrap" style="background:#fff3e0">
             <mat-icon style="color:#ff9800">event</mat-icon>
           </div>
-          <div class="stat-text">
-            <div class="stat-value">{{ dashboardStats?.totalEvents ?? 0 }}</div>
+          <div class="stat-body">
+            <div class="stat-number">{{ dashboardStats?.totalEvents ?? 0 }}</div>
             <div class="stat-label">Events</div>
           </div>
         </mat-card-content>
       </mat-card>
 
-      <mat-card class="stat-card" style="border-top: 4px solid #4caf50">
+      <mat-card class="stat-card" style="border-top:4px solid #4caf50">
         <mat-card-content>
-          <div class="stat-icon-wrapper" style="background: #e8f5e9">
+          <div class="stat-icon-wrap" style="background:#e8f5e9">
             <mat-icon style="color:#4caf50">fact_check</mat-icon>
           </div>
-          <div class="stat-text">
-            <div class="stat-value">{{ (dashboardStats?.overallAttendanceRate ?? 0) | number:'1.0-1' }}%</div>
+          <div class="stat-body">
+            <div class="stat-number">{{ (dashboardStats?.overallAttendanceRate ?? 0) | number:'1.0-1' }}%</div>
             <div class="stat-label">Attendance Rate</div>
           </div>
         </mat-card-content>
       </mat-card>
 
       @if (leaderboard?.troopRankings?.length) {
-        <mat-card class="stat-card" style="border-top: 4px solid #e91e63">
+        <mat-card class="stat-card" style="border-top:4px solid #e91e63">
           <mat-card-content>
-            <div class="stat-icon-wrapper" style="background: #fce4ec">
+            <div class="stat-icon-wrap" style="background:#fce4ec">
               <mat-icon style="color:#e91e63">emoji_events</mat-icon>
             </div>
-            <div class="stat-text">
-              <div class="stat-value" style="font-size:1.1rem">{{ leaderboard!.troopRankings[0].troopName }}</div>
-              <div class="stat-label">Top Troop · {{ leaderboard!.troopRankings[0].totalPoints | number:'1.0-1' }} pts</div>
+            <div class="stat-body">
+              <div class="stat-number stat-number--sm">{{ leaderboard!.troopRankings[0].troopName }}</div>
+              <div class="stat-label">Top Troop · {{ leaderboard!.troopRankings[0].totalPoints | number:'1.0-0' }} pts</div>
             </div>
           </mat-card-content>
         </mat-card>
       }
+
     </div>
 
+    <!-- ③ Rankings Grid ────────────────────────────────────── -->
     <div class="dashboard-grid mt-24">
+
       <!-- Top 5 Members -->
-      <mat-card>
+      <mat-card class="ranking-card">
         <mat-card-header>
-          <mat-icon mat-card-avatar style="color:#f9a825">star</mat-icon>
-          <mat-card-title>Top 5 Members</mat-card-title>
+          <mat-card-title>
+            <mat-icon class="title-icon" style="color:#f9a825">star</mat-icon>
+            Top 5 Members
+          </mat-card-title>
           <mat-card-subtitle>Points leaders</mat-card-subtitle>
         </mat-card-header>
         <mat-card-content>
-          <mat-list>
-            @for (member of leaderboard?.topMembers?.slice(0,5); track member.memberId) {
-              <mat-list-item>
-                <span matListItemTitle class="flex-gap">
-                  <span [class]="'rank-badge rank-' + (member.rank <= 3 ? member.rank : 'other')">
-                    {{ member.rank }}
-                  </span>
-                  <span>{{ member.memberName }}</span>
+          <div class="rank-list">
+            @for (member of leaderboard?.topMembers?.slice(0,5); track member.memberId; let i = $index) {
+              <div class="rank-row">
+                <span [class]="'rank-badge rank-' + (member.rank <= 3 ? member.rank : 'other')">
+                  {{ member.rank }}
                 </span>
-                <span matListItemMeta>
-                  <app-points-badge [points]="member.totalPoints"></app-points-badge>
-                </span>
-                <span matListItemLine>{{ member.troopName }}</span>
-              </mat-list-item>
-              <mat-divider></mat-divider>
+                <div class="rank-avatar">{{ member.memberName.charAt(0) }}</div>
+                <div class="rank-info">
+                  <div class="rank-name">{{ member.memberName }}</div>
+                  <div class="rank-sub">{{ member.troopName }}</div>
+                </div>
+                <app-points-badge [points]="member.totalPoints"></app-points-badge>
+              </div>
             } @empty {
-              <div class="empty-state" style="padding: 24px">
+              <div class="empty-state" style="padding:32px 0">
                 <mat-icon>person_off</mat-icon>
-                <h3>No members yet</h3>
+                <p>No members yet</p>
               </div>
             }
-          </mat-list>
+          </div>
         </mat-card-content>
         <mat-card-actions>
           <a mat-button color="primary" routerLink="/leaderboard">View Full Leaderboard</a>
@@ -141,43 +151,46 @@
       </mat-card>
 
       <!-- Troop Rankings -->
-      <mat-card>
+      <mat-card class="ranking-card">
         <mat-card-header>
-          <mat-icon mat-card-avatar style="color:#e53935">leaderboard</mat-icon>
-          <mat-card-title>Troop Rankings</mat-card-title>
+          <mat-card-title>
+            <mat-icon class="title-icon" style="color:#e53935">leaderboard</mat-icon>
+            Troop Rankings
+          </mat-card-title>
           <mat-card-subtitle>Sorted by total points</mat-card-subtitle>
         </mat-card-header>
         <mat-card-content>
-          <mat-list>
+          <div class="rank-list">
             @for (troop of leaderboard?.troopRankings?.slice(0,5); track troop.troopId) {
-              <mat-list-item>
-                <span matListItemTitle class="flex-gap">
-                  <span [class]="'rank-badge rank-' + (troop.rank <= 3 ? troop.rank : 'other')">
-                    {{ troop.rank }}
-                  </span>
-                  <span>{{ troop.troopName }}</span>
+              <div class="rank-row">
+                <span [class]="'rank-badge rank-' + (troop.rank <= 3 ? troop.rank : 'other')">
+                  {{ troop.rank }}
                 </span>
-                <span matListItemMeta>
-                  <app-points-badge [points]="troop.totalPoints"></app-points-badge>
-                </span>
-                <span matListItemLine>{{ troop.memberCount }} members</span>
-              </mat-list-item>
-              <mat-divider></mat-divider>
+                <div class="rank-avatar rank-avatar--troop">
+                  <mat-icon>groups</mat-icon>
+                </div>
+                <div class="rank-info">
+                  <div class="rank-name">{{ troop.troopName }}</div>
+                  <div class="rank-sub">{{ troop.memberCount }} members</div>
+                </div>
+                <app-points-badge [points]="troop.totalPoints"></app-points-badge>
+              </div>
             } @empty {
-              <div class="empty-state" style="padding: 24px">
+              <div class="empty-state" style="padding:32px 0">
                 <mat-icon>group_off</mat-icon>
-                <h3>No troops yet</h3>
+                <p>No troops yet</p>
               </div>
             }
-          </mat-list>
+          </div>
         </mat-card-content>
         <mat-card-actions>
           <a mat-button color="primary" routerLink="/leaderboard">View All Troops</a>
         </mat-card-actions>
       </mat-card>
+
     </div>
 
-    <!-- Per-Troop Attendance Breakdown -->
+    <!-- ④ Troop Attendance Breakdown ──────────────────────── -->
     @if (dashboardStats?.troopBreakdown?.length) {
       <div class="section-header mt-24">
         <mat-icon>bar_chart</mat-icon>
@@ -197,19 +210,16 @@
                     </div>
                   }
                 </div>
-                <div class="troop-rate-badge"
-                  [style.background]="rateColor(troop.attendanceRate)">
+                <div class="troop-rate-badge" [style.background]="rateColor(troop.attendanceRate)">
                   {{ troop.attendanceRate | number:'1.0-1' }}%
                 </div>
               </div>
-
               <div class="rate-bar-wrapper">
                 <div class="rate-bar"
-                  [style.width.%]="troop.attendanceRate"
-                  [style.background]="rateColor(troop.attendanceRate)">
+                     [style.width.%]="troop.attendanceRate"
+                     [style.background]="rateColor(troop.attendanceRate)">
                 </div>
               </div>
-
               <div class="troop-card-stats">
                 <span><mat-icon style="font-size:14px;color:#4caf50">check_circle</mat-icon> {{ troop.presentCount }} present</span>
                 <span><mat-icon style="font-size:14px;color:#f44336">cancel</mat-icon> {{ troop.absentCount }} absent</span>
@@ -220,7 +230,6 @@
         }
       </div>
     }
-
 
   }
 </div>
