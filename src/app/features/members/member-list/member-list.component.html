@@ -77,13 +77,28 @@
           <mat-form-field appearance="outline">
             <mat-label>Troop (الفرقة)</mat-label>
             <mat-icon matPrefix>groups</mat-icon>
-            <mat-select [(ngModel)]="selectedTroopId" (selectionChange)="onFilterChange()">
+            <mat-select [(ngModel)]="selectedTroopId"
+              (selectionChange)="showUnassigned = false; onFilterChange()"
+              [disabled]="showUnassigned">
               <mat-option value="">All Troops</mat-option>
               @for (t of troops; track t.id) {
                 <mat-option [value]="t.id">{{ t.name }}</mat-option>
               }
             </mat-select>
           </mat-form-field>
+
+          <!-- Unassigned members filter -->
+          <div class="unassigned-toggle">
+            <mat-slide-toggle
+              [(ngModel)]="showUnassigned"
+              (ngModelChange)="selectedTroopId = ''; onFilterChange()"
+              color="warn">
+              <span class="unassigned-label">
+                <mat-icon>person_off</mat-icon>
+                Unassigned members only
+              </span>
+            </mat-slide-toggle>
+          </div>
 
           <!-- Academic year filter -->
           <mat-form-field appearance="outline">
@@ -161,7 +176,14 @@
             <ng-container matColumnDef="troop">
               <th mat-header-cell *matHeaderCellDef>Troop</th>
               <td mat-cell *matCellDef="let m">
-                <mat-chip style="font-size:0.8rem">{{ m.troopName }}</mat-chip>
+                @if (m.troopName) {
+                  <mat-chip style="font-size:0.8rem">{{ m.troopName }}</mat-chip>
+                } @else {
+                  <span class="unassigned-chip" matTooltip="Member has no troop — troop was deleted">
+                    <mat-icon style="font-size:14px;vertical-align:middle">person_off</mat-icon>
+                    Unassigned
+                  </span>
+                }
               </td>
             </ng-container>
 

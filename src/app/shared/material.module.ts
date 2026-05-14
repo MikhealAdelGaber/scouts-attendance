@@ -30,6 +30,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 
 const MATERIAL_MODULES = [
   LayoutModule,
@@ -40,7 +41,7 @@ const MATERIAL_MODULES = [
   MatProgressSpinnerModule, MatProgressBarModule, MatChipsModule, MatBadgeModule,
   MatTooltipModule, MatMenuModule, MatTabsModule, MatExpansionModule,
   MatDividerModule, MatStepperModule, MatCheckboxModule, MatRadioModule,
-  MatAutocompleteModule, MatButtonToggleModule
+  MatAutocompleteModule, MatButtonToggleModule, MatSlideToggleModule
 ];
 
 @NgModule({

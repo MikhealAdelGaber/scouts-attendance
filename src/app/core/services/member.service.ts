@@ -21,6 +21,7 @@ export class MemberService {
     academicYear?: string;
     region?: string;
     hasNeckerchief?: boolean;
+    unassigned?: boolean;        // true = only members with no troop
   }): Observable<PagedResult<Member>> {
     return this.api.get<PagedResult<Member>>('members', params);
   }

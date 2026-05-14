@@ -35,6 +35,7 @@ export class MemberListComponent implements OnInit {
   selectedAcademicYear = '';
   selectedRegion = '';
   selectedNeckerchief: boolean | null = null;
+  showUnassigned = false;       // true = show only members with TroopId = null
   filtersExpanded = false;
 
   readonly academicYears = [
@@ -49,7 +50,7 @@ export class MemberListComponent implements OnInit {
 
   get hasActiveFilters(): boolean {
     return !!(this.selectedTroopId || this.selectedAcademicYear ||
-              this.selectedRegion || this.selectedNeckerchief !== null);
+              this.selectedRegion || this.selectedNeckerchief !== null || this.showUnassigned);
   }
 
   constructor(
@@ -75,13 +76,14 @@ export class MemberListComponent implements OnInit {
   load(): void {
     this.loading = true;
     this.memberService.getAll({
-      troopId:        this.selectedTroopId   || undefined,
+      troopId:        this.showUnassigned ? undefined : (this.selectedTroopId || undefined),
       page:           this.page,
       pageSize:       this.pageSize,
-      search:         this.search            || undefined,
+      search:         this.search               || undefined,
       academicYear:   this.selectedAcademicYear || undefined,
-      region:         this.selectedRegion    || undefined,
-      hasNeckerchief: this.selectedNeckerchief ?? undefined
+      region:         this.selectedRegion       || undefined,
+      hasNeckerchief: this.selectedNeckerchief  ?? undefined,
+      unassigned:     this.showUnassigned       || undefined
     }).subscribe({
       next: r => { this.members = r.items; this.totalCount = r.totalCount; this.loading = false; },
       error: () => { this.loading = false; }
@@ -97,6 +99,7 @@ export class MemberListComponent implements OnInit {
     this.selectedAcademicYear = '';
     this.selectedRegion       = '';
     this.selectedNeckerchief  = null;
+    this.showUnassigned       = false;
     this.search               = '';
     this.page = 1;
     this.load();

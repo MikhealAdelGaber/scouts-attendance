@@ -11,8 +11,8 @@ export interface Member {
   fullName: string;
   phoneNumber?: string;
   dateOfBirth: string;
-  troopId: string;
-  troopName: string;
+  troopId: string | null;       // null when member has no troop (troop was deleted)
+  troopName: string | null;
   groupId: string;
   groupName: string;
   qrCode: string;

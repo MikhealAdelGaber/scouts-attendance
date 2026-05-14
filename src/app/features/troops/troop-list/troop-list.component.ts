@@ -25,11 +25,28 @@ export class TroopListComponent implements OnInit {
   }
 
   delete(t: Troop): void {
+    const memberWarning = t.memberCount > 0
+      ? `\n\n⚠️ This troop has ${t.memberCount} member${t.memberCount === 1 ? '' : 's'}. They will be unassigned but NOT deleted.`
+      : '';
+
     this.dialog.open(ConfirmDialogComponent, {
-      data: { title: 'Delete Troop', message: `Delete "${t.name}"?`, confirmText: 'Delete' }
+      data: {
+        title: 'Delete Troop',
+        message: `Delete "${t.name}"?${memberWarning}`,
+        confirmText: 'Delete'
+      }
     }).afterClosed().subscribe(ok => {
       if (!ok) return;
-      this.troopService.delete(t.id).subscribe(() => { this.snack.open('Troop deleted', 'Close', { duration: 3000 }); this.load(); });
+      this.troopService.delete(t.id).subscribe({
+        next: () => {
+          const msg = t.memberCount > 0
+            ? `Troop deleted. ${t.memberCount} member${t.memberCount === 1 ? '' : 's'} moved to "Unassigned".`
+            : 'Troop deleted.';
+          this.snack.open(msg, 'Close', { duration: 5000 });
+          this.load();
+        },
+        error: () => this.snack.open('Failed to delete troop', 'Close', { duration: 4000 })
+      });
     });
   }
 }
