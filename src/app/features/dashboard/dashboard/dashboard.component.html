@@ -8,6 +8,28 @@
       Welcome, <strong>{{ user.username }}</strong>
     </span>
   </div>
+      <!-- Quick Actions -->
+    <mat-card class="mt-24">
+      <mat-card-header>
+        <mat-card-title>Quick Actions</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="quick-actions">
+          <a mat-raised-button color="primary" routerLink="/attendance">
+            <mat-icon>fact_check</mat-icon> Mark Attendance
+          </a>
+          <a mat-raised-button routerLink="/members/new" style="background:#4caf50;color:white">
+            <mat-icon>person_add</mat-icon> Add Member
+          </a>
+          <a mat-raised-button routerLink="/events/new" style="background:#ff9800;color:white">
+            <mat-icon>event</mat-icon> Create Event
+          </a>
+          <a mat-raised-button routerLink="/points" style="background:#9c27b0;color:white">
+            <mat-icon>star</mat-icon> Add Points
+          </a>
+        </div>
+      </mat-card-content>
+    </mat-card>
 
   @if (loading) {
     <div class="card-grid stats-grid">
@@ -199,27 +221,6 @@
       </div>
     }
 
-    <!-- Quick Actions -->
-    <mat-card class="mt-24">
-      <mat-card-header>
-        <mat-card-title>Quick Actions</mat-card-title>
-      </mat-card-header>
-      <mat-card-content>
-        <div class="quick-actions">
-          <a mat-raised-button color="primary" routerLink="/attendance">
-            <mat-icon>fact_check</mat-icon> Mark Attendance
-          </a>
-          <a mat-raised-button routerLink="/members/new" style="background:#4caf50;color:white">
-            <mat-icon>person_add</mat-icon> Add Member
-          </a>
-          <a mat-raised-button routerLink="/events/new" style="background:#ff9800;color:white">
-            <mat-icon>event</mat-icon> Create Event
-          </a>
-          <a mat-raised-button routerLink="/points" style="background:#9c27b0;color:white">
-            <mat-icon>star</mat-icon> Add Points
-          </a>
-        </div>
-      </mat-card-content>
-    </mat-card>
+
   }
 </div>
