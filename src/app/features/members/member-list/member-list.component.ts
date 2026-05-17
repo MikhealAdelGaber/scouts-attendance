@@ -158,9 +158,12 @@ export class MemberListComponent implements OnInit {
 
   openImportPicker(): void {
     // Resolve the troop that will receive the imported members.
+    // Priority: explicit UI filter selection > JWT troopId (fallback for AttendanceOnly users).
     // "__unassigned__" is a UI sentinel and is NOT a valid troop ID — treat it as empty.
+    // We intentionally do NOT use auth.currentUser?.troopId as the primary source because
+    // JWT tokens are never refreshed mid-session, so they can carry a stale/deleted troop ID.
     const effectiveFilter = this.showUnassigned ? '' : (this.selectedTroopId || '');
-    const troopId = (this.auth.currentUser?.troopId ?? effectiveFilter) || '';
+    const troopId = effectiveFilter || this.auth.currentUser?.troopId || '';
     if (!troopId) {
       // GroupLeaders / Admins must pick a troop first
       this.snack.open(
@@ -187,7 +190,9 @@ export class MemberListComponent implements OnInit {
     }
 
     this.importing = true;
-    const troopId = (this.auth.currentUser?.troopId ?? this.selectedTroopId) || undefined;
+    // Same priority as openImportPicker: UI filter > JWT claim (avoids stale JWT troopId)
+    const effectiveFilter = this.showUnassigned ? '' : (this.selectedTroopId || '');
+    const troopId = (effectiveFilter || this.auth.currentUser?.troopId) || undefined;
     this.memberService.importMembers(file, troopId).subscribe({
       next: result => {
         this.importing = false;
