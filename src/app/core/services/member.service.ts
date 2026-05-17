@@ -58,6 +58,14 @@ export class MemberService {
     return this.api.post<number>('members/bulk-year-update', dto);
   }
 
+  /**
+   * Calls GET /api/members/export-qr-pdf and triggers a browser download of
+   * the returned PDF.  The server sets the Content-Disposition filename.
+   */
+  exportQrPdf(): Observable<Blob> {
+    return this.http.get(`${this.baseUrl}/members/export-qr-pdf`, { responseType: 'blob' });
+  }
+
   downloadImportTemplate(): Observable<Blob> {
     return this.http.get(`${this.baseUrl}/members/import-template`, { responseType: 'blob' });
   }

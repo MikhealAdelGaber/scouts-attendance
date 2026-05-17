@@ -22,9 +22,10 @@ export class MemberListComponent implements OnInit {
 
   members: Member[] = [];
   troops: Troop[] = [];
-  loading = false;
-  exporting = false;
-  importing = false;
+  loading     = false;
+  exporting   = false;
+  exportingQr = false;
+  importing   = false;
   totalCount = 0;
   page = 1;
   pageSize = 20;
@@ -122,6 +123,27 @@ export class MemberListComponent implements OnInit {
     this.exporting = true;
     this.exportService.downloadExcel('members/excel', { troopId: this.selectedTroopId || undefined })
       .subscribe({ next: () => { this.exporting = false; }, error: () => { this.exporting = false; } });
+  }
+
+  exportQrPdf(): void {
+    this.exportingQr = true;
+    this.memberService.exportQrPdf().subscribe({
+      next: blob => {
+        // Derive filename from Content-Disposition if available, else fall back
+        const date  = new Date().toISOString().slice(0, 10);
+        const url   = URL.createObjectURL(blob);
+        const a     = document.createElement('a');
+        a.href      = url;
+        a.download  = `QR-Codes-${date}.pdf`;
+        a.click();
+        URL.revokeObjectURL(url);
+        this.exportingQr = false;
+      },
+      error: () => {
+        this.snack.open('Failed to generate QR PDF — please try again.', 'Close', { duration: 5000 });
+        this.exportingQr = false;
+      }
+    });
   }
 
   downloadTemplate(): void {
