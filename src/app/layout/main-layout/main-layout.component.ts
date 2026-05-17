@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { Subscription } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
+import { ThemeService } from '../../core/services/theme.service';
 import { UserRole } from '../../core/models/user.model';
 import { Router } from '@angular/router';
 
@@ -43,6 +44,7 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
 
   constructor(
     public auth: AuthService,
+    public theme: ThemeService,
     private router: Router,
     private bp: BreakpointObserver
   ) {}

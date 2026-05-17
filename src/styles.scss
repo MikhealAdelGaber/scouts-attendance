@@ -1,31 +1,92 @@
 @use '@angular/material' as mat;
 
-// ─── CSS Design Tokens ────────────────────────────────────────────────────────
+// ─── CSS Design Tokens — Light Mode (default) ─────────────────────────────────
 :root {
+  // Brand
   --primary:        #3f51b5;
   --primary-dark:   #1a237e;
   --primary-light:  #e8eaf6;
   --accent:         #ff6f00;
   --accent-light:   #fff3e0;
+
+  // Semantic
   --success:        #43a047;
   --success-light:  #e8f5e9;
   --warn:           #e53935;
   --warn-light:     #ffebee;
   --info:           #0288d1;
   --info-light:     #e1f5fe;
+
+  // Surfaces
   --surface:        #ffffff;
+  --surface-raised: #f8f9fc;
   --bg:             #f0f2f8;
+  --input-bg:       #fafbff;
   --border:         rgba(0,0,0,0.08);
+
+  // Text
   --text-primary:   #1a1a2e;
   --text-secondary: #5a6379;
   --text-hint:      rgba(0,0,0,0.38);
-  --radius-sm:      8px;
-  --radius-md:      12px;
-  --radius-lg:      16px;
-  --shadow-sm:      0 1px 4px rgba(0,0,0,0.08);
-  --shadow-md:      0 4px 16px rgba(0,0,0,0.10);
-  --shadow-lg:      0 8px 32px rgba(0,0,0,0.12);
-  --transition:     all 0.2s ease;
+
+  // Table
+  --table-header-bg: #f8f9fc;
+  --table-row-alt:   #fafbff;
+  --table-row-hover: #e8eaf6;
+  --table-border:    #f0f2f8;
+
+  // Layout chrome (sidebar + toolbar)
+  --sidenav-gradient: linear-gradient(180deg, #1a237e 0%, #283593 100%);
+  --toolbar-bg:       #3f51b5;
+
+  // Shape
+  --radius-sm:  8px;
+  --radius-md:  12px;
+  --radius-lg:  16px;
+
+  // Elevation
+  --shadow-sm:  0 1px 4px rgba(0,0,0,0.08);
+  --shadow-md:  0 4px 16px rgba(0,0,0,0.10);
+  --shadow-lg:  0 8px 32px rgba(0,0,0,0.12);
+
+  --transition: all 0.2s ease;
+}
+
+// ─── CSS Design Tokens — Dark Mode ────────────────────────────────────────────
+.dark-mode {
+  // Surfaces
+  --surface:        #1e1e1e;
+  --surface-raised: #252525;
+  --bg:             #121212;
+  --input-bg:       #2c2c2c;
+  --border:         #333333;
+
+  // Text
+  --text-primary:   #e0e0e0;
+  --text-secondary: #9e9e9e;
+  --text-hint:      rgba(255,255,255,0.38);
+
+  // Brand tints — desaturated for dark backgrounds
+  --primary-light:  rgba(63,81,181,0.18);
+  --accent-light:   rgba(255,111,0,0.14);
+  --success-light:  rgba(67,160,71,0.18);
+  --warn-light:     rgba(229,57,53,0.18);
+  --info-light:     rgba(2,136,209,0.18);
+
+  // Table
+  --table-header-bg: #252525;
+  --table-row-alt:   #252525;
+  --table-row-hover: rgba(63,81,181,0.14);
+  --table-border:    #333333;
+
+  // Layout chrome
+  --sidenav-gradient: linear-gradient(180deg, #1a1a2e 0%, #0d0d1a 100%);
+  --toolbar-bg:       #1a1a2e;
+
+  // Elevation — stronger on dark
+  --shadow-sm: 0 1px 4px rgba(0,0,0,0.4);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.5);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.6);
 }
 
 // ─── Reset & Base ─────────────────────────────────────────────────────────────
@@ -176,7 +237,7 @@ mat-table {
 
   .mat-mdc-header-row,
   mat-header-row {
-    background: #f8f9fc !important;
+    background: var(--table-header-bg) !important;
     border-bottom: 2px solid var(--border) !important;
 
     .mat-mdc-header-cell,
@@ -195,10 +256,10 @@ mat-table {
   .mat-mdc-row,
   mat-row {
     transition: background 0.15s ease;
-    border-bottom: 1px solid #f0f2f8 !important;
+    border-bottom: 1px solid var(--table-border) !important;
 
-    &:nth-child(even) { background: #fafbff !important; }
-    &:hover { background: var(--primary-light) !important; }
+    &:nth-child(even) { background: var(--table-row-alt) !important; }
+    &:hover { background: var(--table-row-hover) !important; }
     &:last-child { border-bottom: none !important; }
 
     .mat-mdc-cell,
@@ -455,7 +516,8 @@ mat-table {
     font-size: 0.875rem;
     outline: none;
     transition: border-color 0.2s;
-    background: #fafbff;
+    background: var(--input-bg);
+    color: var(--text-primary);
     &:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(63,81,181,0.12); }
     @media (max-width: 768px) { width: 110px; }
   }
@@ -478,9 +540,9 @@ mat-table {
   align-items: center;
   justify-content: center;
   height: 240px;
-  background: #f8f9fc;
+  background: var(--surface-raised);
   border-radius: var(--radius-md);
-  color: #bbb;
+  color: var(--text-hint);
   mat-icon { font-size: 72px; width: 72px; height: 72px; }
   p { margin-top: 8px; font-size: 0.875rem; }
 }
@@ -633,3 +695,245 @@ mat-divider { border-color: var(--border) !important; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: #c5cae9; border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: #9fa8da; }
+
+// ─── Dark Mode — Angular Material Overrides ───────────────────────────────────
+// Applied when ThemeService adds .dark-mode to <body>
+
+.dark-mode {
+  // ── Base ───────────────────────────────────────────────────────────────────
+  body, html { color-scheme: dark; }
+
+  // Smooth color transitions on theme switch
+  *, *::before, *::after {
+    transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+  }
+  // But don't animate transforms/opacity (would break animations)
+  .mat-mdc-progress-spinner, .mat-mdc-progress-bar,
+  [class*="animate"], [class*="transition"] {
+    transition: background-color 0.25s ease !important;
+  }
+
+  // ── Sidenav container background (mat-drawer-container) ────────────────────
+  .mat-drawer-container,
+  .mat-sidenav-container {
+    background-color: var(--bg) !important;
+  }
+
+  // ── Toolbar ────────────────────────────────────────────────────────────────
+  mat-toolbar,
+  .mat-toolbar,
+  .mat-mdc-toolbar {
+    background: var(--toolbar-bg) !important;
+    color: #ffffff !important;
+  }
+
+  // ── Cards ──────────────────────────────────────────────────────────────────
+  mat-card,
+  .mat-mdc-card {
+    background: var(--surface) !important;
+    border-color: var(--border) !important;
+  }
+  mat-card-title, .mat-mdc-card-title { color: var(--text-primary) !important; }
+  mat-card-subtitle, .mat-mdc-card-subtitle { color: var(--text-secondary) !important; }
+  mat-card-actions, .mat-mdc-card-actions { border-color: var(--border) !important; }
+
+  // ── Menus ──────────────────────────────────────────────────────────────────
+  .mat-mdc-menu-panel,
+  .mat-menu-panel {
+    background: var(--surface) !important;
+    border: 1px solid var(--border) !important;
+    box-shadow: var(--shadow-lg) !important;
+  }
+  .mat-mdc-menu-item,
+  .mat-menu-item {
+    color: var(--text-primary) !important;
+    &:hover { background: var(--primary-light) !important; }
+
+    mat-icon, .mat-icon { color: var(--text-secondary) !important; }
+  }
+  // MDC menu item text
+  .mat-mdc-menu-item .mdc-list-item__primary-text { color: var(--text-primary) !important; }
+
+  // ── Dialogs ────────────────────────────────────────────────────────────────
+  .mat-mdc-dialog-container .mdc-dialog__surface,
+  .mat-dialog-container {
+    background: var(--surface) !important;
+    color: var(--text-primary) !important;
+  }
+  .mat-mdc-dialog-title,
+  .mat-dialog-title { color: var(--text-primary) !important; }
+  .mat-mdc-dialog-content { color: var(--text-secondary) !important; }
+
+  // ── Form fields ────────────────────────────────────────────────────────────
+  // Outline border color
+  .mat-mdc-form-field {
+    &.mat-form-field-appearance-outline {
+      .mdc-notched-outline__leading,
+      .mdc-notched-outline__notch,
+      .mdc-notched-outline__trailing {
+        border-color: #444444 !important;
+      }
+    }
+
+    // Input text
+    .mat-mdc-input-element,
+    input.mat-mdc-input-element,
+    textarea.mat-mdc-input-element { color: var(--text-primary) !important; }
+
+    // Label / placeholder
+    .mdc-floating-label,
+    .mat-mdc-floating-label { color: var(--text-secondary) !important; }
+
+    // Text-field wrapper background (filled appearance)
+    .mdc-text-field { background-color: var(--input-bg) !important; }
+
+    // Filled text field: MDC uses rgba — override with our token
+    &.mat-mdc-form-field-type-mat-input .mdc-text-field:not(.mdc-text-field--outlined) {
+      background: var(--input-bg) !important;
+    }
+
+    // Outline appearance: make the inner surface dark too
+    &.mat-form-field-appearance-outline .mat-mdc-text-field-wrapper {
+      background: var(--input-bg) !important;
+    }
+
+    // Hint / error text
+    .mat-mdc-form-field-hint { color: var(--text-hint) !important; }
+
+    // Suffix/prefix icons
+    .mat-mdc-form-field-icon-suffix mat-icon,
+    .mat-mdc-form-field-icon-prefix mat-icon { color: var(--text-secondary) !important; }
+  }
+
+  // Native <input> and <select> inside Material
+  input, textarea, select {
+    color: var(--text-primary) !important;
+    background-color: var(--input-bg) !important;
+  }
+
+  // ── Select panel ───────────────────────────────────────────────────────────
+  .mat-mdc-select-value,
+  .mat-mdc-select-arrow { color: var(--text-primary) !important; }
+
+  .mat-mdc-select-panel,
+  .cdk-overlay-pane .mat-mdc-select-panel {
+    background: var(--surface) !important;
+    border: 1px solid var(--border) !important;
+  }
+  .mat-mdc-option {
+    color: var(--text-primary) !important;
+    &:hover:not(.mat-mdc-option-disabled),
+    &.mat-mdc-option-active { background: var(--primary-light) !important; }
+  }
+  .mat-mdc-option .mdc-list-item__primary-text { color: var(--text-primary) !important; }
+  .mat-mdc-option.mdc-list-item--selected:not(.mdc-list-item--disabled)
+    .mdc-list-item__primary-text { color: var(--primary) !important; }
+
+  // ── Autocomplete ───────────────────────────────────────────────────────────
+  .mat-mdc-autocomplete-panel { background: var(--surface) !important; }
+
+  // ── Paginator ──────────────────────────────────────────────────────────────
+  mat-paginator,
+  .mat-mdc-paginator {
+    background: var(--surface) !important;
+    color: var(--text-secondary) !important;
+    border-top: 1px solid var(--border) !important;
+  }
+  .mat-mdc-paginator-range-label,
+  .mat-mdc-paginator-page-size-label { color: var(--text-secondary) !important; }
+  .mat-mdc-icon-button[disabled] mat-icon { color: var(--text-hint) !important; }
+
+  // ── Chips ──────────────────────────────────────────────────────────────────
+  .mat-mdc-chip.mat-mdc-standard-chip {
+    background: var(--surface-raised) !important;
+    color: var(--text-primary) !important;
+    border: 1px solid var(--border) !important;
+  }
+  .mat-mdc-chip .mdc-evolution-chip__text-label { color: var(--text-primary) !important; }
+
+  // ── Button toggles ─────────────────────────────────────────────────────────
+  .mat-button-toggle-group { border-color: var(--border) !important; }
+  .mat-button-toggle {
+    background: var(--surface) !important;
+    color: var(--text-secondary) !important;
+    border-color: var(--border) !important;
+  }
+  .mat-button-toggle-checked {
+    background: var(--primary-light) !important;
+    color: var(--primary) !important;
+  }
+
+  // ── Dividers ───────────────────────────────────────────────────────────────
+  mat-divider, .mat-divider { border-color: var(--border) !important; }
+
+  // ── Lists (nav list in sidenav inherits its own white styling) ─────────────
+  .mat-mdc-list-item .mdc-list-item__primary-text { color: var(--text-primary); }
+
+  // ── Tabs ───────────────────────────────────────────────────────────────────
+  .mat-mdc-tab-header { border-bottom-color: var(--border) !important; }
+  .mat-mdc-tab .mdc-tab__text-label { color: var(--text-secondary) !important; }
+  .mat-mdc-tab.mdc-tab--active .mdc-tab__text-label { color: var(--primary) !important; }
+  .mat-mdc-tab-body-content { background: var(--bg); }
+
+  // ── Expansion panels ───────────────────────────────────────────────────────
+  mat-expansion-panel,
+  .mat-expansion-panel {
+    background: var(--surface) !important;
+    color: var(--text-primary) !important;
+  }
+  .mat-expansion-panel-header-title { color: var(--text-primary) !important; }
+  .mat-expansion-panel-header-description { color: var(--text-secondary) !important; }
+
+  // ── Slide toggle ───────────────────────────────────────────────────────────
+  .mat-mdc-slide-toggle .mdc-switch__track { background-color: var(--border) !important; }
+
+  // ── Checkbox ───────────────────────────────────────────────────────────────
+  .mat-mdc-checkbox .mdc-checkbox__background { border-color: var(--text-secondary) !important; }
+  .mdc-checkbox__label,
+  .mat-mdc-checkbox label { color: var(--text-primary) !important; }
+
+  // ── Radio ──────────────────────────────────────────────────────────────────
+  .mat-mdc-radio-button label { color: var(--text-primary) !important; }
+
+  // ── Progress bar / spinner ─────────────────────────────────────────────────
+  .mat-mdc-progress-bar { background: var(--border) !important; }
+
+  // ── Tooltip ────────────────────────────────────────────────────────────────
+  .mat-mdc-tooltip .mdc-tooltip__surface {
+    background: #424242 !important;
+    color: #ffffff !important;
+  }
+
+  // ── Stroked / icon buttons — ensure visibility ──────────────────────────────
+  .mat-mdc-outlined-button:not([disabled]) {
+    border-color: var(--border) !important;
+    color: var(--primary) !important;
+  }
+  .mat-mdc-icon-button:not([color]) {
+    color: var(--text-primary) !important;
+  }
+  // Warn / accent color buttons keep their own colors — no override needed
+
+  // ── Status chips ───────────────────────────────────────────────────────────
+  .status-inactive { background: #2a2a2a !important; color: #757575 !important; }
+  .status-late     { background: rgba(230,81,0,0.15) !important; color: #ffb74d !important; }
+
+  // ── Scrollbar ──────────────────────────────────────────────────────────────
+  ::-webkit-scrollbar-thumb { background: #444444; }
+  ::-webkit-scrollbar-thumb:hover { background: #555555; }
+
+  // ── Skeleton shimmer ───────────────────────────────────────────────────────
+  .skeleton {
+    background: linear-gradient(90deg, #2a2a2a 25%, #333333 50%, #2a2a2a 75%) !important;
+  }
+
+  // ── Empty-state icon ───────────────────────────────────────────────────────
+  .empty-state .empty-icon { color: #444 !important; }
+
+  // ── No-scans placeholder ───────────────────────────────────────────────────
+  .no-scans { color: #555 !important; }
+
+  // ── Login page ─────────────────────────────────────────────────────────────
+  .login-container,
+  .auth-container { background: var(--bg) !important; }
+}

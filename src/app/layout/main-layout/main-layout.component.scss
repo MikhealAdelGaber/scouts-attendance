@@ -2,7 +2,7 @@
 
 .sidenav {
   width: 260px;
-  background: linear-gradient(180deg, #1a237e 0%, #283593 100%);
+  background: var(--sidenav-gradient);
   color: white;
   display: flex;
   flex-direction: column;
@@ -115,14 +115,22 @@
   position: sticky;
   top: 0;
   z-index: 100;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.12) !important;
+  background: var(--toolbar-bg) !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.18) !important;
+  transition: background 0.3s ease !important;
 
   .toolbar-spacer { flex: 1; }
   .toolbar-logo   { width: 30px; height: 30px; margin-left: 8px; border-radius: 6px; filter: invert(1); mix-blend-mode: screen; }
   .toolbar-title  { font-weight: 700; margin-left: 8px; font-size: 1rem; letter-spacing: 0.3px; }
+
+  .theme-toggle-btn {
+    color: rgba(255,255,255,0.87);
+    &:hover { background: rgba(255,255,255,0.12); }
+  }
 }
 
 .content-area {
   min-height: calc(100vh - 64px);
-  background: #f0f2f8;
+  background: var(--bg);
+  transition: background 0.3s ease;
 }

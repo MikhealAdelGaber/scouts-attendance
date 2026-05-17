@@ -39,6 +39,15 @@
       <img src="assets/logo.png" alt="Logo" class="toolbar-logo" *ngIf="isMobile">
       <span class="toolbar-title" *ngIf="isMobile">Scouts</span>
       <span class="toolbar-spacer"></span>
+
+      <!-- Dark / Light mode toggle -->
+      <button mat-icon-button
+              (click)="theme.toggle()"
+              [matTooltip]="(theme.isDark$ | async) ? 'Switch to Light Mode' : 'Switch to Dark Mode'"
+              class="theme-toggle-btn">
+        <mat-icon>{{ (theme.isDark$ | async) ? 'brightness_7' : 'brightness_4' }}</mat-icon>
+      </button>
+
       <button mat-icon-button [matMenuTriggerFor]="userMenu">
         <mat-icon>account_circle</mat-icon>
       </button>
