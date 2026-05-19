@@ -31,20 +31,15 @@
 
 .avatar-wrap {
   position: relative;
-  text-align: center;
+  display: flex;
+  justify-content: center;
   margin-bottom: 8px;
 
-  .avatar-icon {
-    font-size: 80px;
-    width: 80px;
-    height: 80px;
-    color: #3f51b5;
-  }
-
+  // neckerchief badge — overlaid on the bottom-right of the avatar circle
   .neckerchief-badge {
     position: absolute;
     bottom: 0;
-    right: calc(50% - 50px);
+    right: calc(50% - 55px);  // half of 90px avatar + a small offset
     background: #4caf50;
     color: white;
     border-radius: 50%;
@@ -56,6 +51,15 @@
 
     mat-icon { font-size: 16px; width: 16px; height: 16px; }
   }
+}
+
+.photo-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  margin-top: 6px;
+  margin-bottom: 4px;
 }
 
 .member-name {

@@ -27,6 +27,7 @@ export interface Member {
   fatherPhone?: string;
   motherPhone?: string;
   notes?: string;
+  profileImageUrl?: string | null;
   hasActiveExcuse: boolean;
 }
 

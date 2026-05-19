@@ -11,6 +11,36 @@
     <mat-card-content>
       <form [formGroup]="form" (ngSubmit)="submit()">
 
+        <!-- Photo upload (edit mode only) -->
+        @if (isEdit) {
+          <h3 class="section-title">Profile Photo</h3>
+          <div style="display:flex;align-items:center;gap:20px;margin-bottom:16px">
+            <app-member-avatar [name]="photoPreviewName" [imageUrl]="photoPreviewUrl" [size]="80">
+            </app-member-avatar>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <input #photoInput type="file" accept="image/jpeg,image/png"
+                style="display:none" (change)="onPhotoSelected($event)">
+              <button mat-stroked-button type="button"
+                (click)="photoInput.click()" [disabled]="uploadingPhoto">
+                @if (uploadingPhoto) {
+                  <mat-progress-spinner mode="indeterminate" diameter="16"
+                    style="display:inline-block;margin-right:4px"></mat-progress-spinner>
+                } @else {
+                  <mat-icon>photo_camera</mat-icon>
+                }
+                {{ photoPreviewUrl ? 'Change Photo' : 'Add Photo' }}
+              </button>
+              @if (photoPreviewUrl) {
+                <button mat-stroked-button color="warn" type="button"
+                  (click)="removePhoto()" [disabled]="uploadingPhoto">
+                  <mat-icon>delete</mat-icon> Remove
+                </button>
+              }
+              <p style="margin:0;font-size:0.78rem;color:#9e9e9e">JPG or PNG · max 2 MB</p>
+            </div>
+          </div>
+        }
+
         <!-- Basic info -->
         <h3 class="section-title">Basic Information</h3>
         <div class="form-row">

@@ -156,6 +156,17 @@
         <div class="table-scroll-wrapper">
           <table mat-table [dataSource]="members" class="full-width members-table">
 
+            <!-- Photo -->
+            <ng-container matColumnDef="photo">
+              <th mat-header-cell *matHeaderCellDef style="width:48px"></th>
+              <td mat-cell *matCellDef="let m" style="width:48px;padding:4px 8px">
+                <a [routerLink]="m.id">
+                  <app-member-avatar [name]="m.fullName" [imageUrl]="m.profileImageUrl" [size]="36">
+                  </app-member-avatar>
+                </a>
+              </td>
+            </ng-container>
+
             <!-- Custom ID -->
             <ng-container matColumnDef="customId">
               <th mat-header-cell *matHeaderCellDef style="width:90px">ID</th>

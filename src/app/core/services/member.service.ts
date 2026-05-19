@@ -79,4 +79,18 @@ export class MemberService {
     return this.http.post<ApiResponse<ImportMembersResult>>(url, fd)
       .pipe(map(r => r.data));
   }
+
+  /** Upload a profile photo; returns the saved image URL. */
+  uploadPhoto(id: string, file: File): Observable<string> {
+    const fd = new FormData();
+    fd.append('photo', file);
+    return this.http
+      .post<ApiResponse<{ imageUrl: string }>>(`${this.baseUrl}/members/${id}/upload-photo`, fd)
+      .pipe(map(r => r.data.imageUrl));
+  }
+
+  /** Remove the profile photo. */
+  deletePhoto(id: string): Observable<void> {
+    return this.api.delete<void>(`members/${id}/photo`);
+  }
 }

@@ -1,5 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { MemberService }     from '../../../core/services/member.service';
@@ -23,6 +24,7 @@ export class MemberDetailComponent implements OnInit {
   attendanceHistory: AttendanceRecord[] = [];
   examScores: ExamScore[] = [];
   loading = true;
+  uploadingPhoto = false;
   qrImageUrl = '';
 
   pointsColumns     = ['date', 'category', 'points', 'note', 'type'];
@@ -39,7 +41,8 @@ export class MemberDetailComponent implements OnInit {
     private pointsService:  PointsService,
     private attendanceService: AttendanceService,
     private examScoreService:  ExamScoreService,
-    public  auth: AuthService
+    public  auth: AuthService,
+    private snack: MatSnackBar
   ) {}
 
   ngOnInit(): void {
@@ -98,5 +101,41 @@ export class MemberDetailComponent implements OnInit {
     if (!this.attendanceHistory.length) return 0;
     const attended = this.presentCount + this.lateCount;
     return Math.round((attended / this.attendanceHistory.length) * 100);
+  }
+
+  // ── Photo upload / remove ────────────────────────────────────────────
+  onPhotoSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file  = input.files?.[0];
+    if (!file || !this.member) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      this.snack.open('Photo is too large (max 2 MB)', 'Close', { duration: 4000 });
+      return;
+    }
+
+    this.uploadingPhoto = true;
+    this.memberService.uploadPhoto(this.member.id, file).subscribe({
+      next: url => {
+        if (this.member) this.member = { ...this.member, profileImageUrl: url };
+        this.snack.open('Photo updated', 'Close', { duration: 3000 });
+        this.uploadingPhoto = false;
+      },
+      error: () => {
+        this.snack.open('Photo upload failed — please try again.', 'Close', { duration: 5000 });
+        this.uploadingPhoto = false;
+      }
+    });
+  }
+
+  removePhoto(): void {
+    if (!this.member) return;
+    this.memberService.deletePhoto(this.member.id).subscribe({
+      next: () => {
+        if (this.member) this.member = { ...this.member, profileImageUrl: null };
+        this.snack.open('Photo removed', 'Close', { duration: 3000 });
+      },
+      error: () => this.snack.open('Could not remove photo.', 'Close', { duration: 4000 })
+    });
   }
 }

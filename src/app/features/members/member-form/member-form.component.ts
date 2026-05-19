@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -12,11 +12,18 @@ import { Troop } from '../../../core/models/troop.model';
   templateUrl: './member-form.component.html'
 })
 export class MemberFormComponent implements OnInit {
+  @ViewChild('photoInput') photoInput!: ElementRef<HTMLInputElement>;
+
   form!: FormGroup;
   troops: Troop[] = [];
   loading = false;
   isEdit = false;
   memberId = '';
+
+  // Photo state
+  photoPreviewUrl: string | null = null;
+  photoPreviewName = '';
+  uploadingPhoto = false;
 
   readonly academicYears = [
     'Grade 1','Grade 2','Grade 3','Grade 4','Grade 5','Grade 6',
@@ -63,6 +70,8 @@ export class MemberFormComponent implements OnInit {
       this.isEdit = true;
       this.memberService.getById(this.memberId).subscribe(m => {
         this.form.patchValue({ ...m, dateOfBirth: new Date(m.dateOfBirth) });
+        this.photoPreviewUrl  = m.profileImageUrl ?? null;
+        this.photoPreviewName = m.fullName;
       });
     }
   }
@@ -84,6 +93,42 @@ export class MemberFormComponent implements OnInit {
         this.router.navigate(['/members', m.id]);
       },
       error: () => { this.loading = false; }
+    });
+  }
+
+  // ── Photo helpers (only shown in edit mode) ──────────────────────────
+  onPhotoSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file  = input.files?.[0];
+    if (!file || !this.memberId) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      this.snack.open('Photo is too large (max 2 MB)', 'Close', { duration: 4000 });
+      return;
+    }
+
+    this.uploadingPhoto = true;
+    this.memberService.uploadPhoto(this.memberId, file).subscribe({
+      next: url => {
+        this.photoPreviewUrl = url;
+        this.snack.open('Photo updated', 'Close', { duration: 3000 });
+        this.uploadingPhoto = false;
+      },
+      error: () => {
+        this.snack.open('Photo upload failed — please try again.', 'Close', { duration: 5000 });
+        this.uploadingPhoto = false;
+      }
+    });
+  }
+
+  removePhoto(): void {
+    if (!this.memberId) return;
+    this.memberService.deletePhoto(this.memberId).subscribe({
+      next: () => {
+        this.photoPreviewUrl = null;
+        this.snack.open('Photo removed', 'Close', { duration: 3000 });
+      },
+      error: () => this.snack.open('Could not remove photo.', 'Close', { duration: 4000 })
     });
   }
 }

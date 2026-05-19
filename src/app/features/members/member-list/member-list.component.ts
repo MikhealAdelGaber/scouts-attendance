@@ -49,7 +49,7 @@ export class MemberListComponent implements OnInit {
     'Grade 7','Grade 8','Grade 9','Grade 10','Grade 11','Grade 12'
   ];
 
-  displayedColumns = ['customId', 'fullName', 'troop', 'region', 'academicYear', 'neckerchief', 'phone', 'totalPoints', 'actions'];
+  displayedColumns = ['photo', 'customId', 'fullName', 'troop', 'region', 'academicYear', 'neckerchief', 'phone', 'totalPoints', 'actions'];
 
   private searchSubject = new Subject<string>();
   private filterSubject = new Subject<void>();
