@@ -4,10 +4,9 @@ export interface MemberExcuse {
   memberName: string;
   startDate: string;
   endDate?: string;
-  reason?: string;
+  reason: string;
   isActive: boolean;
   isPermanent: boolean;
-  grantedBy: string;
   createdByUsername: string;
   createdAt: string;
 }
@@ -16,12 +15,11 @@ export interface GrantExcuse {
   memberId: string;
   startDate: string;
   endDate?: string;
-  reason?: string;
+  reason: string;   // required by backend (minLength 3)
 }
 
 export interface UpdateExcuse {
-  startDate: string;
   endDate?: string;
-  reason?: string;
+  reason: string;
   isActive: boolean;
 }

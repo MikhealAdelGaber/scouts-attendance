@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { FormBuilder, FormGroup, FormControl, Validators } from '@angular/forms';
+import { Router, ActivatedRoute } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ExcuseService } from '../../../core/services/excuse.service';
 import { MemberService } from '../../../core/services/member.service';
@@ -13,16 +13,36 @@ import { Member } from '../../../core/models/member.model';
 export class ExcuseFormComponent implements OnInit {
   form!: FormGroup;
   members: Member[] = [];
-  memberSearch = '';
-  filteredMembers: Member[] = [];
   loading = false;
   isPermanent = false;
+
+  /** Autocomplete control for member search (display only) */
+  memberSearchCtrl = new FormControl<Member | string>('');
+
+  get filteredMembers(): Member[] {
+    const v = this.memberSearchCtrl.value;
+    // If a member object is already selected, show all (so user can re-open and pick another)
+    if (v && typeof v === 'object') return this.members;
+    const q = ((v as string) ?? '').trim().toLowerCase();
+    if (!q) return this.members;
+    return this.members.filter(m =>
+      m.fullName.toLowerCase().includes(q) ||
+      (m.troopName ?? '').toLowerCase().includes(q) ||
+      String(m.customId).includes(q)
+    );
+  }
+
+  displayMemberFn = (member: Member | string | null): string => {
+    if (!member || typeof member === 'string') return '';
+    return `${member.fullName}  #${member.customId}`;
+  };
 
   constructor(
     private fb: FormBuilder,
     private excuseService: ExcuseService,
     private memberService: MemberService,
     private router: Router,
+    private route: ActivatedRoute,
     private snack: MatSnackBar
   ) {}
 
@@ -34,41 +54,68 @@ export class ExcuseFormComponent implements OnInit {
       reason:    ['', [Validators.required, Validators.minLength(3)]]
     });
 
-    this.memberService.getAll({ pageSize: 500 }).subscribe(r => {
+    this.memberService.getAll({ pageSize: 1000 }).subscribe(r => {
       this.members = r.items;
-      this.filteredMembers = r.items;
+
+      // If navigated from member detail with ?memberId=...
+      const preselect = this.route.snapshot.queryParams['memberId'];
+      if (preselect) {
+        const m = r.items.find(x => x.id === preselect);
+        if (m) {
+          this.form.patchValue({ memberId: m.id });
+          this.memberSearchCtrl.setValue(m);
+        }
+      }
     });
   }
 
-  filterMembers(): void {
-    const s = this.memberSearch.toLowerCase();
-    this.filteredMembers = this.members.filter(m =>
-      m.fullName.toLowerCase().includes(s)
-    );
+  onMemberSelected(member: Member): void {
+    this.form.patchValue({ memberId: member.id });
+    this.form.get('memberId')!.markAsTouched();
   }
 
   togglePermanent(checked: boolean): void {
     this.isPermanent = checked;
-    if (checked) this.form.patchValue({ endDate: null });
+    if (checked) {
+      this.form.patchValue({ endDate: null });
+      this.form.get('endDate')!.clearValidators();
+    }
+    this.form.get('endDate')!.updateValueAndValidity();
   }
 
   submit(): void {
-    if (this.form.invalid) return;
+    this.form.markAllAsTouched();
+    if (this.form.invalid || !this.form.value.memberId) {
+      this.snack.open('Please fill all required fields', 'Close', { duration: 3000 });
+      return;
+    }
     this.loading = true;
     const val = this.form.value;
-    const toIso = (d: Date | null) => d ? new Date(d).toISOString() : null;
+
+    const toUtcDateIso = (d: Date | null): string | undefined => {
+      if (!d) return undefined;
+      const date = new Date(d);
+      // Send as UTC midnight of that calendar date
+      return new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())).toISOString();
+    };
+
     const dto = {
       memberId:  val.memberId,
-      startDate: toIso(val.startDate)!,
-      endDate:   this.isPermanent ? undefined : (toIso(val.endDate) ?? undefined),
-      reason:    val.reason
+      startDate: toUtcDateIso(val.startDate)!,
+      endDate:   this.isPermanent ? undefined : toUtcDateIso(val.endDate),
+      reason:    val.reason.trim()
     };
+
     this.excuseService.grant(dto).subscribe({
       next: () => {
-        this.snack.open('Excuse granted', 'Close', { duration: 3000 });
+        this.snack.open('Excuse granted successfully', 'Close', { duration: 3000 });
         this.router.navigate(['/excuses']);
       },
-      error: () => { this.loading = false; }
+      error: (err) => {
+        const msg = err?.error?.message || 'Failed to grant excuse. Please try again.';
+        this.snack.open(msg, 'Close', { duration: 5000 });
+        this.loading = false;
+      }
     });
   }
 }
