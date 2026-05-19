@@ -9,10 +9,32 @@ export interface ScoutEvent {
   troopName?: string;
   isActive: boolean;
   attendanceCount: number;
-  pointValue: number;
-  latePointValue: number;
+  presentPoints: number;
+  latePoints: number;
+  excusedPoints: number;
+  absentPoints: number;
   createdAt: string;
 }
 
-export interface CreateEvent { name: string; description?: string; eventDate: string; troopId?: string; groupId?: string; pointValue?: number; latePointValue?: number; }
-export interface UpdateEvent { name: string; description?: string; eventDate: string; isActive: boolean; pointValue?: number; latePointValue?: number; }
+export interface CreateEvent {
+  name: string;
+  description?: string;
+  eventDate: string;
+  troopId?: string;
+  groupId?: string;
+  presentPoints?: number;
+  latePoints?: number;
+  excusedPoints?: number;
+  absentPoints?: number;
+}
+
+export interface UpdateEvent {
+  name: string;
+  description?: string;
+  eventDate: string;
+  isActive: boolean;
+  presentPoints?: number;
+  latePoints?: number;
+  excusedPoints?: number;
+  absentPoints?: number;
+}

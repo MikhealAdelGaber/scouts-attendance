@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiService } from './api.service';
-import { AttendanceRecord, MarkAttendance, BulkAttendance, QrAttendance, AttendanceSummary } from '../models/attendance.model';
+import { AttendanceRecord, EventMemberStatus, MarkAttendance, BulkAttendance, QrAttendance, AttendanceSummary } from '../models/attendance.model';
 
 @Injectable({ providedIn: 'root' })
 export class AttendanceService {
@@ -9,6 +9,11 @@ export class AttendanceService {
 
   getByEvent(eventId: string): Observable<AttendanceRecord[]> {
     return this.api.get<AttendanceRecord[]>(`attendance/event/${eventId}`);
+  }
+
+  /** All members for an event with their effective status (excuse-aware defaults). */
+  getEventMemberStatuses(eventId: string): Observable<EventMemberStatus[]> {
+    return this.api.get<EventMemberStatus[]>(`attendance/event/${eventId}/members`);
   }
 
   getMemberHistory(memberId: string): Observable<AttendanceRecord[]> {

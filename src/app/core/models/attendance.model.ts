@@ -34,6 +34,29 @@ export interface MemberAttendanceItem {
 
 export interface QrAttendance { eventId: string; qrToken: string; }
 
+/**
+ * A member's effective attendance status for a specific event.
+ * Returned by GET /api/attendance/event/{id}/members.
+ * Members with no saved record get a server-computed default:
+ *   hasActiveExcuse → Excused, otherwise → Absent.
+ */
+export interface EventMemberStatus {
+  memberId: string;
+  memberName: string;
+  customId: number;
+  gender: number;        // 1 = Male, 2 = Female
+  troopId?: string;
+  troopName: string;
+  profileImageUrl?: string;
+  hasActiveExcuse: boolean;
+  status: AttendanceStatus;
+  statusName: string;
+  hasExistingRecord: boolean;
+  recordId?: string;
+  notes?: string;
+  pointsAwarded?: number;
+}
+
 export interface AttendanceSummary {
   eventId: string;
   eventName: string;

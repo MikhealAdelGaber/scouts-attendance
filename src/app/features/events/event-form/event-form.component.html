@@ -3,9 +3,10 @@
     <h1><mat-icon>{{ isEdit ? 'edit' : 'add' }}</mat-icon> {{ isEdit ? 'Edit Event' : 'Create Event' }}</h1>
     <button mat-button routerLink="/events"><mat-icon>arrow_back</mat-icon> Back</button>
   </div>
-  <mat-card style="max-width:600px">
+  <mat-card style="max-width:640px">
     <mat-card-content>
       <form [formGroup]="form" (ngSubmit)="submit()">
+
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Event Name</mat-label>
           <input matInput formControlName="name">
@@ -49,23 +50,61 @@
           </mat-select>
         </mat-form-field>
 
-        <!-- Attendance Points row -->
-        <div class="points-row" style="display:flex;gap:16px;width:100%">
-          <mat-form-field appearance="outline" style="flex:1">
-            <mat-label>Present / Excused Points</mat-label>
-            <mat-icon matPrefix style="color:#4caf50">check_circle</mat-icon>
-            <input matInput type="number" formControlName="pointValue" min="0" max="10000">
-            <mat-hint>Awarded when Present or Excused</mat-hint>
-            <mat-error *ngIf="form.get('pointValue')?.hasError('required')">Required</mat-error>
-          </mat-form-field>
+        <!-- ── Attendance Points ───────────────────────────────────────────── -->
+        <div style="margin-bottom:8px">
+          <p style="font-weight:600;color:#555;margin:0 0 8px">
+            <mat-icon style="vertical-align:middle;font-size:18px;margin-right:4px">star</mat-icon>
+            Attendance Points
+          </p>
+          <p style="font-size:0.78rem;color:#888;margin:0 0 12px">
+            Points awarded per attendance status. Absent points can be negative (e.g. −10).
+          </p>
 
-          <mat-form-field appearance="outline" style="flex:1">
-            <mat-label>Late Points</mat-label>
-            <mat-icon matPrefix style="color:#ff9800">schedule</mat-icon>
-            <input matInput type="number" formControlName="latePointValue" min="0" max="10000">
-            <mat-hint>Awarded when marked Late</mat-hint>
-            <mat-error *ngIf="form.get('latePointValue')?.hasError('required')">Required</mat-error>
-          </mat-form-field>
+          <!-- Row 1: Present + Late -->
+          <div style="display:flex;gap:16px;width:100%">
+            <mat-form-field appearance="outline" style="flex:1">
+              <mat-label>Present Points</mat-label>
+              <mat-icon matPrefix style="color:#4caf50">check_circle</mat-icon>
+              <input matInput type="number" formControlName="presentPoints">
+              <mat-hint>Awarded when Present</mat-hint>
+              <mat-error *ngIf="form.get('presentPoints')?.hasError('required')">Required</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" style="flex:1">
+              <mat-label>Late Points</mat-label>
+              <mat-icon matPrefix style="color:#ff9800">schedule</mat-icon>
+              <input matInput type="number" formControlName="latePoints">
+              <mat-hint>Awarded when Late</mat-hint>
+              <mat-error *ngIf="form.get('latePoints')?.hasError('required')">Required</mat-error>
+            </mat-form-field>
+          </div>
+
+          <!-- Row 2: Excused + Absent -->
+          <div style="display:flex;gap:16px;width:100%;margin-top:4px">
+            <mat-form-field appearance="outline" style="flex:1">
+              <mat-label>Excused Points</mat-label>
+              <mat-icon matPrefix style="color:#2196f3">info</mat-icon>
+              <input matInput type="number" formControlName="excusedPoints">
+              <mat-hint>Awarded when Excused</mat-hint>
+              <mat-error *ngIf="form.get('excusedPoints')?.hasError('required')">Required</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" style="flex:1">
+              <mat-label>Absent Points</mat-label>
+              <mat-icon matPrefix style="color:#f44336">cancel</mat-icon>
+              <input matInput type="number" formControlName="absentPoints">
+              <mat-hint>Can be negative (e.g. −10)</mat-hint>
+              <mat-error *ngIf="form.get('absentPoints')?.hasError('required')">Required</mat-error>
+            </mat-form-field>
+          </div>
+
+          <!-- Cross-field validation warning -->
+          @if (hasOrderError && form.touched) {
+            <mat-hint style="color:#e53935;font-size:0.78rem;display:block;margin-top:4px">
+              <mat-icon style="font-size:14px;vertical-align:middle">warning</mat-icon>
+              Recommended order: Present ≥ Late ≥ Excused
+            </mat-hint>
+          }
         </div>
 
         @if (isEdit) {

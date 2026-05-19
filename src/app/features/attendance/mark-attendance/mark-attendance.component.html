@@ -172,17 +172,20 @@
                       </mat-icon>
                     }
                     <span style="display:flex;flex-direction:column;line-height:1.2">
-                      <span>{{ row.member.fullName }}</span>
+                      <span>{{ row.memberName }}</span>
                       <span style="font-size:0.75rem;color:#888;font-family:'Courier New',monospace;font-weight:600">
-                        #{{ row.member.customId }}
+                        #{{ row.customId }}
                         <mat-icon style="font-size:11px;vertical-align:middle"
-                          [style.color]="row.member.gender === 1 ? '#1565c0' : '#ad1457'">
-                          {{ row.member.gender === 1 ? 'male' : 'female' }}
+                          [style.color]="row.gender === 1 ? '#1565c0' : '#ad1457'">
+                          {{ row.gender === 1 ? 'male' : 'female' }}
                         </mat-icon>
                       </span>
                     </span>
-                    @if (row.member.hasActiveExcuse) {
-                      <mat-chip style="font-size:11px;height:20px" color="accent" selected>Excused</mat-chip>
+                    @if (row.hasActiveExcuse) {
+                      <mat-chip style="font-size:11px;height:20px" color="accent" selected
+                        matTooltip="This member has an active excuse covering this event date">
+                        Excused
+                      </mat-chip>
                     }
                   </div>
                 </td>
@@ -190,7 +193,7 @@
 
               <ng-container matColumnDef="troop">
                 <th mat-header-cell *matHeaderCellDef>Troop</th>
-                <td mat-cell *matCellDef="let row">{{ row.member.troopName }}</td>
+                <td mat-cell *matCellDef="let row">{{ row.troopName }}</td>
               </ng-container>
 
               <ng-container matColumnDef="status">

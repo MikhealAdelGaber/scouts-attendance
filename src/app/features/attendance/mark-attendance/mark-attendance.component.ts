@@ -4,22 +4,26 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { forkJoin, Subscription } from 'rxjs';
 import { AttendanceService } from '../../../core/services/attendance.service';
 import { EventService } from '../../../core/services/event.service';
-import { MemberService } from '../../../core/services/member.service';
 import { TroopService } from '../../../core/services/troop.service';
 import { SignalRService } from '../../../core/services/signalr.service';
 import { ScoutEvent } from '../../../core/models/event.model';
-import { Member } from '../../../core/models/member.model';
 import { Troop } from '../../../core/models/troop.model';
-import { AttendanceRecord, AttendanceStatus, BulkAttendance } from '../../../core/models/attendance.model';
-import { AttendanceSummary } from '../../../core/models/attendance.model';
+import { EventMemberStatus, AttendanceStatus, BulkAttendance, AttendanceSummary } from '../../../core/models/attendance.model';
 import { ExportService } from '../../../core/services/export.service';
 
 interface MemberRow {
-  member: Member;
-  status: AttendanceStatus;
-  notes: string;
-  saved: boolean;
-  saving: boolean;
+  memberId:       string;
+  memberName:     string;
+  customId:       number;
+  gender:         number;
+  troopId?:       string;
+  troopName:      string;
+  profileImageUrl?: string;
+  hasActiveExcuse: boolean;
+  status:         AttendanceStatus;
+  notes:          string;
+  saved:          boolean;
+  saving:         boolean;
 }
 
 @Component({
@@ -30,17 +34,15 @@ interface MemberRow {
 export class MarkAttendanceComponent implements OnInit, OnDestroy {
   events: ScoutEvent[] = [];
   troops: Troop[] = [];
-  members: Member[] = [];
   rows: MemberRow[] = [];
-  existingRecords: AttendanceRecord[] = [];
   summary: AttendanceSummary | null = null;
 
   selectedEventId = '';
   selectedTroopId = '';
-  memberSearch = '';
+  memberSearch    = '';
   sortDir: 'asc' | 'desc' = 'asc';
   loading = false;
-  saving = false; // bulk save
+  saving  = false;
   exporting = false;
 
   private signalRSub: Subscription | null = null;
@@ -57,7 +59,6 @@ export class MarkAttendanceComponent implements OnInit, OnDestroy {
   constructor(
     private attendanceService: AttendanceService,
     private eventService: EventService,
-    private memberService: MemberService,
     private troopService: TroopService,
     private signalR: SignalRService,
     private exportService: ExportService,
@@ -68,7 +69,7 @@ export class MarkAttendanceComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     forkJoin({
-      events: this.eventService.getAll(undefined, undefined, true), // activeOnly = true
+      events: this.eventService.getAll(undefined, undefined, true),
       troops: this.troopService.getAll()
     }).subscribe(({ events, troops }) => {
       this.events = events;
@@ -88,21 +89,19 @@ export class MarkAttendanceComponent implements OnInit, OnDestroy {
     this.memberSearch = '';
     this.loadAttendance();
 
-    // Subscribe to real-time updates
     this.signalRSub?.unsubscribe();
     await this.signalR.joinEvent(this.selectedEventId);
     this.signalRSub = this.signalR.attendanceUpdated$.subscribe(update => {
       if (update.eventId !== this.selectedEventId) return;
-      const row = this.rows.find(r => r.member.id === update.memberId);
+      const row = this.rows.find(r => r.memberId === update.memberId);
       if (row) {
         row.status = update.status as unknown as AttendanceStatus;
-        row.saved = true;
+        row.saved  = true;
         this.refreshSummary();
       }
     });
   }
 
-  /** Troop filter is client-side — no API call needed */
   onTroopChange(): void {
     this.memberSearch = '';
   }
@@ -113,63 +112,62 @@ export class MarkAttendanceComponent implements OnInit, OnDestroy {
 
   private loadAttendance(): void {
     this.loading = true;
-    // Always load ALL members for the event (troop filter is done client-side)
     forkJoin({
-      members: this.memberService.getAll({ pageSize: 1000 }),
-      existing: this.attendanceService.getByEvent(this.selectedEventId),
-      summary:  this.attendanceService.getSummary(this.selectedEventId)
+      memberStatuses: this.attendanceService.getEventMemberStatuses(this.selectedEventId),
+      summary:        this.attendanceService.getSummary(this.selectedEventId)
     }).subscribe({
-      next: ({ members, existing, summary }) => {
-        this.members = members.items;
-        this.existingRecords = existing;
+      next: ({ memberStatuses, summary }) => {
         this.summary = summary;
-        this.buildRows();
+        this.buildRows(memberStatuses);
         this.loading = false;
       },
       error: () => { this.loading = false; }
     });
   }
 
-  private buildRows(): void {
-    this.rows = this.members.map(m => {
-      const existing = this.existingRecords.find(r => r.memberId === m.id);
-      return {
-        member: m,
-        status: existing?.status ?? AttendanceStatus.Absent,
-        notes:  existing?.notes ?? '',
-        saved:  !!existing,
-        saving: false
-      };
-    });
+  /**
+   * Build rows from the server-computed member statuses.
+   * Members without a saved record already have their excuse-based default
+   * status set by the backend (Excused if an excuse covers the event date,
+   * Absent otherwise).
+   */
+  private buildRows(statuses: EventMemberStatus[]): void {
+    this.rows = statuses.map(s => ({
+      memberId:        s.memberId,
+      memberName:      s.memberName,
+      customId:        s.customId,
+      gender:          s.gender,
+      troopId:         s.troopId,
+      troopName:       s.troopName,
+      profileImageUrl: s.profileImageUrl,
+      hasActiveExcuse: s.hasActiveExcuse,
+      status:          s.status,
+      notes:           s.notes ?? '',
+      saved:           s.hasExistingRecord,
+      saving:          false
+    }));
   }
 
-  /** Rows filtered by troop + search query, then sorted alphabetically */
   get filteredRows(): MemberRow[] {
     let rows = this.rows;
 
-    // 1. Filter by selected troop (client-side — no API call)
-    if (this.selectedTroopId) {
-      rows = rows.filter(r => r.member.troopId === this.selectedTroopId);
-    }
+    if (this.selectedTroopId)
+      rows = rows.filter(r => r.troopId === this.selectedTroopId);
 
-    // 2. Filter by search query
     const q = this.memberSearch.trim().toLowerCase();
-    if (q) {
+    if (q)
       rows = rows.filter(r =>
-        r.member.fullName.toLowerCase().includes(q) ||
-        (r.member.troopName ?? '').toLowerCase().includes(q) ||
-        String(r.member.customId).includes(q)
+        r.memberName.toLowerCase().includes(q) ||
+        r.troopName.toLowerCase().includes(q) ||
+        String(r.customId).includes(q)
       );
-    }
 
-    // 3. Sort alphabetically by first name
     return [...rows].sort((a, b) => {
-      const cmp = a.member.fullName.localeCompare(b.member.fullName, undefined, { sensitivity: 'base' });
+      const cmp = a.memberName.localeCompare(b.memberName, undefined, { sensitivity: 'base' });
       return this.sortDir === 'asc' ? cmp : -cmp;
     });
   }
 
-  /** Auto-save immediately when a status button is clicked */
   onStatusChange(row: MemberRow): void {
     this.saveRow(row);
   }
@@ -177,14 +175,16 @@ export class MarkAttendanceComponent implements OnInit, OnDestroy {
   private saveRow(row: MemberRow): void {
     row.saving = true;
     this.attendanceService.mark({
-      eventId: this.selectedEventId,
-      memberId: row.member.id,
-      status: row.status,
-      notes: row.notes
+      eventId:  this.selectedEventId,
+      memberId: row.memberId,
+      status:   row.status,
+      notes:    row.notes
     }).subscribe({
-      next: () => {
-        row.saved = true;
+      next: (rec) => {
+        row.saved  = true;
         row.saving = false;
+        // Sync any server-side status override (e.g. Absent → Excused)
+        row.status = rec.status;
         this.refreshSummary();
       },
       error: () => { row.saving = false; }
@@ -192,13 +192,12 @@ export class MarkAttendanceComponent implements OnInit, OnDestroy {
   }
 
   markAll(status: AttendanceStatus): void {
-    // Only mark the currently visible (filtered) rows
     const visible = this.filteredRows;
     visible.forEach(r => r.status = status);
     this.saving = true;
     const bulk: BulkAttendance = {
       eventId: this.selectedEventId,
-      records: visible.map(r => ({ memberId: r.member.id, status: r.status, notes: r.notes }))
+      records: visible.map(r => ({ memberId: r.memberId, status: r.status, notes: r.notes }))
     };
     this.attendanceService.bulkMark(bulk).subscribe({
       next: () => {
@@ -219,7 +218,7 @@ export class MarkAttendanceComponent implements OnInit, OnDestroy {
     this.saving = true;
     const bulk: BulkAttendance = {
       eventId: this.selectedEventId,
-      records: this.rows.map(r => ({ memberId: r.member.id, status: r.status, notes: r.notes }))
+      records: this.rows.map(r => ({ memberId: r.memberId, status: r.status, notes: r.notes }))
     };
     this.attendanceService.bulkMark(bulk).subscribe({
       next: () => {
@@ -250,7 +249,7 @@ export class MarkAttendanceComponent implements OnInit, OnDestroy {
       eventId: this.selectedEventId || undefined,
       troopId: this.selectedTroopId || undefined
     }).subscribe({
-      next: () => { this.exporting = false; },
+      next:  () => { this.exporting = false; },
       error: () => { this.exporting = false; }
     });
   }
@@ -262,4 +261,5 @@ export class MarkAttendanceComponent implements OnInit, OnDestroy {
   get presentCount(): number { return this.rows.filter(r => r.status === AttendanceStatus.Present).length; }
   get lateCount():   number  { return this.rows.filter(r => r.status === AttendanceStatus.Late).length; }
   get absentCount(): number  { return this.rows.filter(r => r.status === AttendanceStatus.Absent).length; }
+  get excusedCount(): number { return this.rows.filter(r => r.status === AttendanceStatus.Excused).length; }
 }
