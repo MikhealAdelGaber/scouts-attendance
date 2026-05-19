@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { FormBuilder, FormGroup, FormControl, Validators } from '@angular/forms';
 import { PointsService } from '../../../core/services/points.service';
 import { MemberService } from '../../../core/services/member.service';
 import { MemberPointsSummary, MemberPointCategory } from '../../../core/models/points.model';
@@ -7,7 +8,6 @@ import { Member } from '../../../core/models/member.model';
 import { AuthService } from '../../../core/services/auth.service';
 import { ExportService } from '../../../core/services/export.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 
 @Component({
   selector: 'app-points-dashboard',
@@ -31,6 +31,32 @@ export class PointsDashboardComponent implements OnInit {
   savingAttendance = false;
   loadingAttendance = false;
 
+  /** true = award (+), false = deduct (−) */
+  isAwarding = true;
+
+  /** Separate autocomplete control for member search display text */
+  memberSearchCtrl = new FormControl('');
+
+  /** Members filtered by the autocomplete search query */
+  get filteredMembers(): Member[] {
+    const raw = this.memberSearchCtrl.value ?? '';
+    // If user selected a member the value is an object — show all
+    if (typeof raw !== 'string') return this.members;
+    const q = raw.trim().toLowerCase();
+    if (!q) return this.members;
+    return this.members.filter(m =>
+      m.fullName.toLowerCase().includes(q) ||
+      (m.troopName ?? '').toLowerCase().includes(q) ||
+      String(m.customId).includes(q)
+    );
+  }
+
+  /** Format a Member object for display in the autocomplete input after selection */
+  displayMemberFn = (member: Member): string => {
+    if (!member) return '';
+    return `${member.fullName}  #${member.customId}`;
+  };
+
   constructor(
     private fb: FormBuilder,
     private pointsService: PointsService,
@@ -40,22 +66,6 @@ export class PointsDashboardComponent implements OnInit {
     public auth: AuthService,
     private snack: MatSnackBar
   ) {}
-
-  /** true = award (+), false = deduct (−) */
-  isAwarding = true;
-
-  /** Live search string typed inside the member dropdown */
-  memberSearchQuery = '';
-
-  get filteredMembers(): Member[] {
-    const q = this.memberSearchQuery.trim().toLowerCase();
-    if (!q) return this.members;
-    return this.members.filter(m =>
-      m.fullName.toLowerCase().includes(q) ||
-      (m.troopName ?? '').toLowerCase().includes(q) ||
-      String(m.customId).includes(q)
-    );
-  }
 
   toggleMode(): void {
     this.isAwarding = !this.isAwarding;
@@ -77,13 +87,11 @@ export class PointsDashboardComponent implements OnInit {
       attendanceLatePoints:    [0.5, [Validators.required, Validators.min(0)]]
     });
 
-    this.memberService.getAll({ pageSize: 200 }).subscribe(r => this.members = r.items);
-    // Exclude "Attendance" from manual add — it is auto-awarded
+    this.memberService.getAll({ pageSize: 1000 }).subscribe(r => this.members = r.items);
     this.pointsService.getMemberCategories().subscribe(c =>
       this.categories = c.filter(cat => cat.name !== 'Attendance')
     );
 
-    // Load attendance point settings
     if (this.auth.isSystemAdmin() || this.auth.isGroupLeader()) {
       this.loadAttendanceSettings();
     }
@@ -92,7 +100,18 @@ export class PointsDashboardComponent implements OnInit {
     if (memberId) {
       this.form.patchValue({ memberId });
       this.onMemberSelect(memberId);
+      // Pre-fill autocomplete display text once members load
+      this.memberService.getAll({ pageSize: 1000 }).subscribe(r => {
+        const m = r.items.find(x => x.id === memberId);
+        if (m) this.memberSearchCtrl.setValue(m.fullName, { emitEvent: false });
+      });
     }
+  }
+
+  /** Called when user picks a member from the autocomplete */
+  onMemberAutocompleteSelect(member: Member): void {
+    this.form.patchValue({ memberId: member.id });
+    this.onMemberSelect(member.id);
   }
 
   loadAttendanceSettings(): void {

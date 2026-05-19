@@ -49,43 +49,42 @@
         </div>
 
         <form [formGroup]="form" (ngSubmit)="submit()">
+          <!-- Member search via autocomplete — replaces plain mat-select -->
           <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Select Member</mat-label>
-            <mat-icon matPrefix>person</mat-icon>
-            <mat-select formControlName="memberId" (selectionChange)="onMemberSelect($event.value)"
-              (openedChange)="memberSearchQuery = ''">
-              <!-- Search box pinned at the top of the dropdown -->
-              <mat-option disabled style="padding:0;height:48px;border-bottom:1px solid #eee">
-                <div style="display:flex;align-items:center;padding:0 12px;gap:8px" (click)="$event.stopPropagation()">
-                  <mat-icon style="color:#999;font-size:18px;flex-shrink:0">search</mat-icon>
-                  <input
-                    [(ngModel)]="memberSearchQuery"
-                    [ngModelOptions]="{standalone:true}"
-                    placeholder="Search by name, ID or troop..."
-                    style="border:none;outline:none;width:100%;font-size:0.9rem;background:transparent"
-                    (keydown)="$event.stopPropagation()"
-                    (click)="$event.stopPropagation()">
-                  @if (memberSearchQuery) {
-                    <mat-icon style="color:#999;font-size:16px;cursor:pointer;flex-shrink:0"
-                      (click)="memberSearchQuery='';$event.stopPropagation()">close</mat-icon>
-                  }
-                </div>
-              </mat-option>
-
+            <mat-label>Search Member</mat-label>
+            <mat-icon matPrefix>search</mat-icon>
+            <input matInput
+              [formControl]="memberSearchCtrl"
+              [matAutocomplete]="memberAuto"
+              placeholder="Type name, ID or troop...">
+            <mat-autocomplete #memberAuto="matAutocomplete"
+              [displayWith]="displayMemberFn"
+              (optionSelected)="onMemberAutocompleteSelect($event.option.value)">
               @for (m of filteredMembers; track m.id) {
-                <mat-option [value]="m.id">
-                  <span style="font-weight:500">{{ m.fullName }}</span>
-                  <span style="color:#888;font-size:0.8rem;margin-left:6px">
-                    #{{ m.customId }} · {{ m.troopName }}
-                  </span>
+                <mat-option [value]="m">
+                  <div style="display:flex;align-items:center;gap:8px">
+                    <mat-icon style="font-size:16px;width:16px;height:16px;color:#888">person</mat-icon>
+                    <span>
+                      <span style="font-weight:500">{{ m.fullName }}</span>
+                      <span style="color:#888;font-size:0.78rem;margin-left:6px">
+                        #{{ m.customId }} · {{ m.troopName }}
+                      </span>
+                    </span>
+                  </div>
                 </mat-option>
               }
-
               @if (filteredMembers.length === 0) {
-                <mat-option disabled>No members match "{{ memberSearchQuery }}"</mat-option>
+                <mat-option disabled>No members found</mat-option>
               }
-            </mat-select>
-            <mat-error *ngIf="form.get('memberId')?.hasError('required')">Required</mat-error>
+            </mat-autocomplete>
+            <mat-hint *ngIf="!form.get('memberId')?.value">Type to search and select a member</mat-hint>
+            <mat-hint *ngIf="form.get('memberId')?.value" style="color:#4caf50">
+              <mat-icon style="font-size:13px;vertical-align:middle">check_circle</mat-icon>
+              Member selected
+            </mat-hint>
+            <mat-error *ngIf="form.get('memberId')?.touched && form.get('memberId')?.hasError('required')">
+              Please select a member from the list
+            </mat-error>
           </mat-form-field>
 
           <mat-form-field appearance="outline" class="full-width">
