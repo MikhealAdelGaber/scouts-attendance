@@ -94,10 +94,16 @@ export class EventFormComponent implements OnInit {
     if (this.form.invalid) return;
     this.loading = true;
     const val = this.form.value;
+    // Send the chosen calendar date as UTC midnight so the server always stores
+    // the correct date regardless of the user's local timezone offset.
+    // e.g. "May 20 Egypt (UTC+2)" must be stored as 2026-05-20T00:00:00Z not 2026-05-19T22:00:00Z.
+    const d = new Date(val.eventDate);
+    const utcMidnight = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())).toISOString();
+
     const payload: any = {
       name:          val.name,
       description:   val.description,
-      eventDate:     new Date(val.eventDate).toISOString(),
+      eventDate:     utcMidnight,
       troopId:       val.troopId || undefined,
       isActive:      val.isActive,
       presentPoints: val.presentPoints ?? 100,
