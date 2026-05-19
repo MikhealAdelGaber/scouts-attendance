@@ -52,9 +52,37 @@
           <mat-form-field appearance="outline" class="full-width">
             <mat-label>Select Member</mat-label>
             <mat-icon matPrefix>person</mat-icon>
-            <mat-select formControlName="memberId" (selectionChange)="onMemberSelect($event.value)">
-              @for (m of members; track m.id) {
-                <mat-option [value]="m.id">{{ m.fullName }} — {{ m.troopName }}</mat-option>
+            <mat-select formControlName="memberId" (selectionChange)="onMemberSelect($event.value)"
+              (openedChange)="memberSearchQuery = ''">
+              <!-- Search box pinned at the top of the dropdown -->
+              <mat-option disabled style="padding:0;height:48px;border-bottom:1px solid #eee">
+                <div style="display:flex;align-items:center;padding:0 12px;gap:8px" (click)="$event.stopPropagation()">
+                  <mat-icon style="color:#999;font-size:18px;flex-shrink:0">search</mat-icon>
+                  <input
+                    [(ngModel)]="memberSearchQuery"
+                    [ngModelOptions]="{standalone:true}"
+                    placeholder="Search by name, ID or troop..."
+                    style="border:none;outline:none;width:100%;font-size:0.9rem;background:transparent"
+                    (keydown)="$event.stopPropagation()"
+                    (click)="$event.stopPropagation()">
+                  @if (memberSearchQuery) {
+                    <mat-icon style="color:#999;font-size:16px;cursor:pointer;flex-shrink:0"
+                      (click)="memberSearchQuery='';$event.stopPropagation()">close</mat-icon>
+                  }
+                </div>
+              </mat-option>
+
+              @for (m of filteredMembers; track m.id) {
+                <mat-option [value]="m.id">
+                  <span style="font-weight:500">{{ m.fullName }}</span>
+                  <span style="color:#888;font-size:0.8rem;margin-left:6px">
+                    #{{ m.customId }} · {{ m.troopName }}
+                  </span>
+                </mat-option>
+              }
+
+              @if (filteredMembers.length === 0) {
+                <mat-option disabled>No members match "{{ memberSearchQuery }}"</mat-option>
               }
             </mat-select>
             <mat-error *ngIf="form.get('memberId')?.hasError('required')">Required</mat-error>

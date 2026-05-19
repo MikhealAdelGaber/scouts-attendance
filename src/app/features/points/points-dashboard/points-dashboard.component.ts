@@ -44,6 +44,19 @@ export class PointsDashboardComponent implements OnInit {
   /** true = award (+), false = deduct (−) */
   isAwarding = true;
 
+  /** Live search string typed inside the member dropdown */
+  memberSearchQuery = '';
+
+  get filteredMembers(): Member[] {
+    const q = this.memberSearchQuery.trim().toLowerCase();
+    if (!q) return this.members;
+    return this.members.filter(m =>
+      m.fullName.toLowerCase().includes(q) ||
+      (m.troopName ?? '').toLowerCase().includes(q) ||
+      String(m.customId).includes(q)
+    );
+  }
+
   toggleMode(): void {
     this.isAwarding = !this.isAwarding;
     const v = this.form.get('points')!.value;
