@@ -31,11 +31,19 @@ export class ExcusesListComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.troopService.getAll().subscribe(t => {
-      this.troops = t;
-      const user = this.auth.currentUser;
-      if (user?.troopId) this.selectedTroopId = user.troopId;
-      this.load();
+    // Load troops for the filter chips; call load() regardless of whether
+    // troops succeed so the excuse list always attempts to fetch.
+    this.troopService.getAll().subscribe({
+      next: t => {
+        this.troops = t;
+        const user = this.auth.currentUser;
+        if (user?.troopId) this.selectedTroopId = user.troopId;
+        this.load();
+      },
+      error: () => {
+        // Troops failed — still load excuses with the default scope
+        this.load();
+      }
     });
   }
 

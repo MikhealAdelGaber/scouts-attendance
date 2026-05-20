@@ -15,39 +15,53 @@
           <input matInput
             [formControl]="memberSearchCtrl"
             [matAutocomplete]="memberAuto"
+            (blur)="onMemberInputBlur()"
             placeholder="Type name, ID or troop...">
           <mat-autocomplete #memberAuto="matAutocomplete"
             [displayWith]="displayMemberFn"
+            [autoActiveFirstOption]="true"
             (optionSelected)="onMemberSelected($event.option.value)">
-            @for (m of filteredMembers; track m.id) {
-              <mat-option [value]="m">
-                <div style="display:flex;align-items:center;gap:8px">
-                  <mat-icon style="font-size:16px;width:16px;height:16px;color:#888">person</mat-icon>
-                  <span>
-                    <span style="font-weight:500">{{ m.fullName }}</span>
-                    <span style="color:#888;font-size:0.78rem;margin-left:6px">
-                      #{{ m.customId }} · {{ m.troopName }}
-                    </span>
-                  </span>
-                </div>
+            @if (loadingMembers) {
+              <mat-option disabled>
+                <mat-progress-spinner mode="indeterminate" diameter="16"
+                  style="display:inline-block;margin-right:8px;vertical-align:middle">
+                </mat-progress-spinner>
+                Loading members...
               </mat-option>
-            }
-            @if (filteredMembers.length === 0) {
-              <mat-option disabled>No members found</mat-option>
+            } @else {
+              @for (m of filteredMembers; track m.id) {
+                <mat-option [value]="m">
+                  <div style="display:flex;align-items:center;gap:8px">
+                    <mat-icon [style.color]="m.gender === 1 ? '#1565c0' : '#ad1457'"
+                      style="font-size:16px;width:16px;height:16px">
+                      {{ m.gender === 1 ? 'male' : 'female' }}
+                    </mat-icon>
+                    <span>
+                      <span style="font-weight:500">{{ m.fullName }}</span>
+                      <span style="color:#888;font-size:0.78rem;margin-left:6px">
+                        #{{ m.customId }} · {{ m.troopName }}
+                      </span>
+                    </span>
+                  </div>
+                </mat-option>
+              }
+              @if (filteredMembers.length === 0) {
+                <mat-option disabled>No members found</mat-option>
+              }
             }
           </mat-autocomplete>
 
           @if (form.get('memberId')?.value) {
-            <mat-hint style="color:#4caf50">
+            <mat-hint style="color:#4caf50;font-weight:500">
               <mat-icon style="font-size:13px;vertical-align:middle">check_circle</mat-icon>
-              Member selected
+              Member selected ✓
             </mat-hint>
           } @else {
-            <mat-hint>Type to search, then click a name to select</mat-hint>
+            <mat-hint>Type a name, then <strong>click</strong> or press <strong>Enter</strong> to select</mat-hint>
           }
-          <mat-error *ngIf="form.get('memberId')?.touched && !form.get('memberId')?.value">
-            Please select a member
-          </mat-error>
+          @if (form.get('memberId')?.touched && !form.get('memberId')?.value) {
+            <mat-error>Please select a member from the list</mat-error>
+          }
         </mat-form-field>
 
         <!-- ── Start date ─────────────────────────────────────────────── -->
@@ -129,7 +143,7 @@
         <div class="form-actions">
           <button mat-button type="button" routerLink="/excuses">Cancel</button>
           <button mat-raised-button color="primary" type="submit"
-            [disabled]="loading || form.invalid || !form.get('memberId')?.value">
+            [disabled]="loading || loadingMembers">
             @if (loading) {
               <mat-progress-spinner mode="indeterminate" diameter="18"
                 style="display:inline-block;margin-right:6px"></mat-progress-spinner>
