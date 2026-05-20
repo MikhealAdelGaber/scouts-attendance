@@ -54,17 +54,22 @@ export class ExcuseFormComponent implements OnInit {
       reason:    ['', [Validators.required, Validators.minLength(3)]]
     });
 
-    this.memberService.getAll({ pageSize: 1000 }).subscribe(r => {
-      this.members = r.items;
+    this.memberService.getAll({ pageSize: 1000 }).subscribe({
+      next: r => {
+        this.members = r.items;
 
-      // If navigated from member detail with ?memberId=...
-      const preselect = this.route.snapshot.queryParams['memberId'];
-      if (preselect) {
-        const m = r.items.find(x => x.id === preselect);
-        if (m) {
-          this.form.patchValue({ memberId: m.id });
-          this.memberSearchCtrl.setValue(m);
+        // If navigated from member detail with ?memberId=...
+        const preselect = this.route.snapshot.queryParams['memberId'];
+        if (preselect) {
+          const m = r.items.find(x => x.id === preselect);
+          if (m) {
+            this.form.patchValue({ memberId: m.id });
+            this.memberSearchCtrl.setValue(m);
+          }
         }
+      },
+      error: () => {
+        this.snack.open('Failed to load members list. Please refresh the page.', 'Close', { duration: 5000 });
       }
     });
   }
@@ -84,8 +89,25 @@ export class ExcuseFormComponent implements OnInit {
   }
 
   submit(): void {
+    // Fallback: if the user selected a member via autocomplete but (optionSelected)
+    // didn't fire (e.g. keyboard Tab instead of Enter/click), extract the member
+    // directly from the search control's current value.
+    const searchVal = this.memberSearchCtrl.value;
+    if (searchVal && typeof searchVal === 'object' && !this.form.value.memberId) {
+      this.form.patchValue({ memberId: (searchVal as Member).id });
+      this.form.get('memberId')!.markAsTouched();
+    }
+
     this.form.markAllAsTouched();
-    if (this.form.invalid || !this.form.value.memberId) {
+    if (!this.form.value.memberId) {
+      this.snack.open('Please select a member from the list', 'Close', { duration: 3000 });
+      return;
+    }
+    if (this.form.invalid) {
+      const reasonErr = this.form.get('reason')?.errors;
+      if (reasonErr?.['required'])   { this.snack.open('Please enter a reason', 'Close', { duration: 3000 }); return; }
+      if (reasonErr?.['minlength'])  { this.snack.open('Reason must be at least 3 characters', 'Close', { duration: 3000 }); return; }
+      if (this.form.get('startDate')?.invalid) { this.snack.open('Please select a start date', 'Close', { duration: 3000 }); return; }
       this.snack.open('Please fill all required fields', 'Close', { duration: 3000 });
       return;
     }
@@ -112,8 +134,12 @@ export class ExcuseFormComponent implements OnInit {
         this.router.navigate(['/excuses']);
       },
       error: (err) => {
-        const msg = err?.error?.message || 'Failed to grant excuse. Please try again.';
-        this.snack.open(msg, 'Close', { duration: 5000 });
+        // err.error.message  — our ApiResponse.Fail format
+        // err.error.title    — ASP.NET Core ProblemDetails (model validation)
+        const msg = err?.error?.message
+                 || err?.error?.title
+                 || (err?.status ? `Server error ${err.status}` : 'Failed to grant excuse. Please try again.');
+        this.snack.open(msg, 'Close', { duration: 6000 });
         this.loading = false;
       }
     });

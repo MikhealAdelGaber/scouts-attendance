@@ -89,6 +89,14 @@
             <div class="lbl">Absent</div>
           </mat-card-content>
         </mat-card>
+        <!-- Excused count — members whose excuse date range covers this event -->
+        <mat-card class="summary-card" style="border-top:3px solid #2196f3">
+          <mat-card-content>
+            <mat-icon style="color:#2196f3">event_busy</mat-icon>
+            <div class="val" style="color:#2196f3">{{ summary.excused }}</div>
+            <div class="lbl">Excused</div>
+          </mat-card-content>
+        </mat-card>
         <mat-card class="summary-card rate">
           <mat-card-content>
             <mat-icon>percent</mat-icon>
