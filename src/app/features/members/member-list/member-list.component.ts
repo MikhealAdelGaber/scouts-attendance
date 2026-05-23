@@ -121,7 +121,7 @@ export class MemberListComponent implements OnInit {
 
   exportExcel(): void {
     this.exporting = true;
-    this.exportService.downloadExcel('members/excel', { troopId: this.selectedTroopId || undefined })
+    this.exportService.downloadExcel('members/excel/full', { troopId: this.selectedTroopId || undefined })
       .subscribe({ next: () => { this.exporting = false; }, error: () => { this.exporting = false; } });
   }
 

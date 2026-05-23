@@ -40,6 +40,7 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
     { label: 'Points',      icon: 'star',        route: '/points',      roles: [UserRole.SystemAdmin, UserRole.GroupLeader] },
     { label: 'Leaderboard', icon: 'leaderboard', route: '/leaderboard', roles: [UserRole.SystemAdmin, UserRole.GroupLeader] },
     { label: 'Exam Scores', icon: 'school',      route: '/exam-scores', roles: [UserRole.SystemAdmin, UserRole.GroupLeader] },
+    { label: 'Reports',     icon: 'analytics',   route: '/reports',     roles: [UserRole.SystemAdmin, UserRole.GroupLeader, UserRole.AttendanceOnly] },
   ];
 
   constructor(

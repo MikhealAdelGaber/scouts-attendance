@@ -73,6 +73,12 @@ const routes: Routes = [
         canActivate: [RoleGuard],
         data: { roles: [UserRole.SystemAdmin, UserRole.GroupLeader] },
         loadChildren: () => import('./features/exam-scores/exam-scores.module').then(m => m.ExamScoresModule)
+      },
+      {
+        path: 'reports',
+        canActivate: [RoleGuard],
+        data: { roles: [UserRole.SystemAdmin, UserRole.GroupLeader, UserRole.AttendanceOnly] },
+        loadChildren: () => import('./features/reports/reports.module').then(m => m.ReportsModule)
       }
     ]
   },

@@ -1,0 +1,157 @@
+<div class="page-container">
+  <div class="page-header">
+    <h1><mat-icon>analytics</mat-icon> Attendance Rate Report</h1>
+    <button mat-raised-button color="accent"
+      [disabled]="exporting || rates.length === 0"
+      (click)="exportExcel()">
+      <mat-icon>download</mat-icon>
+      {{ exporting ? 'Exporting…' : 'Export Excel' }}
+    </button>
+  </div>
+
+  <!-- Filters -->
+  <mat-card class="mb-16">
+    <mat-card-content style="padding:16px">
+      <form [formGroup]="form" style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end">
+
+        <!-- Troop filter -->
+        <mat-form-field appearance="outline" style="width:220px">
+          <mat-label>Troop</mat-label>
+          <mat-icon matPrefix>groups</mat-icon>
+          <mat-select formControlName="troopId">
+            <mat-option value="">All Troops</mat-option>
+            @for (t of troops; track t.id) {
+              <mat-option [value]="t.id">{{ t.name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <!-- From date -->
+        <mat-form-field appearance="outline" style="width:180px">
+          <mat-label>From Date</mat-label>
+          <mat-icon matPrefix>event</mat-icon>
+          <input matInput [matDatepicker]="fromPicker" formControlName="from" placeholder="Start">
+          <mat-datepicker-toggle matSuffix [for]="fromPicker"></mat-datepicker-toggle>
+          <mat-datepicker #fromPicker></mat-datepicker>
+        </mat-form-field>
+
+        <!-- To date -->
+        <mat-form-field appearance="outline" style="width:180px">
+          <mat-label>To Date</mat-label>
+          <mat-icon matPrefix>event</mat-icon>
+          <input matInput [matDatepicker]="toPicker" formControlName="to" placeholder="End">
+          <mat-datepicker-toggle matSuffix [for]="toPicker"></mat-datepicker-toggle>
+          <mat-datepicker #toPicker></mat-datepicker>
+        </mat-form-field>
+
+        <button mat-raised-button color="primary" type="button"
+          [disabled]="loading" (click)="load()" style="height:56px">
+          <mat-icon>search</mat-icon>
+          {{ loading ? 'Loading…' : 'Load Report' }}
+        </button>
+
+      </form>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Results -->
+  <mat-card>
+    <mat-card-content>
+      @if (loading) {
+        <app-loading-spinner></app-loading-spinner>
+      } @else if (!loaded) {
+        <div style="text-align:center;padding:48px;color:#9e9e9e">
+          <mat-icon style="font-size:56px;width:56px;height:56px;display:block;margin:0 auto 12px">analytics</mat-icon>
+          <p style="font-size:1rem">Select filters above and click <strong>Load Report</strong></p>
+        </div>
+      } @else if (rates.length === 0) {
+        <div style="text-align:center;padding:48px;color:#9e9e9e">
+          <mat-icon style="font-size:56px;width:56px;height:56px;display:block;margin:0 auto 12px">event_busy</mat-icon>
+          <p>No attendance records found for the selected period.</p>
+        </div>
+      } @else {
+        <div style="margin-bottom:12px;font-size:0.85rem;color:#666">
+          <strong>{{ rates.length }}</strong> members · showing attendance rate = (Present + Late) / Total Events
+        </div>
+        <div class="table-scroll-wrapper">
+          <table mat-table [dataSource]="rates" class="full-width">
+
+            <!-- Rank -->
+            <ng-container matColumnDef="rank">
+              <th mat-header-cell *matHeaderCellDef style="width:56px">#</th>
+              <td mat-cell *matCellDef="let r; let i = index">
+                <strong style="color:#555">{{ i + 1 }}</strong>
+              </td>
+            </ng-container>
+
+            <!-- Member Name -->
+            <ng-container matColumnDef="memberName">
+              <th mat-header-cell *matHeaderCellDef>Member</th>
+              <td mat-cell *matCellDef="let r"><strong>{{ r.memberName }}</strong></td>
+            </ng-container>
+
+            <!-- Troop -->
+            <ng-container matColumnDef="troopName">
+              <th mat-header-cell *matHeaderCellDef>Troop</th>
+              <td mat-cell *matCellDef="let r">{{ r.troopName }}</td>
+            </ng-container>
+
+            <!-- Total Events -->
+            <ng-container matColumnDef="totalEvents">
+              <th mat-header-cell *matHeaderCellDef style="text-align:center">Total</th>
+              <td mat-cell *matCellDef="let r" style="text-align:center">{{ r.totalEvents }}</td>
+            </ng-container>
+
+            <!-- Present -->
+            <ng-container matColumnDef="present">
+              <th mat-header-cell *matHeaderCellDef style="text-align:center">Present</th>
+              <td mat-cell *matCellDef="let r" style="text-align:center">
+                <span style="color:#2e7d32;font-weight:500">{{ r.present }}</span>
+              </td>
+            </ng-container>
+
+            <!-- Late -->
+            <ng-container matColumnDef="late">
+              <th mat-header-cell *matHeaderCellDef style="text-align:center">Late</th>
+              <td mat-cell *matCellDef="let r" style="text-align:center">
+                <span style="color:#f57c00;font-weight:500">{{ r.late }}</span>
+              </td>
+            </ng-container>
+
+            <!-- Excused -->
+            <ng-container matColumnDef="excused">
+              <th mat-header-cell *matHeaderCellDef style="text-align:center">Excused</th>
+              <td mat-cell *matCellDef="let r" style="text-align:center">
+                <span style="color:#1565c0;font-weight:500">{{ r.excused }}</span>
+              </td>
+            </ng-container>
+
+            <!-- Absent -->
+            <ng-container matColumnDef="absent">
+              <th mat-header-cell *matHeaderCellDef style="text-align:center">Absent</th>
+              <td mat-cell *matCellDef="let r" style="text-align:center">
+                <span style="color:#c62828;font-weight:500">{{ r.absent }}</span>
+              </td>
+            </ng-container>
+
+            <!-- Rate -->
+            <ng-container matColumnDef="rate">
+              <th mat-header-cell *matHeaderCellDef style="text-align:center">Rate %</th>
+              <td mat-cell *matCellDef="let r" style="text-align:center">
+                <span style="display:inline-block;min-width:64px;padding:2px 10px;
+                             border-radius:12px;font-weight:700;font-size:0.9rem"
+                  [style.color]="rateColor(r.rate)"
+                  [style.background]="rateBg(r.rate)">
+                  {{ r.rate | number:'1.1-1' }}%
+                </span>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+          </table>
+        </div>
+      }
+    </mat-card-content>
+  </mat-card>
+</div>
