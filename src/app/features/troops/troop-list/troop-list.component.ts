@@ -9,7 +9,8 @@ import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-troop-list',
-  templateUrl: './troop-list.component.html'
+  templateUrl: './troop-list.component.html',
+  styleUrls: ['./troop-list.component.scss']
 })
 export class TroopListComponent implements OnInit {
   troops: Troop[] = [];

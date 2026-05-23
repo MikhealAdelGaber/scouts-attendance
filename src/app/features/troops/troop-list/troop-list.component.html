@@ -1,18 +1,31 @@
-<div class="page-container">
+<div class="troops-page">
+
+  <!-- Page header -->
   <div class="page-header">
-    <h1><mat-icon>groups</mat-icon> Troops</h1>
-    <a mat-raised-button color="primary" routerLink="new" *ngIf="auth.isGroupLeader() || auth.isSystemAdmin()">
+    <h1 class="page-title">
+      <mat-icon>groups</mat-icon>
+      Troops
+    </h1>
+    <a mat-raised-button color="primary" routerLink="new"
+       *ngIf="auth.isGroupLeader() || auth.isSystemAdmin()">
       <mat-icon>add</mat-icon> Create Troop
     </a>
   </div>
 
+  <!-- Loading -->
+  @if (loading) {
+    <div class="spinner-wrap">
+      <app-loading-spinner></app-loading-spinner>
+    </div>
+  }
+
+  <!-- Grid -->
   <div class="troops-grid">
-    @if (loading) { <app-loading-spinner></app-loading-spinner> }
 
     @for (t of troops; track t.id) {
       <mat-card class="troop-card">
 
-        <!-- Top: icon + name + group -->
+        <!-- ── Top: icon + name ─────────────────────────────────────── -->
         <div class="card-top">
           <div class="troop-avatar">
             <mat-icon>groups</mat-icon>
@@ -23,48 +36,53 @@
           </div>
         </div>
 
-        <!-- Middle: stats -->
+        <mat-divider class="card-divider"></mat-divider>
+
+        <!-- ── Stats ────────────────────────────────────────────────── -->
         <div class="card-stats">
           <div class="stat-row">
             <mat-icon class="stat-icon members-icon">people</mat-icon>
-            <span class="stat-label">Members</span>
-            <span class="stat-value">{{ t.memberCount }}</span>
+            <span class="stat-text">
+              <span class="stat-value">{{ t.memberCount }}</span>
+              <span class="stat-label">Members</span>
+            </span>
           </div>
           <div class="stat-row">
             <mat-icon class="stat-icon points-icon">star</mat-icon>
-            <span class="stat-label">Points</span>
-            <span class="stat-value points-value">{{ t.totalPoints | number:'1.0-1' }}</span>
+            <span class="stat-text">
+              <span class="stat-value points-value">{{ t.totalPoints | number:'1.0-1' }}</span>
+              <span class="stat-label">pts</span>
+            </span>
           </div>
         </div>
 
-        <!-- Bottom: icon-only action buttons -->
+        <!-- ── Actions ──────────────────────────────────────────────── -->
         <div class="card-actions">
-          <a mat-icon-button color="primary" [routerLink]="t.id" matTooltip="View" matTooltipPosition="above">
+          <a mat-icon-button color="primary" [routerLink]="t.id"
+             matTooltip="View" matTooltipPosition="above">
             <mat-icon>visibility</mat-icon>
           </a>
 
           <a mat-icon-button [routerLink]="[t.id, 'edit']"
-            *ngIf="auth.isGroupLeader() || auth.isSystemAdmin()"
-            matTooltip="Edit" matTooltipPosition="above">
+             *ngIf="auth.isGroupLeader() || auth.isSystemAdmin()"
+             matTooltip="Edit" matTooltipPosition="above">
             <mat-icon>edit</mat-icon>
           </a>
 
-          <button mat-icon-button (click)="copyLink(t)"
-            matTooltip="Copy Excuse Link" matTooltipPosition="above"
-            class="btn-link">
+          <button mat-icon-button class="btn-link" (click)="copyLink(t)"
+                  matTooltip="Copy Excuse Link" matTooltipPosition="above">
             <mat-icon>link</mat-icon>
           </button>
 
-          <button mat-icon-button (click)="resetLink(t)"
-            *ngIf="auth.isGroupLeader() || auth.isSystemAdmin()"
-            matTooltip="Reset Link" matTooltipPosition="above"
-            class="btn-reset">
+          <button mat-icon-button class="btn-reset" (click)="resetLink(t)"
+                  *ngIf="auth.isGroupLeader() || auth.isSystemAdmin()"
+                  matTooltip="Reset Link" matTooltipPosition="above">
             <mat-icon>refresh</mat-icon>
           </button>
 
           <button mat-icon-button color="warn" (click)="delete(t)"
-            *ngIf="auth.isGroupLeader() || auth.isSystemAdmin()"
-            matTooltip="Delete" matTooltipPosition="above">
+                  *ngIf="auth.isGroupLeader() || auth.isSystemAdmin()"
+                  matTooltip="Delete" matTooltipPosition="above">
             <mat-icon>delete</mat-icon>
           </button>
         </div>
@@ -72,17 +90,19 @@
       </mat-card>
     }
 
+    <!-- Empty state -->
     @empty {
       @if (!loading) {
         <div class="empty-state">
           <mat-icon>groups</mat-icon>
           <p>No troops yet.</p>
           <a mat-stroked-button color="primary" routerLink="new"
-            *ngIf="auth.isGroupLeader() || auth.isSystemAdmin()">
+             *ngIf="auth.isGroupLeader() || auth.isSystemAdmin()">
             <mat-icon>add</mat-icon> Create your first troop
           </a>
         </div>
       }
     }
+
   </div>
 </div>
