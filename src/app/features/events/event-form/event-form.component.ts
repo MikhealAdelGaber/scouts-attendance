@@ -9,13 +9,11 @@ import { AuthService } from '../../../core/services/auth.service';
 import { Troop } from '../../../core/models/troop.model';
 import { Group } from '../../../core/models/group.model';
 
-/** Cross-field validator: PresentPoints >= LatePoints >= ExcusedPoints */
+/** Cross-field validator: PresentPoints >= LatePoints */
 function pointsOrderValidator(group: AbstractControl): ValidationErrors | null {
   const present = group.get('presentPoints')?.value ?? 0;
   const late    = group.get('latePoints')?.value    ?? 0;
-  const excused = group.get('excusedPoints')?.value ?? 0;
-  if (present < late)   return { presentLessThanLate: true };
-  if (late    < excused) return { lateLessThanExcused: true };
+  if (present < late) return { presentLessThanLate: true };
   return null;
 }
 
@@ -52,8 +50,8 @@ export class EventFormComponent implements OnInit {
       isActive:      [true],
       presentPoints: [100, [Validators.required, Validators.min(-10000), Validators.max(10000)]],
       latePoints:    [50,  [Validators.required, Validators.min(-10000), Validators.max(10000)]],
-      excusedPoints: [50,  [Validators.required, Validators.min(-10000), Validators.max(10000)]],
       absentPoints:  [-10, [Validators.required, Validators.min(-10000), Validators.max(10000)]]
+      // excusedPoints is not shown — backend always awards Present points for Excused
     }, { validators: pointsOrderValidator });
 
     this.troopService.getAll().subscribe(t => this.troops = t);
@@ -71,7 +69,6 @@ export class EventFormComponent implements OnInit {
           eventDate:     new Date(e.eventDate),
           presentPoints: e.presentPoints,
           latePoints:    e.latePoints,
-          excusedPoints: e.excusedPoints,
           absentPoints:  e.absentPoints
         })
       );
@@ -86,8 +83,7 @@ export class EventFormComponent implements OnInit {
   }
 
   get hasOrderError(): boolean {
-    return !!(this.form.hasError('presentLessThanLate') ||
-              this.form.hasError('lateLessThanExcused'));
+    return !!this.form.hasError('presentLessThanLate');
   }
 
   submit(): void {
@@ -108,7 +104,7 @@ export class EventFormComponent implements OnInit {
       isActive:      val.isActive,
       presentPoints: val.presentPoints ?? 100,
       latePoints:    val.latePoints    ?? 50,
-      excusedPoints: val.excusedPoints ?? 50,
+      excusedPoints: val.presentPoints ?? 100,   // Excused = Present points
       absentPoints:  val.absentPoints  ?? -10
     };
     if (this.auth.isSystemAdmin() && val.groupId) {
