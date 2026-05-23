@@ -14,4 +14,5 @@ export class TroopService {
   create(dto: CreateTroop): Observable<Troop> { return this.api.post<Troop>('troops', dto); }
   update(id: string, dto: UpdateTroop): Observable<Troop> { return this.api.put<Troop>(`troops/${id}`, dto); }
   delete(id: string): Observable<void> { return this.api.delete<void>(`troops/${id}`); }
+  resetToken(id: string): Observable<string> { return this.api.post<string>(`troops/${id}/reset-token`, {}); }
 }

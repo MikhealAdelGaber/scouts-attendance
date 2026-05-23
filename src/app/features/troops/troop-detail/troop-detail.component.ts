@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatDialog } from '@angular/material/dialog';
 import { TroopService } from '../../../core/services/troop.service';
 import { PointsService } from '../../../core/services/points.service';
 import { MemberService } from '../../../core/services/member.service';
@@ -9,6 +10,7 @@ import { Troop } from '../../../core/models/troop.model';
 import { TroopPointsSummary } from '../../../core/models/points.model';
 import { Member } from '../../../core/models/member.model';
 import { AuthService } from '../../../core/services/auth.service';
+import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-troop-detail',
@@ -30,7 +32,8 @@ export class TroopDetailComponent implements OnInit {
     private pointsService: PointsService,
     private memberService: MemberService,
     public auth: AuthService,
-    private snack: MatSnackBar
+    private snack: MatSnackBar,
+    private dialog: MatDialog
   ) {}
 
   copyLink(): void {
@@ -43,6 +46,31 @@ export class TroopDetailComponent implements OnInit {
       this.snack.open('Excuse submission link copied!', 'Close', { duration: 3000 });
     }).catch(() => {
       this.snack.open(`Link: ${url}`, 'Close', { duration: 8000 });
+    });
+  }
+
+  resetLink(): void {
+    if (!this.troop) return;
+    this.dialog.open(ConfirmDialogComponent, {
+      data: {
+        title: 'Reset Excuse Link',
+        message: `Are you sure? The old link for "${this.troop.name}" will stop working and you will need to share the new link with your troop members.`,
+        confirmText: 'Reset Link'
+      }
+    }).afterClosed().subscribe(ok => {
+      if (!ok || !this.troop) return;
+      this.troopService.resetToken(this.troop.id).subscribe({
+        next: (newToken) => {
+          this.troop!.shareToken = newToken;
+          const url = `${window.location.origin}/excuse/${newToken}`;
+          navigator.clipboard.writeText(url).then(() => {
+            this.snack.open('Link has been reset. New link copied — share it with your troop.', 'Close', { duration: 5000 });
+          }).catch(() => {
+            this.snack.open(`Link reset! New link: ${url}`, 'Close', { duration: 10000 });
+          });
+        },
+        error: () => this.snack.open('Failed to reset link.', 'Close', { duration: 3000 })
+      });
     });
   }
 

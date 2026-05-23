@@ -47,9 +47,17 @@
           <div style="font-weight:600;color:#333;margin-bottom:2px">Excuse Submission Link</div>
           <div style="font-size:0.8rem;color:#777">Share this link with parents / scouts to submit absence excuses for review.</div>
         </div>
-        <button mat-raised-button color="primary" (click)="copyLink()" style="flex-shrink:0">
-          <mat-icon>content_copy</mat-icon> Copy Link
-        </button>
+        <div style="display:flex;gap:8px;flex-shrink:0">
+          <button mat-raised-button color="primary" (click)="copyLink()">
+            <mat-icon>content_copy</mat-icon> Copy Link
+          </button>
+          <button mat-stroked-button (click)="resetLink()"
+            *ngIf="auth.isGroupLeader() || auth.isSystemAdmin()"
+            matTooltip="Generate a new link — old link will stop working"
+            style="color:#ff9800;border-color:#ff9800">
+            <mat-icon>refresh</mat-icon> Reset Link
+          </button>
+        </div>
       </mat-card-content>
     </mat-card>
 

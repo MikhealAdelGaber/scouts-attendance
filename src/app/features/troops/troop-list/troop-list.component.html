@@ -34,6 +34,12 @@
             matTooltip="Copy shareable excuse-submission link for this troop">
             <mat-icon>link</mat-icon> Excuse Link
           </button>
+          <button mat-button (click)="resetLink(t)"
+            *ngIf="auth.isGroupLeader() || auth.isSystemAdmin()"
+            matTooltip="Reset excuse link — old link will stop working"
+            style="color:#ff9800">
+            <mat-icon>refresh</mat-icon> Reset Link
+          </button>
           <button mat-button color="warn" (click)="delete(t)" *ngIf="auth.isGroupLeader() || auth.isSystemAdmin()">
             <mat-icon>delete</mat-icon>
           </button>

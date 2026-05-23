@@ -37,6 +37,30 @@ export class TroopListComponent implements OnInit {
     });
   }
 
+  resetLink(t: Troop): void {
+    this.dialog.open(ConfirmDialogComponent, {
+      data: {
+        title: 'Reset Excuse Link',
+        message: `Are you sure? The old link for "${t.name}" will stop working and you will need to share the new link with your troop members.`,
+        confirmText: 'Reset Link'
+      }
+    }).afterClosed().subscribe(ok => {
+      if (!ok) return;
+      this.troopService.resetToken(t.id).subscribe({
+        next: (newToken) => {
+          t.shareToken = newToken;
+          const url = `${window.location.origin}/excuse/${newToken}`;
+          navigator.clipboard.writeText(url).then(() => {
+            this.snack.open('Link has been reset. New link copied — share it with your troop.', 'Close', { duration: 5000 });
+          }).catch(() => {
+            this.snack.open(`Link reset! New link: ${url}`, 'Close', { duration: 10000 });
+          });
+        },
+        error: () => this.snack.open('Failed to reset link.', 'Close', { duration: 3000 })
+      });
+    });
+  }
+
   delete(t: Troop): void {
     const memberWarning = t.memberCount > 0
       ? `\n\n⚠️ This troop has ${t.memberCount} member${t.memberCount === 1 ? '' : 's'}. They will be unassigned but NOT deleted.`
