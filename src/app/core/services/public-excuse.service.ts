@@ -17,11 +17,13 @@ export class PublicExcuseService {
 
   constructor(private http: HttpClient) {}
 
+  /** Returns troop info + member list for the given share token. */
   getTroopInfo(token: string): Observable<PublicTroopInfo> {
     return this.http.get<ApiResponse<PublicTroopInfo>>(`${this.base}/public/excuse/${token}`)
       .pipe(map(r => r.data));
   }
 
+  /** Submits a new pending excuse via the public link. */
   submit(token: string, dto: SubmitPendingExcuse): Observable<PendingExcuse> {
     return this.http.post<ApiResponse<PendingExcuse>>(`${this.base}/public/excuse/${token}`, dto)
       .pipe(map(r => r.data));

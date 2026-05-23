@@ -116,7 +116,7 @@ export class ExcusesListComponent implements OnInit {
 
   approve(p: PendingExcuse): void {
     this.reviewingId = p.id;
-    this.pendingExcuseService.review(p.id, { approve: true }).subscribe({
+    this.pendingExcuseService.approve(p.id).subscribe({
       next: () => {
         this.snack.open('Excuse approved and applied.', 'Close', { duration: 3000 });
         this.pending = this.pending.filter(x => x.id !== p.id);
@@ -131,7 +131,7 @@ export class ExcusesListComponent implements OnInit {
 
   reject(p: PendingExcuse): void {
     this.reviewingId = p.id;
-    this.pendingExcuseService.review(p.id, { approve: false }).subscribe({
+    this.pendingExcuseService.reject(p.id).subscribe({
       next: () => {
         this.snack.open('Excuse rejected.', 'Close', { duration: 3000 });
         this.pending = this.pending.filter(x => x.id !== p.id);

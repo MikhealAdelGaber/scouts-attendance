@@ -53,27 +53,45 @@
 
       <form [formGroup]="form" (ngSubmit)="submit()" class="excuse-form">
 
+        <!-- Your Name (who is submitting) -->
         <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Your Name (Parent or Scout)</mat-label>
+          <mat-label>Your Name (who is submitting this excuse)</mat-label>
           <mat-icon matPrefix>person</mat-icon>
-          <input matInput formControlName="submitterName" placeholder="e.g. Ahmed Hassan's Parent">
-          <mat-error *ngIf="form.get('submitterName')?.hasError('required')">Required</mat-error>
+          <input matInput formControlName="submittedByName"
+            placeholder="e.g. Ahmed Hassan's Parent / Ahmed Hassan">
+          <mat-error *ngIf="form.get('submittedByName')?.hasError('required')">Required</mat-error>
+          <mat-error *ngIf="form.get('submittedByName')?.hasError('maxlength')">Max 200 characters</mat-error>
         </mat-form-field>
 
+        <!-- Scout name — searchable dropdown -->
         <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Scout's Full Name</mat-label>
+          <mat-label>Scout Name</mat-label>
           <mat-icon matPrefix>face</mat-icon>
-          <input matInput formControlName="memberName" placeholder="e.g. Ahmed Hassan">
-          <mat-error *ngIf="form.get('memberName')?.hasError('required')">Required</mat-error>
+          <input matInput formControlName="memberSearch"
+            [matAutocomplete]="memberAuto"
+            (input)="onMemberInput()"
+            placeholder="Search by name or scout ID…">
+          <mat-autocomplete #memberAuto="matAutocomplete"
+            (optionSelected)="onMemberSelected($event.option.value)">
+            @for (m of filteredMembers$ | async; track m.id) {
+              <mat-option [value]="m">
+                <span>{{ m.fullName }}</span>
+                <span style="color:#888;font-size:0.8rem;margin-left:8px">#{{ m.customId }}</span>
+              </mat-option>
+            }
+          </mat-autocomplete>
+          @if (memberRequired) {
+            <mat-error>Please select a scout from the list</mat-error>
+          }
+          @if (selectedMember) {
+            <mat-hint style="color:#2e7d32">
+              <mat-icon style="font-size:14px;width:14px;height:14px;vertical-align:middle">check_circle</mat-icon>
+              {{ selectedMember.fullName }} (#{{ selectedMember.customId }}) selected
+            </mat-hint>
+          }
         </mat-form-field>
 
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Scout ID (optional — if you know it)</mat-label>
-          <mat-icon matPrefix>badge</mat-icon>
-          <input matInput type="number" formControlName="memberCustomId" placeholder="e.g. 100001">
-          <mat-hint>Helps the leader match the record faster</mat-hint>
-        </mat-form-field>
-
+        <!-- Date range -->
         <div class="date-row">
           <mat-form-field appearance="outline" style="flex:1">
             <mat-label>From Date</mat-label>
@@ -99,6 +117,7 @@
           </p>
         }
 
+        <!-- Reason -->
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Reason for Absence</mat-label>
           <mat-icon matPrefix>description</mat-icon>
@@ -106,6 +125,7 @@
             placeholder="e.g. Sick with flu, doctor visit, family emergency…"></textarea>
           <mat-hint align="end">{{ form.get('reason')?.value?.length || 0 }}/1000</mat-hint>
           <mat-error *ngIf="form.get('reason')?.hasError('required')">Required</mat-error>
+          <mat-error *ngIf="form.get('reason')?.hasError('maxlength')">Max 1000 characters</mat-error>
         </mat-form-field>
 
         @if (submitError) {
@@ -116,7 +136,7 @@
         }
 
         <button mat-raised-button color="primary" type="submit"
-          [disabled]="form.invalid || submitting || dateError"
+          [disabled]="submitting"
           style="width:100%;padding:12px 0;font-size:1rem">
           @if (submitting) {
             <mat-progress-spinner mode="indeterminate" diameter="20"

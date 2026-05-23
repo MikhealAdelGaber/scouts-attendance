@@ -1,18 +1,26 @@
 export type PendingExcuseStatus = 0 | 1 | 2; // Pending | Approved | Rejected
 
+export interface PublicMember {
+  id: string;
+  fullName: string;
+  customId: number;
+}
+
 export interface PublicTroopInfo {
   id: string;
   name: string;
   groupName: string;
+  members: PublicMember[];
 }
 
 export interface PendingExcuse {
   id: string;
   troopId: string;
   troopName: string;
-  submitterName: string;
+  memberId: string;
   memberName: string;
-  memberCustomId?: number;
+  memberCustomId: number;
+  submittedByName: string;
   startDate: string;
   endDate: string;
   reason: string;
@@ -25,16 +33,13 @@ export interface PendingExcuse {
 }
 
 export interface SubmitPendingExcuse {
-  submitterName: string;
-  memberName: string;
-  memberCustomId?: number;
+  submittedByName: string;
+  memberId: string;
   startDate: string;
   endDate: string;
   reason: string;
 }
 
-export interface ReviewPendingExcuse {
-  approve: boolean;
+export interface ReviewNotesDto {
   reviewNotes?: string;
-  memberId?: string;
 }

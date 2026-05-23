@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiService } from './api.service';
-import { PendingExcuse, ReviewPendingExcuse } from '../models/pending-excuse.model';
+import { PendingExcuse, ReviewNotesDto } from '../models/pending-excuse.model';
 
 @Injectable({ providedIn: 'root' })
 export class PendingExcuseService {
@@ -15,7 +15,13 @@ export class PendingExcuseService {
     return this.api.get<number>('pendingExcuses/count', groupId ? { groupId } : {});
   }
 
-  review(id: string, dto: ReviewPendingExcuse): Observable<PendingExcuse> {
-    return this.api.post<PendingExcuse>(`pendingExcuses/${id}/review`, dto);
+  approve(id: string, reviewNotes?: string): Observable<PendingExcuse> {
+    const dto: ReviewNotesDto = { reviewNotes };
+    return this.api.post<PendingExcuse>(`pendingExcuses/${id}/approve`, dto);
+  }
+
+  reject(id: string, reviewNotes?: string): Observable<PendingExcuse> {
+    const dto: ReviewNotesDto = { reviewNotes };
+    return this.api.post<PendingExcuse>(`pendingExcuses/${id}/reject`, dto);
   }
 }
