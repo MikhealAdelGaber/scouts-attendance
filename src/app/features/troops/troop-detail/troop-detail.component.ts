@@ -3,6 +3,7 @@ import { ActivatedRoute } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
+import { environment } from '../../../../environments/environment';
 import { TroopService } from '../../../core/services/troop.service';
 import { PointsService } from '../../../core/services/points.service';
 import { MemberService } from '../../../core/services/member.service';
@@ -41,7 +42,7 @@ export class TroopDetailComponent implements OnInit {
       this.snack.open('Share link not available.', 'Close', { duration: 3000 });
       return;
     }
-    const url = `${window.location.origin}/excuse/${this.troop.shareToken}`;
+    const url = `${environment.baseUrl}/excuse/${this.troop.shareToken}`;
     navigator.clipboard.writeText(url).then(() => {
       this.snack.open('Excuse submission link copied!', 'Close', { duration: 3000 });
     }).catch(() => {
@@ -62,7 +63,7 @@ export class TroopDetailComponent implements OnInit {
       this.troopService.resetToken(this.troop.id).subscribe({
         next: (newToken) => {
           this.troop!.shareToken = newToken;
-          const url = `${window.location.origin}/excuse/${newToken}`;
+          const url = `${environment.baseUrl}/excuse/${newToken}`;
           navigator.clipboard.writeText(url).then(() => {
             this.snack.open('Link has been reset. New link copied — share it with your troop.', 'Close', { duration: 5000 });
           }).catch(() => {

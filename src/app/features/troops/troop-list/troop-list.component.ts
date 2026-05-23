@@ -5,6 +5,7 @@ import { TroopService } from '../../../core/services/troop.service';
 import { Troop } from '../../../core/models/troop.model';
 import { AuthService } from '../../../core/services/auth.service';
 import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog/confirm-dialog.component';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-troop-list',
@@ -29,7 +30,7 @@ export class TroopListComponent implements OnInit {
       this.snack.open('Share link not available — please refresh.', 'Close', { duration: 3000 });
       return;
     }
-    const url = `${window.location.origin}/excuse/${t.shareToken}`;
+    const url = `${environment.baseUrl}/excuse/${t.shareToken}`;
     navigator.clipboard.writeText(url).then(() => {
       this.snack.open('Excuse submission link copied!', 'Close', { duration: 3000 });
     }).catch(() => {
@@ -49,7 +50,7 @@ export class TroopListComponent implements OnInit {
       this.troopService.resetToken(t.id).subscribe({
         next: (newToken) => {
           t.shareToken = newToken;
-          const url = `${window.location.origin}/excuse/${newToken}`;
+          const url = `${environment.baseUrl}/excuse/${newToken}`;
           navigator.clipboard.writeText(url).then(() => {
             this.snack.open('Link has been reset. New link copied — share it with your troop.', 'Close', { duration: 5000 });
           }).catch(() => {
