@@ -8,7 +8,7 @@ import { TroopService } from '../../../core/services/troop.service';
 import { SignalRService } from '../../../core/services/signalr.service';
 import { ScoutEvent } from '../../../core/models/event.model';
 import { Troop } from '../../../core/models/troop.model';
-import { EventMemberStatus, AttendanceStatus, BulkAttendance, AttendanceSummary } from '../../../core/models/attendance.model';
+import { EventMemberStatus, AttendanceStatus, BulkAttendance } from '../../../core/models/attendance.model';
 import { ExportService } from '../../../core/services/export.service';
 
 interface MemberRow {
@@ -35,7 +35,6 @@ export class MarkAttendanceComponent implements OnInit, OnDestroy {
   events: ScoutEvent[] = [];
   troops: Troop[] = [];
   rows: MemberRow[] = [];
-  summary: AttendanceSummary | null = null;
 
   selectedEventId = '';
   selectedTroopId = '';
@@ -95,9 +94,9 @@ export class MarkAttendanceComponent implements OnInit, OnDestroy {
       if (update.eventId !== this.selectedEventId) return;
       const row = this.rows.find(r => r.memberId === update.memberId);
       if (row) {
+        // Update status in-place — stat cards recompute instantly from rows
         row.status = update.status as unknown as AttendanceStatus;
         row.saved  = true;
-        this.refreshSummary();
       }
     });
   }
@@ -112,13 +111,9 @@ export class MarkAttendanceComponent implements OnInit, OnDestroy {
 
   private loadAttendance(): void {
     this.loading = true;
-    forkJoin({
-      memberStatuses: this.attendanceService.getEventMemberStatuses(this.selectedEventId),
-      summary:        this.attendanceService.getSummary(this.selectedEventId)
-    }).subscribe({
-      next: ({ memberStatuses, summary }) => {
-        this.summary = summary;
-        this.buildRows(memberStatuses);
+    this.attendanceService.getEventMemberStatuses(this.selectedEventId).subscribe({
+      next: statuses => {
+        this.buildRows(statuses);
         this.loading = false;
       },
       error: () => { this.loading = false; }
@@ -169,6 +164,7 @@ export class MarkAttendanceComponent implements OnInit, OnDestroy {
   }
 
   onStatusChange(row: MemberRow): void {
+    // Stat cards update immediately from the rows getter — no API wait needed
     this.saveRow(row);
   }
 
@@ -183,9 +179,8 @@ export class MarkAttendanceComponent implements OnInit, OnDestroy {
       next: (rec) => {
         row.saved  = true;
         row.saving = false;
-        // Sync any server-side status override (e.g. Absent → Excused)
+        // Sync any server-side status override (e.g. Absent → Excused via active excuse)
         row.status = rec.status;
-        this.refreshSummary();
       },
       error: () => { row.saving = false; }
     });
@@ -193,6 +188,7 @@ export class MarkAttendanceComponent implements OnInit, OnDestroy {
 
   markAll(status: AttendanceStatus): void {
     const visible = this.filteredRows;
+    // Update status immediately so stat cards reflect the change at once
     visible.forEach(r => r.status = status);
     this.saving = true;
     const bulk: BulkAttendance = {
@@ -207,7 +203,6 @@ export class MarkAttendanceComponent implements OnInit, OnDestroy {
         this.snack.open(`${visible.length} members in ${troopLabel} marked as ${status}`, 'Close', { duration: 3000 });
         visible.forEach(r => r.saved = true);
         this.saving = false;
-        this.refreshSummary();
       },
       error: () => { this.saving = false; }
     });
@@ -225,14 +220,9 @@ export class MarkAttendanceComponent implements OnInit, OnDestroy {
         this.snack.open(`Saved attendance for ${this.rows.length} members`, 'Close', { duration: 3000 });
         this.rows.forEach(r => r.saved = true);
         this.saving = false;
-        this.refreshSummary();
       },
       error: () => { this.saving = false; }
     });
-  }
-
-  private refreshSummary(): void {
-    this.attendanceService.getSummary(this.selectedEventId).subscribe(s => this.summary = s);
   }
 
   goToQrScanner(): void {
@@ -258,8 +248,20 @@ export class MarkAttendanceComponent implements OnInit, OnDestroy {
     return this.troops.find(t => t.id === this.selectedTroopId)?.name ?? '';
   }
 
-  get presentCount(): number { return this.rows.filter(r => r.status === AttendanceStatus.Present).length; }
-  get lateCount():   number  { return this.rows.filter(r => r.status === AttendanceStatus.Late).length; }
-  get absentCount(): number  { return this.rows.filter(r => r.status === AttendanceStatus.Absent).length; }
-  get excusedCount(): number { return this.rows.filter(r => r.status === AttendanceStatus.Excused).length; }
+  // ── Live stat counters — recomputed directly from rows on every change ─────
+  // Members with no saved record are already given their default status by the
+  // backend (Excused if an active excuse covers the event date, Absent otherwise),
+  // so these counts are always accurate — no API round-trip needed.
+
+  get presentCount(): number  { return this.rows.filter(r => r.status === AttendanceStatus.Present).length; }
+  get lateCount():    number  { return this.rows.filter(r => r.status === AttendanceStatus.Late).length; }
+  get absentCount():  number  { return this.rows.filter(r => r.status === AttendanceStatus.Absent).length; }
+  get excusedCount(): number  { return this.rows.filter(r => r.status === AttendanceStatus.Excused).length; }
+
+  /** Rate = (Present + Late + Excused) / TotalMembers × 100 */
+  get attendanceRate(): number {
+    const total = this.rows.length;
+    if (total === 0) return 0;
+    return Math.round((this.presentCount + this.lateCount + this.excusedCount) * 1000 / total) / 10;
+  }
 }

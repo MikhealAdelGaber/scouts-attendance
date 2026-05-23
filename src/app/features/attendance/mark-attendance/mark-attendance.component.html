@@ -65,42 +65,43 @@
   </mat-card>
 
   @if (selectedEventId) {
-    <!-- Summary Cards -->
-    @if (summary) {
+    <!-- Summary Cards — update in real-time as statuses change (no API call) -->
+    @if (rows.length > 0) {
       <div class="summary-cards mb-16">
         <mat-card class="summary-card present">
           <mat-card-content>
             <mat-icon>check_circle</mat-icon>
-            <div class="val">{{ summary.present }}</div>
+            <div class="val">{{ presentCount }}</div>
             <div class="lbl">Present</div>
           </mat-card-content>
         </mat-card>
         <mat-card class="summary-card late">
           <mat-card-content>
             <mat-icon>schedule</mat-icon>
-            <div class="val">{{ summary.late }}</div>
+            <div class="val">{{ lateCount }}</div>
             <div class="lbl">Late</div>
           </mat-card-content>
         </mat-card>
         <mat-card class="summary-card absent">
           <mat-card-content>
             <mat-icon>cancel</mat-icon>
-            <div class="val">{{ summary.absent }}</div>
+            <div class="val">{{ absentCount }}</div>
             <div class="lbl">Absent</div>
           </mat-card-content>
         </mat-card>
-        <!-- Excused count — members whose excuse date range covers this event -->
+        <!-- Excused — members with an active excuse covering this event date -->
         <mat-card class="summary-card" style="border-top:3px solid #2196f3">
           <mat-card-content>
             <mat-icon style="color:#2196f3">event_busy</mat-icon>
-            <div class="val" style="color:#2196f3">{{ summary.excused }}</div>
+            <div class="val" style="color:#2196f3">{{ excusedCount }}</div>
             <div class="lbl">Excused</div>
           </mat-card-content>
         </mat-card>
+        <!-- Rate = (Present + Late + Excused) / Total × 100 -->
         <mat-card class="summary-card rate">
           <mat-card-content>
             <mat-icon>percent</mat-icon>
-            <div class="val">{{ summary.attendanceRate | number:'1.0-1' }}%</div>
+            <div class="val">{{ attendanceRate | number:'1.0-1' }}%</div>
             <div class="lbl">Rate</div>
           </mat-card-content>
         </mat-card>
