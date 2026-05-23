@@ -3,6 +3,7 @@ import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { Subscription } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 import { ThemeService } from '../../core/services/theme.service';
+import { PendingExcuseService } from '../../core/services/pending-excuse.service';
 import { UserRole } from '../../core/models/user.model';
 import { Router } from '@angular/router';
 
@@ -23,6 +24,7 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
   isMobile = false;
   sidenavMode: 'side' | 'over' = 'side';
   currentUser$ = this.auth.currentUser$;
+  pendingExcuseCount = 0;
   private bpSub: Subscription | null = null;
 
   navItems: NavItem[] = [
@@ -47,7 +49,8 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
     public auth: AuthService,
     public theme: ThemeService,
     private router: Router,
-    private bp: BreakpointObserver
+    private bp: BreakpointObserver,
+    private pendingExcuseService: PendingExcuseService
   ) {}
 
   ngOnInit(): void {
@@ -57,6 +60,15 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
         this.sidenavMode = state.matches ? 'over' : 'side';
         this.sidenavOpened = !state.matches;
       });
+
+    // Load pending excuse count for admins/leaders (badge on nav item)
+    if (this.auth.isAdmin()) {
+      const groupId = this.auth.currentUser?.groupId ?? undefined;
+      this.pendingExcuseService.getPendingCount(groupId).subscribe({
+        next: count => this.pendingExcuseCount = count,
+        error: () => {}  // non-critical — badge just stays 0
+      });
+    }
   }
 
   ngOnDestroy(): void { this.bpSub?.unsubscribe(); }

@@ -11,6 +11,11 @@ const routes: Routes = [
     loadChildren: () => import('./features/auth/auth.module').then(m => m.AuthModule)
   },
   {
+    // Public (no auth) excuse-submission page — MUST be before the '' auth-guarded route
+    path: 'excuse',
+    loadChildren: () => import('./features/excuse-submit/excuse-submit.module').then(m => m.ExcuseSubmitModule)
+  },
+  {
     path: '',
     component: MainLayoutComponent,
     canActivate: [AuthGuard],

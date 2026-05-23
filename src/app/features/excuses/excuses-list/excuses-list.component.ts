@@ -1,9 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ExcuseService } from '../../../core/services/excuse.service';
+import { PendingExcuseService } from '../../../core/services/pending-excuse.service';
 import { TroopService } from '../../../core/services/troop.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { MemberExcuse } from '../../../core/models/excuse.model';
+import { PendingExcuse } from '../../../core/models/pending-excuse.model';
 import { Troop } from '../../../core/models/troop.model';
 
 @Component({
@@ -16,6 +18,11 @@ export class ExcusesListComponent implements OnInit {
   selectedTroopId = '';
   loading = false;
 
+  // ── Pending tab ───────────────────────────────────────────────────────────
+  pending: PendingExcuse[] = [];
+  pendingLoading = false;
+  reviewingId: string | null = null;
+
   /** Revoke column only shown to GroupLeader / SystemAdmin */
   get displayedColumns(): string[] {
     const cols = ['member', 'period', 'status', 'reason', 'createdBy'];
@@ -25,6 +32,7 @@ export class ExcusesListComponent implements OnInit {
 
   constructor(
     private excuseService: ExcuseService,
+    private pendingExcuseService: PendingExcuseService,
     private troopService: TroopService,
     public auth: AuthService,
     private snack: MatSnackBar
@@ -43,6 +51,10 @@ export class ExcusesListComponent implements OnInit {
         this.load();
       }
     });
+
+    if (this.auth.isAdmin()) {
+      this.loadPending();
+    }
   }
 
   load(): void {
@@ -90,6 +102,46 @@ export class ExcusesListComponent implements OnInit {
     const today = new Date(); today.setHours(0, 0, 0, 0);
     const end = new Date(e.endDate); end.setHours(0, 0, 0, 0);
     return end < today;
+  }
+
+  // ── Pending tab methods ──────────────────────────────────────────────────
+
+  loadPending(): void {
+    this.pendingLoading = true;
+    this.pendingExcuseService.getPending().subscribe({
+      next: list => { this.pending = list; this.pendingLoading = false; },
+      error: () => { this.pendingLoading = false; }
+    });
+  }
+
+  approve(p: PendingExcuse): void {
+    this.reviewingId = p.id;
+    this.pendingExcuseService.review(p.id, { approve: true }).subscribe({
+      next: () => {
+        this.snack.open('Excuse approved and applied.', 'Close', { duration: 3000 });
+        this.pending = this.pending.filter(x => x.id !== p.id);
+        this.reviewingId = null;
+      },
+      error: () => {
+        this.snack.open('Failed to approve excuse.', 'Close', { duration: 3000 });
+        this.reviewingId = null;
+      }
+    });
+  }
+
+  reject(p: PendingExcuse): void {
+    this.reviewingId = p.id;
+    this.pendingExcuseService.review(p.id, { approve: false }).subscribe({
+      next: () => {
+        this.snack.open('Excuse rejected.', 'Close', { duration: 3000 });
+        this.pending = this.pending.filter(x => x.id !== p.id);
+        this.reviewingId = null;
+      },
+      error: () => {
+        this.snack.open('Failed to reject excuse.', 'Close', { duration: 3000 });
+        this.reviewingId = null;
+      }
+    });
   }
 
   revoke(id: string): void {

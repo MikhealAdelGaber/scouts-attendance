@@ -1,0 +1,137 @@
+<div class="excuse-submit-page">
+  <div class="card-wrapper">
+
+    <!-- Header / branding -->
+    <div class="brand-header">
+      <img src="assets/logo.png" alt="Logo" class="brand-logo" onerror="this.style.display='none'">
+      <h2 class="brand-title">Scouts Attendance</h2>
+    </div>
+
+    <!-- Loading -->
+    @if (loading) {
+      <div class="center-content">
+        <mat-progress-spinner mode="indeterminate" diameter="48"></mat-progress-spinner>
+        <p style="margin-top:16px;color:#666">Loading troop info…</p>
+      </div>
+    }
+
+    <!-- Invalid token -->
+    @else if (troopError) {
+      <div class="center-content">
+        <mat-icon style="font-size:64px;width:64px;height:64px;color:#ef9a9a">link_off</mat-icon>
+        <h3 style="color:#c62828;margin:16px 0 8px">Invalid Link</h3>
+        <p style="color:#666;text-align:center">
+          This excuse submission link is invalid or has expired.<br>
+          Please ask your troop leader for a valid link.
+        </p>
+      </div>
+    }
+
+    <!-- Success confirmation -->
+    @else if (submitted) {
+      <div class="center-content">
+        <mat-icon style="font-size:72px;width:72px;height:72px;color:#4caf50">check_circle</mat-icon>
+        <h3 style="color:#2e7d32;margin:16px 0 8px">Excuse Submitted!</h3>
+        <p style="color:#555;text-align:center;margin:0">
+          Your excuse request has been sent to <strong>{{ troop?.name }}</strong>.<br>
+          A leader will review it shortly.
+        </p>
+      </div>
+    }
+
+    <!-- Form -->
+    @else if (troop) {
+      <div class="form-header">
+        <mat-icon style="color:#3f51b5;font-size:32px;width:32px;height:32px">event_busy</mat-icon>
+        <div>
+          <h3 style="margin:0">Submit Excuse</h3>
+          <p style="margin:2px 0 0;color:#666;font-size:0.9rem">
+            <strong>{{ troop.name }}</strong> · {{ troop.groupName }}
+          </p>
+        </div>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="submit()" class="excuse-form">
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Your Name (Parent or Scout)</mat-label>
+          <mat-icon matPrefix>person</mat-icon>
+          <input matInput formControlName="submitterName" placeholder="e.g. Ahmed Hassan's Parent">
+          <mat-error *ngIf="form.get('submitterName')?.hasError('required')">Required</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Scout's Full Name</mat-label>
+          <mat-icon matPrefix>face</mat-icon>
+          <input matInput formControlName="memberName" placeholder="e.g. Ahmed Hassan">
+          <mat-error *ngIf="form.get('memberName')?.hasError('required')">Required</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Scout ID (optional — if you know it)</mat-label>
+          <mat-icon matPrefix>badge</mat-icon>
+          <input matInput type="number" formControlName="memberCustomId" placeholder="e.g. 100001">
+          <mat-hint>Helps the leader match the record faster</mat-hint>
+        </mat-form-field>
+
+        <div class="date-row">
+          <mat-form-field appearance="outline" style="flex:1">
+            <mat-label>From Date</mat-label>
+            <input matInput [matDatepicker]="startPicker" formControlName="startDate">
+            <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
+            <mat-datepicker #startPicker></mat-datepicker>
+            <mat-error *ngIf="form.get('startDate')?.hasError('required')">Required</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" style="flex:1">
+            <mat-label>To Date</mat-label>
+            <input matInput [matDatepicker]="endPicker" formControlName="endDate">
+            <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
+            <mat-datepicker #endPicker></mat-datepicker>
+            <mat-error *ngIf="form.get('endDate')?.hasError('required')">Required</mat-error>
+          </mat-form-field>
+        </div>
+
+        @if (dateError) {
+          <p style="color:#c62828;font-size:0.8rem;margin:-8px 0 8px;display:flex;align-items:center;gap:4px">
+            <mat-icon style="font-size:16px;width:16px;height:16px">warning</mat-icon>
+            End date must be on or after start date.
+          </p>
+        }
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Reason for Absence</mat-label>
+          <mat-icon matPrefix>description</mat-icon>
+          <textarea matInput formControlName="reason" rows="3"
+            placeholder="e.g. Sick with flu, doctor visit, family emergency…"></textarea>
+          <mat-hint align="end">{{ form.get('reason')?.value?.length || 0 }}/1000</mat-hint>
+          <mat-error *ngIf="form.get('reason')?.hasError('required')">Required</mat-error>
+        </mat-form-field>
+
+        @if (submitError) {
+          <p style="color:#c62828;font-size:0.85rem;margin:0 0 12px;display:flex;align-items:center;gap:6px">
+            <mat-icon style="font-size:18px;width:18px;height:18px">error</mat-icon>
+            {{ submitError }}
+          </p>
+        }
+
+        <button mat-raised-button color="primary" type="submit"
+          [disabled]="form.invalid || submitting || dateError"
+          style="width:100%;padding:12px 0;font-size:1rem">
+          @if (submitting) {
+            <mat-progress-spinner mode="indeterminate" diameter="20"
+              style="display:inline-block;margin-right:8px"></mat-progress-spinner>
+            Submitting…
+          } @else {
+            <mat-icon>send</mat-icon> Submit Excuse Request
+          }
+        </button>
+      </form>
+
+      <p style="text-align:center;font-size:0.75rem;color:#aaa;margin-top:20px">
+        Your submission will be reviewed by a troop leader before being applied.
+      </p>
+    }
+
+  </div>
+</div>

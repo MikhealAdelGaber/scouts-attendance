@@ -24,6 +24,19 @@ export class TroopListComponent implements OnInit {
     this.troopService.getAll().subscribe({ next: t => { this.troops = t; this.loading = false; }, error: () => this.loading = false });
   }
 
+  copyLink(t: Troop): void {
+    if (!t.shareToken) {
+      this.snack.open('Share link not available — please refresh.', 'Close', { duration: 3000 });
+      return;
+    }
+    const url = `${window.location.origin}/excuse/${t.shareToken}`;
+    navigator.clipboard.writeText(url).then(() => {
+      this.snack.open('Excuse submission link copied!', 'Close', { duration: 3000 });
+    }).catch(() => {
+      this.snack.open(`Link: ${url}`, 'Close', { duration: 8000 });
+    });
+  }
+
   delete(t: Troop): void {
     const memberWarning = t.memberCount > 0
       ? `\n\n⚠️ This troop has ${t.memberCount} member${t.memberCount === 1 ? '' : 's'}. They will be unassigned but NOT deleted.`

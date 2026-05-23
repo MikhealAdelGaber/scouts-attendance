@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { forkJoin } from 'rxjs';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { TroopService } from '../../../core/services/troop.service';
 import { PointsService } from '../../../core/services/points.service';
 import { MemberService } from '../../../core/services/member.service';
@@ -28,8 +29,22 @@ export class TroopDetailComponent implements OnInit {
     private troopService: TroopService,
     private pointsService: PointsService,
     private memberService: MemberService,
-    public auth: AuthService
+    public auth: AuthService,
+    private snack: MatSnackBar
   ) {}
+
+  copyLink(): void {
+    if (!this.troop?.shareToken) {
+      this.snack.open('Share link not available.', 'Close', { duration: 3000 });
+      return;
+    }
+    const url = `${window.location.origin}/excuse/${this.troop.shareToken}`;
+    navigator.clipboard.writeText(url).then(() => {
+      this.snack.open('Excuse submission link copied!', 'Close', { duration: 3000 });
+    }).catch(() => {
+      this.snack.open(`Link: ${url}`, 'Close', { duration: 8000 });
+    });
+  }
 
   ngOnInit(): void {
     const id = this.route.snapshot.params['id'];

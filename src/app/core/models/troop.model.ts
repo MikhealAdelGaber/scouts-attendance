@@ -8,6 +8,7 @@ export interface Troop {
   memberCount: number;
   totalPoints: number;
   createdAt: string;
+  shareToken?: string;
 }
 
 export interface CreateTroop { name: string; groupId: string; leaderId?: string; }

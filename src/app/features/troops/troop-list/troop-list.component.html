@@ -30,6 +30,10 @@
           <a mat-button [routerLink]="[t.id, 'edit']" *ngIf="auth.isGroupLeader() || auth.isSystemAdmin()">
             <mat-icon>edit</mat-icon> Edit
           </a>
+          <button mat-button color="accent" (click)="copyLink(t)"
+            matTooltip="Copy shareable excuse-submission link for this troop">
+            <mat-icon>link</mat-icon> Excuse Link
+          </button>
           <button mat-button color="warn" (click)="delete(t)" *ngIf="auth.isGroupLeader() || auth.isSystemAdmin()">
             <mat-icon>delete</mat-icon>
           </button>
