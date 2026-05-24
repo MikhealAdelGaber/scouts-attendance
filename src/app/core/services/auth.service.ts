@@ -77,9 +77,9 @@ export class AuthService {
     return !!u.canCreateEvents;
   }
 
-  /** Can award points to members/troops. */
+  /** Can award / delete points for members and troops. */
   canManagePoints(): boolean {
-    return this.hasRole(UserRole.SystemAdmin, UserRole.GroupLeader);
+    return this.hasRole(UserRole.SystemAdmin, UserRole.GroupLeader, UserRole.AttendanceOnly);
   }
 
   // ─── Session persistence ─────────────────────────────────────────────────────

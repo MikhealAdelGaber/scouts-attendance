@@ -92,7 +92,7 @@ export class PointsDashboardComponent implements OnInit {
       this.categories = c.filter(cat => cat.name !== 'Attendance')
     );
 
-    if (this.auth.isSystemAdmin() || this.auth.isGroupLeader()) {
+    if (this.auth.canManagePoints()) {
       this.loadAttendanceSettings();
     }
 

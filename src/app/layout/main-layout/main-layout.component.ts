@@ -39,7 +39,7 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
     // Events: not shown to AttendanceOnly (they cannot create events)
     { label: 'Events',      icon: 'event',       route: '/events',      roles: [UserRole.SystemAdmin, UserRole.GroupLeader] },
     { label: 'Attendance',  icon: 'fact_check',  route: '/attendance' },
-    { label: 'Points',      icon: 'star',        route: '/points',      roles: [UserRole.SystemAdmin, UserRole.GroupLeader] },
+    { label: 'Points',      icon: 'star',        route: '/points',      roles: [UserRole.SystemAdmin, UserRole.GroupLeader, UserRole.AttendanceOnly] },
     { label: 'Leaderboard', icon: 'leaderboard', route: '/leaderboard', roles: [UserRole.SystemAdmin, UserRole.GroupLeader] },
     { label: 'Exam Scores', icon: 'school',      route: '/exam-scores', roles: [UserRole.SystemAdmin, UserRole.GroupLeader] },
     { label: 'Reports',     icon: 'analytics',   route: '/reports',     roles: [UserRole.SystemAdmin, UserRole.GroupLeader, UserRole.AttendanceOnly] },
