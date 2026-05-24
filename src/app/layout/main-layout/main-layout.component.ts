@@ -36,8 +36,7 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
     { label: 'Members',     icon: 'people',      route: '/members',     roles: [UserRole.SystemAdmin, UserRole.GroupLeader, UserRole.AttendanceOnly] },
     // Excuses: AttendanceOnly can grant excuses for members
     { label: 'Excuses',     icon: 'event_busy',  route: '/excuses',     roles: [UserRole.SystemAdmin, UserRole.GroupLeader, UserRole.AttendanceOnly] },
-    // Events: not shown to AttendanceOnly (they cannot create events)
-    { label: 'Events',      icon: 'event',       route: '/events',      roles: [UserRole.SystemAdmin, UserRole.GroupLeader] },
+    { label: 'Events',      icon: 'event',       route: '/events',      roles: [UserRole.SystemAdmin, UserRole.GroupLeader, UserRole.AttendanceOnly] },
     { label: 'Attendance',  icon: 'fact_check',  route: '/attendance' },
     { label: 'Points',      icon: 'star',        route: '/points',      roles: [UserRole.SystemAdmin, UserRole.GroupLeader, UserRole.AttendanceOnly] },
     { label: 'Leaderboard', icon: 'leaderboard', route: '/leaderboard', roles: [UserRole.SystemAdmin, UserRole.GroupLeader] },

@@ -61,19 +61,19 @@ export class AuthService {
     return !!u.canTakeAttendance;
   }
 
-  /** Can create / edit member records. Admin, GroupLeader, or explicit flag. */
+  /** Can create / edit member records. Admin, GroupLeader, AttendanceOnly, or explicit flag. */
   canEditMembers(): boolean {
     const u = this.currentUser;
     if (!u) return false;
-    if (this.hasRole(UserRole.SystemAdmin, UserRole.GroupLeader)) return true;
+    if (this.hasRole(UserRole.SystemAdmin, UserRole.GroupLeader, UserRole.AttendanceOnly)) return true;
     return !!u.canEditMembers;
   }
 
-  /** Can create events. Admin, GroupLeader, or explicit flag. */
+  /** Can create / edit events. Admin, GroupLeader, AttendanceOnly, or explicit flag. */
   canCreateEvents(): boolean {
     const u = this.currentUser;
     if (!u) return false;
-    if (this.hasRole(UserRole.SystemAdmin, UserRole.GroupLeader)) return true;
+    if (this.hasRole(UserRole.SystemAdmin, UserRole.GroupLeader, UserRole.AttendanceOnly)) return true;
     return !!u.canCreateEvents;
   }
 
