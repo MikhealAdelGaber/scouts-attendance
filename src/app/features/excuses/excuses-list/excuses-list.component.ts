@@ -22,6 +22,7 @@ export class ExcusesListComponent implements OnInit {
   pending: PendingExcuse[] = [];
   pendingLoading = false;
   reviewingId: string | null = null;
+  pendingTroopId = '';   // '' = all troops visible to the user
 
   /** Revoke column only shown to GroupLeader / SystemAdmin */
   get displayedColumns(): string[] {
@@ -108,7 +109,7 @@ export class ExcusesListComponent implements OnInit {
 
   loadPending(): void {
     this.pendingLoading = true;
-    this.pendingExcuseService.getPending().subscribe({
+    this.pendingExcuseService.getPending(this.pendingTroopId || undefined).subscribe({
       next: list => { this.pending = list; this.pendingLoading = false; },
       error: () => { this.pendingLoading = false; }
     });
