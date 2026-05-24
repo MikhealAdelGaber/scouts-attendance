@@ -46,6 +46,11 @@ export class AuthService {
   /** True for SystemAdmin OR GroupLeader — can manage the whole group. */
   isAdmin(): boolean { return this.hasRole(UserRole.SystemAdmin, UserRole.GroupLeader); }
 
+  /** True for SystemAdmin, GroupLeader, OR AttendanceOnly — can review pending excuses. */
+  canReviewPendingExcuses(): boolean {
+    return this.hasRole(UserRole.SystemAdmin, UserRole.GroupLeader, UserRole.AttendanceOnly);
+  }
+
   // ─── Permission helpers (role defaults + flag overrides) ────────────────────
 
   /** Can mark/record attendance. AttendanceOnly role or explicit flag. */

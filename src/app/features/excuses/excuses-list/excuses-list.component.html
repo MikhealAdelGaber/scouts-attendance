@@ -139,7 +139,7 @@
     </mat-tab>
 
     <!-- ══ Tab 2: Pending Approval (admin/leader only) ═════════════════════ -->
-    @if (auth.isAdmin()) {
+    @if (auth.canReviewPendingExcuses()) {
       <mat-tab>
         <ng-template mat-tab-label>
           <mat-icon style="margin-right:6px;font-size:18px">hourglass_empty</mat-icon>

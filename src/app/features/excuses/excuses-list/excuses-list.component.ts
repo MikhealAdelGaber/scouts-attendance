@@ -52,7 +52,7 @@ export class ExcusesListComponent implements OnInit {
       }
     });
 
-    if (this.auth.isAdmin()) {
+    if (this.auth.canReviewPendingExcuses()) {
       this.loadPending();
     }
   }

@@ -61,8 +61,8 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
         this.sidenavOpened = !state.matches;
       });
 
-    // Load pending excuse count for admins/leaders (badge on nav item)
-    if (this.auth.isAdmin()) {
+    // Load pending excuse count for admins/leaders/attendanceOnly (badge on nav item)
+    if (this.auth.canReviewPendingExcuses()) {
       const groupId = this.auth.currentUser?.groupId ?? undefined;
       this.pendingExcuseService.getPendingCount(groupId).subscribe({
         next: count => this.pendingExcuseCount = count,
