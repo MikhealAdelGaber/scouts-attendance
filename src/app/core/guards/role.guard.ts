@@ -17,11 +17,14 @@ export class RoleGuard implements CanActivate {
     if (!roles.length || this.auth.hasRole(...roles)) return true;
 
     this.snack.open(
-      '⛔ Access Denied — you do not have permission to view that page.',
+      'You don\'t have permission to access that page.',
       'Dismiss',
       { duration: 4000, panelClass: ['snack-error'] }
     );
-    this.router.navigate(['/dashboard']);
+
+    // AttendanceOnly users go to /attendance; others go to /dashboard
+    const redirect = this.auth.isAttendanceOnly() ? '/attendance' : '/dashboard';
+    this.router.navigate([redirect]);
     return false;
   }
 }
