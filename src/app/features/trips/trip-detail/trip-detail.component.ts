@@ -37,7 +37,8 @@ export class TripDetailComponent implements OnInit {
 
   // Attendance edited map: memberId → status
   attendanceEdits: Record<string, number> = {};
-  savingAttendance = false;
+  // Per-member saving state (shows spinner on the row being saved)
+  savingMember: Record<string, boolean> = {};
 
   BookingStatus = BookingStatus;
   TripStatus = TripStatus;
@@ -216,20 +217,30 @@ export class TripDetailComponent implements OnInit {
     this.attendanceEdits[memberId] = status;
   }
 
-  saveAttendance(): void {
-    this.savingAttendance = true;
-    const records: TripAttendanceEntryDto[] = Object.entries(this.attendanceEdits)
-      .map(([memberId, status]) => ({ memberId, status, notes: '' }));
+  /** Computed attendance summary across confirmed members. */
+  get attendanceSummary() {
+    const members = this.attendanceMembers();
+    return {
+      present: members.filter(m => this.getAttendanceStatus(m.memberId) === 0).length,
+      late:    members.filter(m => this.getAttendanceStatus(m.memberId) === 2).length,
+      absent:  members.filter(m => this.getAttendanceStatus(m.memberId) === 1).length,
+      excused: members.filter(m => this.getAttendanceStatus(m.memberId) === 3).length
+    };
+  }
 
-    this.tripService.saveAttendance(this.trip.id, { records }).subscribe({
-      next:  () => {
-        this.snack.open('Attendance saved', 'Close', { duration: 3000 });
-        this.savingAttendance = false;
-        this.loadAttendance();
-      },
+  /** Save a single member's attendance immediately on status-button click. */
+  saveOneAttendance(memberId: string, status: number): void {
+    // Optimistic local update
+    this.setAttendanceStatus(memberId, status);
+    this.savingMember[memberId] = true;
+
+    this.tripService.saveAttendance(this.trip.id, {
+      records: [{ memberId, status, notes: '' }]
+    }).subscribe({
+      next:  () => { this.savingMember[memberId] = false; },
       error: () => {
+        this.savingMember[memberId] = false;
         this.snack.open('Failed to save attendance', 'Close', { duration: 3000 });
-        this.savingAttendance = false;
       }
     });
   }

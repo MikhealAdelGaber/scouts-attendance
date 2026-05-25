@@ -231,14 +231,34 @@
 // ─── Attendance ───────────────────────────────────────────────────────────
 .attendance-container { padding: 4px 0; }
 
-.attendance-header {
+// Summary chips row
+.att-summary {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 18px;
 }
 
-.att-hint { margin: 0; font-size: 0.85rem; color: var(--text-secondary); }
+.att-sum-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+
+  mat-icon { font-size: 16px; width: 16px; height: 16px; }
+
+  strong { font-size: 1rem; font-weight: 700; margin-left: 2px; }
+
+  &.present { background: #e8f5e9; color: #388e3c; }
+  &.late    { background: #fff3e0; color: #e65100; }
+  &.absent  { background: #fce4ec; color: #c62828; }
+  &.excused { background: #e3f2fd; color: #1565c0; }
+}
+
+.att-spinner { margin-left: 6px; }
 
 .attendance-list { display: flex; flex-direction: column; gap: 8px; }
 
@@ -275,7 +295,7 @@
   mat-icon { font-size: 18px; width: 18px; height: 18px; }
 }
 
-.save-footer { text-align: right; margin-top: 16px; }
+// .save-footer removed — attendance saves per-member immediately
 
 .empty-state {
   text-align: center;

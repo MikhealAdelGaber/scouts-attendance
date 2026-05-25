@@ -121,23 +121,17 @@
               <span class="sibling-tag" *ngIf="b.isSibling">Sibling</span>
             </div>
             <div class="booking-actions">
-              <!-- GroupLeader / SystemAdmin: interactive paid toggle -->
+              <!-- All roles with CanAccessTrips can toggle paid status -->
               <button mat-icon-button
-                      *ngIf="auth.isAdmin()"
                       [color]="b.isPaid ? 'primary' : ''"
                       (click)="togglePaid(b)"
                       [matTooltip]="b.isPaid ? 'Mark as unpaid' : 'Mark as paid'">
                 <mat-icon>{{ b.isPaid ? 'paid' : 'money_off' }}</mat-icon>
               </button>
-              <!-- AttendanceOnly: read-only paid status icon -->
-              <mat-icon *ngIf="!auth.isAdmin()"
-                        [style.color]="b.isPaid ? '#4caf50' : '#9e9e9e'"
-                        [matTooltip]="b.isPaid ? 'Paid' : 'Unpaid'">
-                {{ b.isPaid ? 'paid' : 'money_off' }}
-              </mat-icon>
               <span class="paid-date" *ngIf="b.isPaid && b.paidAt">
                 {{ b.paidAt | date:'shortDate' }}
               </span>
+              <!-- Cancel booking: GroupLeader / SystemAdmin only -->
               <button mat-icon-button color="warn"
                       (click)="cancelBooking(b)"
                       matTooltip="Cancel booking"
@@ -188,15 +182,28 @@
         </div>
 
         <div *ngIf="attendanceMembers().length > 0">
-          <div class="attendance-header">
-            <p class="att-hint">Mark attendance for all confirmed members, then save.</p>
-            <button mat-raised-button color="primary"
-                    (click)="saveAttendance()"
-                    [disabled]="savingAttendance">
-              <mat-icon>save</mat-icon> Save Attendance
-            </button>
+
+          <!-- Attendance summary row -->
+          <div class="att-summary">
+            <span class="att-sum-chip present">
+              <mat-icon>check_circle</mat-icon>
+              Present <strong>{{ attendanceSummary.present }}</strong>
+            </span>
+            <span class="att-sum-chip late">
+              <mat-icon>schedule</mat-icon>
+              Late <strong>{{ attendanceSummary.late }}</strong>
+            </span>
+            <span class="att-sum-chip absent">
+              <mat-icon>cancel</mat-icon>
+              Absent <strong>{{ attendanceSummary.absent }}</strong>
+            </span>
+            <span class="att-sum-chip excused">
+              <mat-icon>verified</mat-icon>
+              Excused <strong>{{ attendanceSummary.excused }}</strong>
+            </span>
           </div>
 
+          <!-- Member list — each click saves immediately -->
           <div class="attendance-list">
             <div class="att-row" *ngFor="let m of attendanceMembers()">
               <div class="att-member">
@@ -210,21 +217,19 @@
                           [class.selected]="getAttendanceStatus(m.memberId) === s.value"
                           [style.background-color]="getAttendanceStatus(m.memberId) === s.value ? s.color : ''"
                           [matTooltip]="s.label"
-                          (click)="setAttendanceStatus(m.memberId, s.value)">
+                          [disabled]="savingMember[m.memberId]"
+                          (click)="saveOneAttendance(m.memberId, s.value)">
                     <mat-icon>{{ s.icon }}</mat-icon>
                   </button>
                 }
+                <mat-spinner *ngIf="savingMember[m.memberId]"
+                             diameter="20"
+                             class="att-spinner">
+                </mat-spinner>
               </div>
             </div>
           </div>
 
-          <div class="save-footer">
-            <button mat-raised-button color="primary"
-                    (click)="saveAttendance()"
-                    [disabled]="savingAttendance">
-              <mat-icon>save</mat-icon> Save Attendance
-            </button>
-          </div>
         </div>
       </div>
     </mat-tab>
