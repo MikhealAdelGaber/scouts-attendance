@@ -54,7 +54,8 @@ export class UserFormComponent implements OnInit {
       isActive:         [true],
       canTakeAttendance:[false],
       canEditMembers:   [false],
-      canCreateEvents:  [false]
+      canCreateEvents:  [false],
+      canAccessTrips:   [false]
     });
 
     // Pre-fill groupId for non-SystemAdmin editors
@@ -85,7 +86,8 @@ export class UserFormComponent implements OnInit {
           isActive:          u.isActive,
           canTakeAttendance: u.canTakeAttendance,
           canEditMembers:    u.canEditMembers,
-          canCreateEvents:   u.canCreateEvents
+          canCreateEvents:   u.canCreateEvents,
+          canAccessTrips:    u.canAccessTrips
         });
         this.isLoadingData = false;
         this.form.get('username')!.disable();
@@ -133,7 +135,8 @@ export class UserFormComponent implements OnInit {
         isActive:          val.isActive,
         canTakeAttendance: val.canTakeAttendance,
         canEditMembers:    val.canEditMembers,
-        canCreateEvents:   val.canCreateEvents
+        canCreateEvents:   val.canCreateEvents,
+        canAccessTrips:    val.canAccessTrips
       };
       this.userService.update(this.userId, dto).subscribe({
         next: () => {
@@ -156,7 +159,8 @@ export class UserFormComponent implements OnInit {
         troopId:           val.troopId || undefined,
         canTakeAttendance: val.canTakeAttendance,
         canEditMembers:    val.canEditMembers,
-        canCreateEvents:   val.canCreateEvents
+        canCreateEvents:   val.canCreateEvents,
+        canAccessTrips:    val.canAccessTrips
       };
       this.userService.create(dto).subscribe({
         next: () => { this.snack.open('User created', 'Close', { duration: 3000 }); this.router.navigate(['/admin/users']); },

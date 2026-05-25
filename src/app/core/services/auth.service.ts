@@ -82,6 +82,14 @@ export class AuthService {
     return this.hasRole(UserRole.SystemAdmin, UserRole.GroupLeader, UserRole.AttendanceOnly);
   }
 
+  /** Can access the Trips/Camps booking module. SystemAdmin always can; others need the flag. */
+  canAccessTrips(): boolean {
+    const u = this.currentUser;
+    if (!u) return false;
+    if (this.hasRole(UserRole.SystemAdmin)) return true;
+    return !!u.canAccessTrips;
+  }
+
   // ─── Session persistence ─────────────────────────────────────────────────────
 
   private setSession(user: AuthUser): void {

@@ -1,0 +1,245 @@
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { FormControl } from '@angular/forms';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatDialog } from '@angular/material/dialog';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+
+import { TripService } from '../../../core/services/trip.service';
+import { MemberService } from '../../../core/services/member.service';
+import { AuthService } from '../../../core/services/auth.service';
+import {
+  TripDto, TripBookingDto, TripAttendanceDto,
+  BookingStatus, TripStatus, TripAttendanceEntryDto
+} from '../../../core/models/trip.model';
+import { Member } from '../../../core/models/member.model';
+import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog/confirm-dialog.component';
+
+@Component({
+  selector: 'app-trip-detail',
+  templateUrl: './trip-detail.component.html',
+  styleUrls: ['./trip-detail.component.scss']
+})
+export class TripDetailComponent implements OnInit {
+  trip!: TripDto;
+  bookings: TripBookingDto[] = [];
+  attendance: TripAttendanceDto[] = [];
+  loading = true;
+  activeTab = 0;
+
+  // Booking form
+  memberSearch = new FormControl('');
+  memberResults: Member[] = [];
+  selectedMember: Member | null = null;
+  isSibling = false;
+  bookingNotes = '';
+  booking = false;
+
+  // Attendance edited map: memberId → status
+  attendanceEdits: Record<string, number> = {};
+  savingAttendance = false;
+
+  BookingStatus = BookingStatus;
+  TripStatus = TripStatus;
+
+  readonly attendanceStatuses = [
+    { value: 0, label: 'Present',  icon: 'check_circle',   color: '#4caf50' },
+    { value: 1, label: 'Absent',   icon: 'cancel',         color: '#f44336' },
+    { value: 2, label: 'Late',     icon: 'schedule',       color: '#ff9800' },
+    { value: 3, label: 'Excused',  icon: 'verified',       color: '#2196f3' }
+  ];
+
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+    private tripService: TripService,
+    private memberService: MemberService,
+    public auth: AuthService,
+    private snack: MatSnackBar,
+    private dialog: MatDialog
+  ) {}
+
+  ngOnInit(): void {
+    const id = this.route.snapshot.params['id'];
+    this.tripService.getById(id).subscribe({
+      next:  t => { this.trip = t; this.loading = false; this.loadBookings(); },
+      error: () => { this.loading = false; this.router.navigate(['/trips']); }
+    });
+
+    // Member search with debounce
+    this.memberSearch.valueChanges.pipe(debounceTime(300), distinctUntilChanged())
+      .subscribe(q => {
+        if (!q || q.length < 2) { this.memberResults = []; return; }
+        this.memberService.getAll({ search: q, pageSize: 10 }).subscribe(
+          r => this.memberResults = r.items
+        );
+      });
+  }
+
+  loadBookings(): void {
+    this.tripService.getBookings(this.trip.id).subscribe(b => this.bookings = b);
+  }
+
+  loadAttendance(): void {
+    this.tripService.getAttendance(this.trip.id).subscribe(a => {
+      this.attendance = a;
+      // Pre-populate edits from existing records
+      this.attendanceEdits = {};
+      a.forEach(r => this.attendanceEdits[r.memberId] = r.status);
+
+      // Also add confirmed-booked members not yet in attendance
+      this.confirmedBookings.forEach(b => {
+        if (!(b.memberId in this.attendanceEdits))
+          this.attendanceEdits[b.memberId] = 1; // default Absent
+      });
+    });
+  }
+
+  onTabChange(idx: number): void {
+    this.activeTab = idx;
+    if (idx === 1 && this.attendance.length === 0) this.loadAttendance();
+  }
+
+  // ─── Bookings ─────────────────────────────────────────────────────────────
+
+  get confirmedBookings(): TripBookingDto[] {
+    return this.bookings.filter(b => b.bookingStatus === BookingStatus.Confirmed);
+  }
+
+  get waitingBookings(): TripBookingDto[] {
+    return this.bookings.filter(b => b.bookingStatus === BookingStatus.Waiting);
+  }
+
+  selectMember(m: Member): void {
+    this.selectedMember = m;
+    this.memberSearch.setValue(m.fullName, { emitEvent: false });
+    this.memberResults = [];
+  }
+
+  clearMember(): void {
+    this.selectedMember = null;
+    this.memberSearch.setValue('', { emitEvent: false });
+    this.memberResults = [];
+  }
+
+  bookMember(): void {
+    if (!this.selectedMember) return;
+    this.booking = true;
+    this.tripService.bookMember(this.trip.id, {
+      memberId:  this.selectedMember.id,
+      isSibling: this.isSibling,
+      notes:     this.bookingNotes
+    }).subscribe({
+      next:  () => {
+        this.snack.open('Member booked successfully', 'Close', { duration: 3000 });
+        this.booking = false;
+        this.clearMember();
+        this.isSibling = false;
+        this.bookingNotes = '';
+        this.loadBookings();
+        // Reload trip to update counts
+        this.tripService.getById(this.trip.id).subscribe(t => this.trip = t);
+      },
+      error: (err) => {
+        const msg = err?.error?.message || 'Failed to book member';
+        this.snack.open(msg, 'Close', { duration: 4000 });
+        this.booking = false;
+      }
+    });
+  }
+
+  cancelBooking(b: TripBookingDto): void {
+    const ref = this.dialog.open(ConfirmDialogComponent, {
+      data: {
+        title: 'Cancel Booking',
+        message: `Cancel booking for ${b.memberName}?`
+          + (b.bookingStatus === BookingStatus.Confirmed && this.waitingBookings.length > 0
+            ? ' The first person on the waiting list will be automatically confirmed.' : '')
+      }
+    });
+    ref.afterClosed().subscribe(ok => {
+      if (!ok) return;
+      this.tripService.cancelBooking(this.trip.id, b.id).subscribe({
+        next:  () => {
+          this.snack.open('Booking cancelled', 'Close', { duration: 3000 });
+          this.loadBookings();
+          this.tripService.getById(this.trip.id).subscribe(t => this.trip = t);
+        },
+        error: () => this.snack.open('Failed to cancel booking', 'Close', { duration: 3000 })
+      });
+    });
+  }
+
+  togglePaid(b: TripBookingDto): void {
+    this.tripService.markPaid(this.trip.id, b.id).subscribe({
+      next:  updated => {
+        const idx = this.bookings.findIndex(x => x.id === b.id);
+        if (idx >= 0) this.bookings[idx] = updated;
+        this.snack.open(updated.isPaid ? 'Marked as paid' : 'Marked as unpaid', 'Close', { duration: 2000 });
+      },
+      error: () => this.snack.open('Failed to update payment', 'Close', { duration: 3000 })
+    });
+  }
+
+  totalCollected(): number {
+    return this.confirmedBookings
+      .filter(b => b.isPaid)
+      .reduce((sum, b) => sum + b.amountDue, 0);
+  }
+
+  totalExpected(): number {
+    return this.confirmedBookings.reduce((sum, b) => sum + b.amountDue, 0);
+  }
+
+  // ─── Attendance ───────────────────────────────────────────────────────────
+
+  attendanceMembers(): Array<{ memberId: string; memberName: string; troopName: string }> {
+    // Merge confirmed bookings + existing attendance records for display
+    const map = new Map<string, { memberId: string; memberName: string; troopName: string }>();
+    this.confirmedBookings.forEach(b => map.set(b.memberId, {
+      memberId: b.memberId, memberName: b.memberName, troopName: b.troopName
+    }));
+    this.attendance.forEach(a => map.set(a.memberId, {
+      memberId: a.memberId, memberName: a.memberName, troopName: a.troopName
+    }));
+    return Array.from(map.values());
+  }
+
+  getAttendanceStatus(memberId: string): number {
+    return this.attendanceEdits[memberId] ?? 1;
+  }
+
+  setAttendanceStatus(memberId: string, status: number): void {
+    this.attendanceEdits[memberId] = status;
+  }
+
+  saveAttendance(): void {
+    this.savingAttendance = true;
+    const records: TripAttendanceEntryDto[] = Object.entries(this.attendanceEdits)
+      .map(([memberId, status]) => ({ memberId, status, notes: '' }));
+
+    this.tripService.saveAttendance(this.trip.id, { records }).subscribe({
+      next:  () => {
+        this.snack.open('Attendance saved', 'Close', { duration: 3000 });
+        this.savingAttendance = false;
+        this.loadAttendance();
+      },
+      error: () => {
+        this.snack.open('Failed to save attendance', 'Close', { duration: 3000 });
+        this.savingAttendance = false;
+      }
+    });
+  }
+
+  // ─── Helpers ──────────────────────────────────────────────────────────────
+
+  statusLabel(status: TripStatus): string {
+    return status === TripStatus.Open ? 'Open'
+         : status === TripStatus.Full ? 'Full'
+         : 'Cancelled';
+  }
+
+  attendanceStatusInfo(status: number) {
+    return this.attendanceStatuses.find(s => s.value === status) ?? this.attendanceStatuses[1];
+  }
+}

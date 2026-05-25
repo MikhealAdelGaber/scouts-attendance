@@ -1,0 +1,225 @@
+<app-loading-spinner *ngIf="loading"></app-loading-spinner>
+
+<div class="page-container" *ngIf="!loading && trip">
+  <!-- Header -->
+  <div class="page-header">
+    <button mat-icon-button routerLink="/trips" matTooltip="Back to trips">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <div class="header-info">
+      <h1 class="trip-title">{{ trip.name }}</h1>
+      <div class="trip-meta">
+        <span class="meta-chip"><mat-icon>place</mat-icon>{{ trip.location }}</span>
+        <span class="meta-chip"><mat-icon>calendar_today</mat-icon>{{ trip.tripDate | date:'longDate' }}</span>
+        <span class="status-chip status-{{ trip.status }}">{{ statusLabel(trip.status) }}</span>
+      </div>
+    </div>
+    <div class="header-actions" *ngIf="auth.isAdmin()">
+      <button mat-icon-button [routerLink]="['/trips', trip.id, 'edit']" matTooltip="Edit trip">
+        <mat-icon>edit</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <!-- Summary cards -->
+  <div class="summary-row">
+    <div class="summary-card">
+      <mat-icon>people</mat-icon>
+      <div>
+        <div class="summary-value">{{ trip.confirmedCount }}<span *ngIf="trip.maxCapacity"> / {{ trip.maxCapacity }}</span></div>
+        <div class="summary-label">Confirmed</div>
+      </div>
+    </div>
+    <div class="summary-card accent" *ngIf="trip.waitingCount > 0">
+      <mat-icon>hourglass_top</mat-icon>
+      <div>
+        <div class="summary-value">{{ trip.waitingCount }}</div>
+        <div class="summary-label">Waiting</div>
+      </div>
+    </div>
+    <div class="summary-card green">
+      <mat-icon>payments</mat-icon>
+      <div>
+        <div class="summary-value">{{ totalCollected() | number:'1.0-0' }}</div>
+        <div class="summary-label">Collected / {{ totalExpected() | number:'1.0-0' }} EGP</div>
+      </div>
+    </div>
+    <div class="summary-card purple" *ngIf="trip.hasPoints && trip.pointValue">
+      <mat-icon>star</mat-icon>
+      <div>
+        <div class="summary-value">{{ trip.pointValue }}</div>
+        <div class="summary-label">Points per member</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <mat-tab-group (selectedIndexChange)="onTabChange($event)" class="detail-tabs">
+
+    <!-- ── Bookings tab ──────────────────────────────────────────────────── -->
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <mat-icon>book_online</mat-icon>&nbsp;Bookings
+        <span class="tab-badge" *ngIf="confirmedBookings.length">{{ confirmedBookings.length }}</span>
+      </ng-template>
+
+      <!-- Add booking form (admin only) -->
+      <div class="booking-form-card" *ngIf="auth.isAdmin() && trip.status !== TripStatus.Cancelled">
+        <h3><mat-icon>person_add</mat-icon> Add Booking</h3>
+        <div class="booking-inputs">
+          <div class="member-search-wrap">
+            <mat-form-field appearance="outline">
+              <mat-label>Search member</mat-label>
+              <mat-icon matPrefix>search</mat-icon>
+              <input matInput [formControl]="memberSearch" autocomplete="off">
+              <button matSuffix mat-icon-button *ngIf="selectedMember" (click)="clearMember()">
+                <mat-icon>close</mat-icon>
+              </button>
+            </mat-form-field>
+            <!-- Autocomplete dropdown -->
+            <div class="member-dropdown" *ngIf="memberResults.length > 0">
+              <div class="member-option" *ngFor="let m of memberResults" (click)="selectMember(m)">
+                <span class="member-name">{{ m.fullName }}</span>
+                <span class="member-troop">{{ m.troopName }}</span>
+              </div>
+            </div>
+          </div>
+
+          <mat-checkbox [(ngModel)]="isSibling">Sibling price
+            ({{ trip.siblingPrice | number:'1.0-0' }} EGP)
+          </mat-checkbox>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Notes</mat-label>
+            <input matInput [(ngModel)]="bookingNotes">
+          </mat-form-field>
+
+          <button mat-raised-button color="primary"
+                  [disabled]="!selectedMember || booking"
+                  (click)="bookMember()">
+            <mat-icon>add</mat-icon>
+            {{ trip.maxCapacity && trip.confirmedCount >= trip.maxCapacity ? 'Add to Waiting List' : 'Book Member' }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Confirmed bookings -->
+      <div class="bookings-section">
+        <h3 class="section-title"><mat-icon>check_circle</mat-icon> Confirmed ({{ confirmedBookings.length }})</h3>
+        <div class="empty-state" *ngIf="confirmedBookings.length === 0">
+          <p>No confirmed bookings yet</p>
+        </div>
+        <div class="booking-list" *ngIf="confirmedBookings.length > 0">
+          <div class="booking-row" *ngFor="let b of confirmedBookings">
+            <div class="booking-info">
+              <span class="member-name">{{ b.memberName }}</span>
+              <span class="troop-name">{{ b.troopName }}</span>
+              <span class="booking-notes" *ngIf="b.notes">{{ b.notes }}</span>
+            </div>
+            <div class="booking-amount">
+              <span class="amount">{{ b.amountDue | number:'1.0-0' }} EGP</span>
+              <span class="sibling-tag" *ngIf="b.isSibling">Sibling</span>
+            </div>
+            <div class="booking-actions">
+              <button mat-icon-button
+                      [color]="b.isPaid ? 'primary' : ''"
+                      (click)="togglePaid(b)"
+                      [matTooltip]="b.isPaid ? 'Mark as unpaid' : 'Mark as paid'">
+                <mat-icon>{{ b.isPaid ? 'paid' : 'money_off' }}</mat-icon>
+              </button>
+              <span class="paid-date" *ngIf="b.isPaid && b.paidAt">
+                {{ b.paidAt | date:'shortDate' }}
+              </span>
+              <button mat-icon-button color="warn"
+                      (click)="cancelBooking(b)"
+                      matTooltip="Cancel booking"
+                      *ngIf="auth.isAdmin()">
+                <mat-icon>cancel</mat-icon>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Waiting list -->
+      <div class="bookings-section" *ngIf="waitingBookings.length > 0">
+        <h3 class="section-title waiting"><mat-icon>hourglass_top</mat-icon> Waiting List ({{ waitingBookings.length }})</h3>
+        <div class="booking-list">
+          <div class="booking-row waiting-row" *ngFor="let b of waitingBookings; let i = index">
+            <div class="waiting-pos">#{{ i + 1 }}</div>
+            <div class="booking-info">
+              <span class="member-name">{{ b.memberName }}</span>
+              <span class="troop-name">{{ b.troopName }}</span>
+            </div>
+            <div class="booking-amount">
+              <span class="amount">{{ b.amountDue | number:'1.0-0' }} EGP</span>
+            </div>
+            <div class="booking-actions">
+              <button mat-icon-button color="warn"
+                      (click)="cancelBooking(b)"
+                      matTooltip="Remove from waiting list"
+                      *ngIf="auth.isAdmin()">
+                <mat-icon>cancel</mat-icon>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </mat-tab>
+
+    <!-- ── Attendance tab ────────────────────────────────────────────────── -->
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <mat-icon>fact_check</mat-icon>&nbsp;Attendance
+      </ng-template>
+
+      <div class="attendance-container">
+        <div *ngIf="attendanceMembers().length === 0" class="empty-state">
+          <mat-icon>people_outline</mat-icon>
+          <p>No confirmed members yet. Book members first.</p>
+        </div>
+
+        <div *ngIf="attendanceMembers().length > 0">
+          <div class="attendance-header">
+            <p class="att-hint">Mark attendance for all confirmed members, then save.</p>
+            <button mat-raised-button color="primary"
+                    (click)="saveAttendance()"
+                    [disabled]="savingAttendance">
+              <mat-icon>save</mat-icon> Save Attendance
+            </button>
+          </div>
+
+          <div class="attendance-list">
+            <div class="att-row" *ngFor="let m of attendanceMembers()">
+              <div class="att-member">
+                <span class="att-name">{{ m.memberName }}</span>
+                <span class="att-troop">{{ m.troopName }}</span>
+              </div>
+              <div class="att-buttons">
+                @for (s of attendanceStatuses; track s.value) {
+                  <button mat-mini-fab
+                          class="att-btn"
+                          [class.selected]="getAttendanceStatus(m.memberId) === s.value"
+                          [style.background-color]="getAttendanceStatus(m.memberId) === s.value ? s.color : ''"
+                          [matTooltip]="s.label"
+                          (click)="setAttendanceStatus(m.memberId, s.value)">
+                    <mat-icon>{{ s.icon }}</mat-icon>
+                  </button>
+                }
+              </div>
+            </div>
+          </div>
+
+          <div class="save-footer">
+            <button mat-raised-button color="primary"
+                    (click)="saveAttendance()"
+                    [disabled]="savingAttendance">
+              <mat-icon>save</mat-icon> Save Attendance
+            </button>
+          </div>
+        </div>
+      </div>
+    </mat-tab>
+
+  </mat-tab-group>
+</div>

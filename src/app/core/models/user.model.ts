@@ -17,6 +17,7 @@ export interface AuthUser {
   canTakeAttendance?: boolean;
   canEditMembers?: boolean;
   canCreateEvents?: boolean;
+  canAccessTrips?: boolean;
 }
 
 export interface LoginRequest { username: string; password: string; }
@@ -37,6 +38,7 @@ export interface UserDto {
   canTakeAttendance: boolean;
   canEditMembers: boolean;
   canCreateEvents: boolean;
+  canAccessTrips: boolean;
   createdAt: string;
 }
 
@@ -50,6 +52,7 @@ export interface CreateUserDto {
   canTakeAttendance: boolean;
   canEditMembers: boolean;
   canCreateEvents: boolean;
+  canAccessTrips: boolean;
 }
 
 export interface UpdateUserDto {
@@ -60,6 +63,7 @@ export interface UpdateUserDto {
   canTakeAttendance: boolean;
   canEditMembers: boolean;
   canCreateEvents: boolean;
+  canAccessTrips: boolean;
 }
 
 export interface UserLeaderDto {

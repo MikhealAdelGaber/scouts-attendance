@@ -3,6 +3,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { MainLayoutComponent } from './layout/main-layout/main-layout.component';
 import { AuthGuard } from './core/guards/auth.guard';
 import { RoleGuard } from './core/guards/role.guard';
+import { canAccessTripsGuard } from './core/guards/can-access-trips.guard';
 import { UserRole } from './core/models/user.model';
 
 const routes: Routes = [
@@ -84,6 +85,11 @@ const routes: Routes = [
         canActivate: [RoleGuard],
         data: { roles: [UserRole.SystemAdmin, UserRole.GroupLeader, UserRole.AttendanceOnly] },
         loadChildren: () => import('./features/reports/reports.module').then(m => m.ReportsModule)
+      },
+      {
+        path: 'trips',
+        canActivate: [canAccessTripsGuard],
+        loadChildren: () => import('./features/trips/trips.module').then(m => m.TripsModule)
       }
     ]
   },

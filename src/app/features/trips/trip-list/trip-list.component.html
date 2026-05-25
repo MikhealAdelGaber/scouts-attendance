@@ -1,0 +1,78 @@
+<div class="page-container">
+  <div class="page-header">
+    <div class="header-left">
+      <mat-icon class="page-icon">luggage</mat-icon>
+      <h1 class="page-title">Trips &amp; Camps</h1>
+    </div>
+    <button mat-raised-button color="primary" routerLink="new"
+            *ngIf="auth.isAdmin()">
+      <mat-icon>add</mat-icon> New Trip
+    </button>
+  </div>
+
+  <app-loading-spinner *ngIf="loading"></app-loading-spinner>
+
+  <div *ngIf="!loading">
+    <div *ngIf="trips.length === 0" class="empty-state">
+      <mat-icon>luggage</mat-icon>
+      <p>No trips yet. Create the first one!</p>
+    </div>
+
+    <div class="trips-grid" *ngIf="trips.length > 0">
+      <mat-card class="trip-card" *ngFor="let trip of trips"
+                (click)="openDetail(trip.id)">
+        <mat-card-header>
+          <mat-card-title>{{ trip.name }}</mat-card-title>
+          <mat-card-subtitle>
+            <mat-icon class="meta-icon">place</mat-icon> {{ trip.location }}
+          </mat-card-subtitle>
+          <span class="status-chip" [ngClass]="'status-' + trip.status">
+            {{ statusLabel(trip.status) }}
+          </span>
+        </mat-card-header>
+
+        <mat-card-content>
+          <p class="trip-desc" *ngIf="trip.description">{{ trip.description }}</p>
+
+          <div class="trip-meta">
+            <div class="meta-item">
+              <mat-icon>calendar_today</mat-icon>
+              <span>{{ trip.tripDate | date:'mediumDate' }}</span>
+            </div>
+            <div class="meta-item">
+              <mat-icon>people</mat-icon>
+              <span>{{ capacityText(trip) }}</span>
+              <span class="waiting-badge" *ngIf="trip.waitingCount > 0">
+                +{{ trip.waitingCount }} waiting
+              </span>
+            </div>
+            <div class="meta-item">
+              <mat-icon>payments</mat-icon>
+              <span>EGP {{ trip.price | number:'1.0-0' }}</span>
+              <span class="sibling-price" *ngIf="trip.siblingPrice !== trip.price">
+                (Sibling: {{ trip.siblingPrice | number:'1.0-0' }})
+              </span>
+            </div>
+            <div class="meta-item" *ngIf="trip.hasPoints && trip.pointValue">
+              <mat-icon>star</mat-icon>
+              <span>{{ trip.pointValue }} pts</span>
+            </div>
+          </div>
+        </mat-card-content>
+
+        <mat-card-actions *ngIf="auth.isAdmin()" (click)="$event.stopPropagation()">
+          <button mat-icon-button color="primary"
+                  [routerLink]="[trip.id, 'edit']"
+                  matTooltip="Edit trip">
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button mat-icon-button color="warn"
+                  (click)="confirmDelete(trip)"
+                  matTooltip="Delete trip">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </mat-card-actions>
+      </mat-card>
+    </div>
+  </div>
+</div>

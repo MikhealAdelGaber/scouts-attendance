@@ -12,6 +12,8 @@ interface NavItem {
   icon: string;
   route: string;
   roles?: UserRole[];
+  /** Extra runtime permission check — evaluated at render time via isVisible(). */
+  permissionKey?: string;
 }
 
 @Component({
@@ -42,6 +44,7 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
     { label: 'Leaderboard', icon: 'leaderboard', route: '/leaderboard', roles: [UserRole.SystemAdmin, UserRole.GroupLeader] },
     { label: 'Exam Scores', icon: 'school',      route: '/exam-scores', roles: [UserRole.SystemAdmin, UserRole.GroupLeader] },
     { label: 'Reports',     icon: 'analytics',   route: '/reports',     roles: [UserRole.SystemAdmin, UserRole.GroupLeader, UserRole.AttendanceOnly] },
+    { label: 'Trips & Camps', icon: 'luggage',   route: '/trips',       permissionKey: 'canAccessTrips' },
   ];
 
   constructor(
@@ -73,6 +76,7 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void { this.bpSub?.unsubscribe(); }
 
   isVisible(item: NavItem): boolean {
+    if (item.permissionKey === 'canAccessTrips') return this.auth.canAccessTrips();
     if (!item.roles) return true;
     return this.auth.hasRole(...item.roles);
   }
