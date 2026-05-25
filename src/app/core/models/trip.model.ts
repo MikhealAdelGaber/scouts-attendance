@@ -38,6 +38,8 @@ export interface CreateTripDto {
   maxCapacity?: number | null;
   hasPoints:    boolean;
   pointValue?:  number | null;
+  /** SystemAdmin only: the group this trip belongs to. */
+  groupId?:     string | null;
 }
 
 export interface UpdateTripDto {
@@ -51,16 +53,19 @@ export interface UpdateTripDto {
   hasPoints:    boolean;
   pointValue?:  number | null;
   status:       TripStatus;
+  /** SystemAdmin only: re-assign to a different group. */
+  groupId?:     string | null;
 }
 
 export interface TripBookingDto {
   id:            string;
   tripId:        string;
-  tripName:      string;
   memberId:      string;
   memberName:    string;
   troopName:     string;
+  memberCustomId:number;
   bookingStatus: BookingStatus;
+  statusName:    string;
   isSibling:     boolean;
   amountDue:     number;
   isPaid:        boolean;

@@ -66,13 +66,16 @@ export class TripDetailComponent implements OnInit {
       error: () => { this.loading = false; this.router.navigate(['/trips']); }
     });
 
-    // Member search with debounce
+    // Member search with debounce — scoped to trip's group (Bug 4 fix)
     this.memberSearch.valueChanges.pipe(debounceTime(300), distinctUntilChanged())
       .subscribe(q => {
         if (!q || q.length < 2) { this.memberResults = []; return; }
-        this.memberService.getAll({ search: q, pageSize: 10 }).subscribe(
-          r => this.memberResults = r.items
-        );
+        // Always filter by the trip's groupId so only group-members are shown
+        this.memberService.getAll({
+          search:   q,
+          pageSize: 15,
+          groupId:  this.trip?.groupId   // scopes to the trip's group
+        }).subscribe(r => this.memberResults = r.items);
       });
   }
 

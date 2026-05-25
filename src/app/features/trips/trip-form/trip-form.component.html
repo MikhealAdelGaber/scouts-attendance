@@ -34,6 +34,19 @@
                     placeholder="Optional trip description"></textarea>
         </mat-form-field>
 
+        <!-- Group (SystemAdmin only — non-admins get GroupId auto-set from JWT) -->
+        <mat-form-field appearance="outline" class="full-width" *ngIf="auth.isSystemAdmin()">
+          <mat-label>Group <span style="color:#f44336">*</span></mat-label>
+          <mat-icon matPrefix>group_work</mat-icon>
+          <mat-select formControlName="groupId">
+            <mat-option [value]="null">— Select a group —</mat-option>
+            @for (g of groups; track g.id) {
+              <mat-option [value]="g.id">{{ g.name }}</mat-option>
+            }
+          </mat-select>
+          <mat-hint>This trip will be visible to all users in the selected group</mat-hint>
+        </mat-form-field>
+
         <!-- Date -->
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Trip Date</mat-label>

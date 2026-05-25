@@ -3,7 +3,10 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { TripService } from '../../../core/services/trip.service';
+import { GroupService } from '../../../core/services/group.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { TripStatus } from '../../../core/models/trip.model';
+import { Group } from '../../../core/models/group.model';
 
 @Component({
   selector: 'app-trip-form',
@@ -15,6 +18,7 @@ export class TripFormComponent implements OnInit {
   loading  = false;
   isEdit   = false;
   tripId   = '';
+  groups: Group[] = [];
   TripStatus = TripStatus;
 
   readonly statusOptions = [
@@ -26,6 +30,8 @@ export class TripFormComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private tripService: TripService,
+    private groupService: GroupService,
+    public auth: AuthService,
     private router: Router,
     private route: ActivatedRoute,
     private snack: MatSnackBar
@@ -42,13 +48,19 @@ export class TripFormComponent implements OnInit {
       maxCapacity:  [null],
       hasPoints:    [false],
       pointValue:   [null],
-      status:       [TripStatus.Open]
+      status:       [TripStatus.Open],
+      groupId:      [null]  // required for SystemAdmin only (validated in submit)
     });
 
     // When hasPoints is toggled off, clear pointValue
     this.form.get('hasPoints')!.valueChanges.subscribe(has => {
       if (!has) this.form.patchValue({ pointValue: null });
     });
+
+    // Load groups for SystemAdmin group picker
+    if (this.auth.isSystemAdmin()) {
+      this.groupService.getAll().subscribe(g => this.groups = g);
+    }
 
     this.tripId = this.route.snapshot.params['id'];
     if (this.tripId) {
@@ -64,7 +76,8 @@ export class TripFormComponent implements OnInit {
           maxCapacity:  t.maxCapacity,
           hasPoints:    t.hasPoints,
           pointValue:   t.pointValue,
-          status:       t.status
+          status:       t.status,
+          groupId:      t.groupId
         });
       });
     }
@@ -72,45 +85,52 @@ export class TripFormComponent implements OnInit {
 
   submit(): void {
     if (this.form.invalid) return;
-    this.loading = true;
     const val = this.form.value;
+
+    // SystemAdmin must pick a group
+    if (this.auth.isSystemAdmin() && !val.groupId) {
+      this.snack.open('Please select a group for this trip.', 'Close', { duration: 4000 });
+      return;
+    }
+
+    this.loading = true;
 
     const tripDate = val.tripDate instanceof Date
       ? val.tripDate.toISOString()
       : new Date(val.tripDate).toISOString();
 
+    const base = {
+      name:         val.name,
+      description:  val.description ?? '',
+      location:     val.location,
+      tripDate,
+      price:        val.price,
+      siblingPrice: val.siblingPrice,
+      maxCapacity:  val.maxCapacity || null,
+      hasPoints:    val.hasPoints,
+      pointValue:   val.hasPoints ? val.pointValue : null,
+      // SystemAdmin: send groupId so backend can scope correctly
+      groupId:      this.auth.isSystemAdmin() ? val.groupId : undefined
+    };
+
     if (this.isEdit) {
-      const dto = {
-        name:         val.name,
-        description:  val.description ?? '',
-        location:     val.location,
-        tripDate,
-        price:        val.price,
-        siblingPrice: val.siblingPrice,
-        maxCapacity:  val.maxCapacity || null,
-        hasPoints:    val.hasPoints,
-        pointValue:   val.hasPoints ? val.pointValue : null,
-        status:       val.status
-      };
+      const dto = { ...base, status: val.status };
       this.tripService.update(this.tripId, dto).subscribe({
         next:  () => { this.snack.open('Trip updated', 'Close', { duration: 3000 }); this.router.navigate(['/trips', this.tripId]); },
-        error: () => { this.snack.open('Failed to update trip', 'Close', { duration: 3000 }); this.loading = false; }
+        error: (err) => {
+          const msg = err?.error?.message || 'Failed to update trip';
+          this.snack.open(msg, 'Close', { duration: 4000 });
+          this.loading = false;
+        }
       });
     } else {
-      const dto = {
-        name:         val.name,
-        description:  val.description ?? '',
-        location:     val.location,
-        tripDate,
-        price:        val.price,
-        siblingPrice: val.siblingPrice,
-        maxCapacity:  val.maxCapacity || null,
-        hasPoints:    val.hasPoints,
-        pointValue:   val.hasPoints ? val.pointValue : null
-      };
-      this.tripService.create(dto).subscribe({
+      this.tripService.create(base).subscribe({
         next:  t  => { this.snack.open('Trip created', 'Close', { duration: 3000 }); this.router.navigate(['/trips', t.id]); },
-        error: () => { this.snack.open('Failed to create trip', 'Close', { duration: 3000 }); this.loading = false; }
+        error: (err) => {
+          const msg = err?.error?.message || 'Failed to create trip';
+          this.snack.open(msg, 'Close', { duration: 4000 });
+          this.loading = false;
+        }
       });
     }
   }

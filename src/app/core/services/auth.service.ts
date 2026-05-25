@@ -93,6 +93,9 @@ export class AuthService {
   // ─── Session persistence ─────────────────────────────────────────────────────
 
   private setSession(user: AuthUser): void {
+    // Enrich with JWT claims so permission flags are always current,
+    // even if the backend response pre-dates the addition of those fields.
+    this.enrichFromJwt(user);
     localStorage.setItem(this.TOKEN_KEY, user.token);
     localStorage.setItem(this.USER_KEY, JSON.stringify(user));
     this.currentUserSubject.next(user);
@@ -101,7 +104,47 @@ export class AuthService {
   private loadUser(): AuthUser | null {
     const raw = localStorage.getItem(this.USER_KEY);
     if (!raw) return null;
-    try { return JSON.parse(raw); } catch { return null; }
+    try {
+      const user: AuthUser = JSON.parse(raw);
+      // Re-enrich on every load: covers sessions stored before permissions
+      // were added to TokenResponseDto (old cached tokens get flags from JWT).
+      this.enrichFromJwt(user);
+      return user;
+    } catch { return null; }
+  }
+
+  /**
+   * Decode the JWT payload and back-fill any permission flags that the
+   * TokenResponseDto may not have included (older tokens / older backend).
+   * JWT claims are the authoritative source; DTO values take priority when
+   * they are explicitly set (non-undefined).
+   */
+  private enrichFromJwt(user: AuthUser): void {
+    if (!user.token) return;
+    try {
+      const parts   = user.token.split('.');
+      if (parts.length !== 3) return;
+      const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+
+      const parseBool = (v: unknown) =>
+        v === true || v === 'true';
+
+      // Only overwrite if the DTO value is still undefined (new backend always sets it)
+      if (user.canAccessTrips    === undefined)
+        user.canAccessTrips    = parseBool(payload['canAccessTrips']);
+      if (user.canTakeAttendance === undefined)
+        user.canTakeAttendance = parseBool(payload['canTakeAttendance']);
+      if (user.canEditMembers    === undefined)
+        user.canEditMembers    = parseBool(payload['canEditMembers']);
+      if (user.canCreateEvents   === undefined)
+        user.canCreateEvents   = parseBool(payload['canCreateEvents']);
+
+      // Always sync canAccessTrips from JWT (most up-to-date source after login)
+      user.canAccessTrips    = parseBool(payload['canAccessTrips']);
+      user.canTakeAttendance = parseBool(payload['canTakeAttendance']);
+      user.canEditMembers    = parseBool(payload['canEditMembers']);
+      user.canCreateEvents   = parseBool(payload['canCreateEvents']);
+    } catch { /* malformed JWT — leave flags as-is */ }
   }
 
   private isTokenExpired(): boolean {
