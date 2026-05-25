@@ -63,8 +63,8 @@
         <span class="tab-badge" *ngIf="confirmedBookings.length">{{ confirmedBookings.length }}</span>
       </ng-template>
 
-      <!-- Add booking form (admin only) -->
-      <div class="booking-form-card" *ngIf="auth.isAdmin() && trip.status !== TripStatus.Cancelled">
+      <!-- Add booking form (all roles with CanAccessTrips) -->
+      <div class="booking-form-card" *ngIf="auth.canAccessTrips() && trip.status !== TripStatus.Cancelled">
         <h3><mat-icon>person_add</mat-icon> Add Booking</h3>
         <div class="booking-inputs">
           <div class="member-search-wrap">
@@ -121,12 +121,20 @@
               <span class="sibling-tag" *ngIf="b.isSibling">Sibling</span>
             </div>
             <div class="booking-actions">
+              <!-- GroupLeader / SystemAdmin: interactive paid toggle -->
               <button mat-icon-button
+                      *ngIf="auth.isAdmin()"
                       [color]="b.isPaid ? 'primary' : ''"
                       (click)="togglePaid(b)"
                       [matTooltip]="b.isPaid ? 'Mark as unpaid' : 'Mark as paid'">
                 <mat-icon>{{ b.isPaid ? 'paid' : 'money_off' }}</mat-icon>
               </button>
+              <!-- AttendanceOnly: read-only paid status icon -->
+              <mat-icon *ngIf="!auth.isAdmin()"
+                        [style.color]="b.isPaid ? '#4caf50' : '#9e9e9e'"
+                        [matTooltip]="b.isPaid ? 'Paid' : 'Unpaid'">
+                {{ b.isPaid ? 'paid' : 'money_off' }}
+              </mat-icon>
               <span class="paid-date" *ngIf="b.isPaid && b.paidAt">
                 {{ b.paidAt | date:'shortDate' }}
               </span>
