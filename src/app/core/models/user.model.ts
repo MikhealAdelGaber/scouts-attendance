@@ -68,3 +68,7 @@ export interface UserLeaderDto {
   email: string;
   display: string;
 }
+
+export interface AdminChangePasswordDto {
+  newPassword: string;
+}

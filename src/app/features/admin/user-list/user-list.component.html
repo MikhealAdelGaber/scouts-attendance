@@ -17,7 +17,7 @@
           <ng-container matColumnDef="username">
             <th mat-header-cell *matHeaderCellDef>Username</th>
             <td mat-cell *matCellDef="let u">
-              <strong>{{ u.username }}</strong>
+              <strong [style.color]="u.isActive ? 'inherit' : '#9e9e9e'">{{ u.username }}</strong>
             </td>
           </ng-container>
 
@@ -85,7 +85,9 @@
           <ng-container matColumnDef="status">
             <th mat-header-cell *matHeaderCellDef>Status</th>
             <td mat-cell *matCellDef="let u">
-              <mat-chip [style.background]="u.isActive ? '#4caf50' : '#9e9e9e'" style="color:white;font-size:0.75rem">
+              <mat-chip
+                [style.background]="u.isActive ? '#4caf50' : '#f44336'"
+                style="color:white;font-size:0.75rem;font-weight:600">
                 {{ u.isActive ? 'Active' : 'Inactive' }}
               </mat-chip>
             </td>
@@ -94,10 +96,30 @@
           <!-- Actions -->
           <ng-container matColumnDef="actions">
             <th mat-header-cell *matHeaderCellDef></th>
-            <td mat-cell *matCellDef="let u">
+            <td mat-cell *matCellDef="let u" style="white-space:nowrap">
+
+              <!-- Change Password -->
+              <button mat-icon-button color="accent"
+                (click)="openChangePassword(u)"
+                matTooltip="Change Password">
+                <mat-icon>lock_reset</mat-icon>
+              </button>
+
+              <!-- Activate / Deactivate (not own account) -->
+              <button mat-icon-button
+                [color]="u.isActive ? 'warn' : 'primary'"
+                (click)="toggleStatus(u)"
+                [disabled]="isOwnAccount(u)"
+                [matTooltip]="isOwnAccount(u) ? 'Cannot change own account status' : (u.isActive ? 'Deactivate' : 'Activate')">
+                <mat-icon>{{ u.isActive ? 'person_off' : 'how_to_reg' }}</mat-icon>
+              </button>
+
+              <!-- Edit -->
               <button mat-icon-button [routerLink]="[u.id, 'edit']" matTooltip="Edit user">
                 <mat-icon>edit</mat-icon>
               </button>
+
+              <!-- Delete -->
               <button mat-icon-button color="warn" (click)="delete(u)" matTooltip="Delete user">
                 <mat-icon>delete</mat-icon>
               </button>
@@ -105,7 +127,8 @@
           </ng-container>
 
           <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"
+              [class.inactive-row]="!row.isActive"></tr>
           <tr class="mat-row" *matNoDataRow>
             <td class="mat-cell text-center" [attr.colspan]="displayedColumns.length" style="padding:32px">
               No users found.
