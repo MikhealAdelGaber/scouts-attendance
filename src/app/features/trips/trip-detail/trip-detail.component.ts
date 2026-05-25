@@ -39,6 +39,7 @@ export class TripDetailComponent implements OnInit {
   attendanceEdits: Record<string, number> = {};
   // Per-member saving state (shows spinner on the row being saved)
   savingMember: Record<string, boolean> = {};
+  exporting = false;
 
   BookingStatus = BookingStatus;
   TripStatus = TripStatus;
@@ -255,5 +256,48 @@ export class TripDetailComponent implements OnInit {
 
   attendanceStatusInfo(status: number) {
     return this.attendanceStatuses.find(s => s.value === status) ?? this.attendanceStatuses[1];
+  }
+
+  /**
+   * Returns the CSS class to highlight the correct status button.
+   * Uses per-status !important classes so they override mat-mini-fab defaults.
+   */
+  getAttendanceBtnClass(memberId: string, statusValue: number): string {
+    if (this.getAttendanceStatus(memberId) !== statusValue) return '';
+    const map: Record<number, string> = { 0: 'att-present', 1: 'att-absent', 2: 'att-late', 3: 'att-excused' };
+    return map[statusValue] ?? '';
+  }
+
+  // ─── Export ───────────────────────────────────────────────────────────────
+
+  private downloadBlob(blob: Blob, filename: string): void {
+    const url = URL.createObjectURL(blob);
+    const a   = document.createElement('a');
+    a.href     = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  private exportFilename(ext: string): string {
+    const safe = this.trip.name.replace(/[^a-zA-Z0-9؀-ۿ]/g, '_');
+    const date = new Date(this.trip.tripDate).toISOString().slice(0, 10);
+    return `Trip-${safe}-${date}.${ext}`;
+  }
+
+  exportExcel(): void {
+    this.exporting = true;
+    this.tripService.exportExcel(this.trip.id).subscribe({
+      next:  blob => { this.downloadBlob(blob, this.exportFilename('xlsx')); this.exporting = false; },
+      error: ()   => { this.snack.open('Excel export failed', 'Close', { duration: 3000 }); this.exporting = false; }
+    });
+  }
+
+  exportPdf(): void {
+    this.exporting = true;
+    this.tripService.exportPdf(this.trip.id).subscribe({
+      next:  blob => { this.downloadBlob(blob, this.exportFilename('pdf')); this.exporting = false; },
+      error: ()   => { this.snack.open('PDF export failed', 'Close', { duration: 3000 }); this.exporting = false; }
+    });
   }
 }

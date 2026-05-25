@@ -78,9 +78,13 @@ export class TripService {
       .pipe(map(() => void 0));
   }
 
-  // ─── Export (delegated to backend Excel endpoint) ─────────────────────────
+  // ─── Export ───────────────────────────────────────────────────────────────
 
-  exportBookingsExcel(tripId: string): Observable<Blob> {
-    return this.http.get(`${this.base}/${tripId}/export/bookings`, { responseType: 'blob' });
+  exportExcel(tripId: string): Observable<Blob> {
+    return this.http.get(`${this.base}/${tripId}/export/excel`, { responseType: 'blob' });
+  }
+
+  exportPdf(tripId: string): Observable<Blob> {
+    return this.http.get(`${this.base}/${tripId}/export/pdf`, { responseType: 'blob' });
   }
 }

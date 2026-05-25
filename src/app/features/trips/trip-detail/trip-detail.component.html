@@ -14,10 +14,27 @@
         <span class="status-chip status-{{ trip.status }}">{{ statusLabel(trip.status) }}</span>
       </div>
     </div>
-    <div class="header-actions" *ngIf="auth.isAdmin()">
-      <button mat-icon-button [routerLink]="['/trips', trip.id, 'edit']" matTooltip="Edit trip">
+    <div class="header-actions">
+      <!-- Edit: GroupLeader / SystemAdmin only -->
+      <button mat-icon-button *ngIf="auth.isAdmin()"
+              [routerLink]="['/trips', trip.id, 'edit']" matTooltip="Edit trip">
         <mat-icon>edit</mat-icon>
       </button>
+      <!-- Export: all roles with CanAccessTrips -->
+      <button mat-icon-button *ngIf="auth.canAccessTrips()"
+              [matMenuTriggerFor]="exportMenu"
+              [disabled]="exporting"
+              matTooltip="Export">
+        <mat-icon>download</mat-icon>
+      </button>
+      <mat-menu #exportMenu="matMenu">
+        <button mat-menu-item (click)="exportExcel()">
+          <mat-icon>table_view</mat-icon> Excel (.xlsx)
+        </button>
+        <button mat-menu-item (click)="exportPdf()">
+          <mat-icon>picture_as_pdf</mat-icon> PDF
+        </button>
+      </mat-menu>
     </div>
   </div>
 
@@ -131,11 +148,11 @@
               <span class="paid-date" *ngIf="b.isPaid && b.paidAt">
                 {{ b.paidAt | date:'shortDate' }}
               </span>
-              <!-- Cancel booking: GroupLeader / SystemAdmin only -->
+              <!-- Cancel booking: all roles with CanAccessTrips -->
               <button mat-icon-button color="warn"
                       (click)="cancelBooking(b)"
                       matTooltip="Cancel booking"
-                      *ngIf="auth.isAdmin()">
+                      *ngIf="auth.canAccessTrips()">
                 <mat-icon>cancel</mat-icon>
               </button>
             </div>
@@ -160,7 +177,7 @@
               <button mat-icon-button color="warn"
                       (click)="cancelBooking(b)"
                       matTooltip="Remove from waiting list"
-                      *ngIf="auth.isAdmin()">
+                      *ngIf="auth.canAccessTrips()">
                 <mat-icon>cancel</mat-icon>
               </button>
             </div>
@@ -214,8 +231,7 @@
                 @for (s of attendanceStatuses; track s.value) {
                   <button mat-mini-fab
                           class="att-btn"
-                          [class.selected]="getAttendanceStatus(m.memberId) === s.value"
-                          [style.background-color]="getAttendanceStatus(m.memberId) === s.value ? s.color : ''"
+                          [ngClass]="getAttendanceBtnClass(m.memberId, s.value)"
                           [matTooltip]="s.label"
                           [disabled]="savingMember[m.memberId]"
                           (click)="saveOneAttendance(m.memberId, s.value)">

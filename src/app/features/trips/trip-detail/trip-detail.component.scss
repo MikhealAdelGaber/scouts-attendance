@@ -10,6 +10,12 @@
 
 .header-info { flex: 1; }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .trip-title {
   margin: 0 0 8px;
   font-size: 1.6rem;
@@ -278,21 +284,42 @@
   .att-troop { display: block; font-size: 0.8rem; color: var(--text-secondary); }
 }
 
-.att-buttons { display: flex; gap: 8px; }
+.att-buttons { display: flex; gap: 8px; align-items: center; }
 
 .att-btn {
   width: 36px;
   height: 36px;
-  background: var(--border) !important;
+  // Neutral unselected state — overrides mat-mini-fab defaults
+  background-color: var(--border) !important;
   color: var(--text-secondary) !important;
-  transition: background 0.15s, transform 0.1s;
-
-  &.selected {
-    color: white !important;
-    transform: scale(1.1);
-  }
-
+  transition: background-color 0.15s, transform 0.12s, box-shadow 0.12s;
   mat-icon { font-size: 18px; width: 18px; height: 18px; }
+
+  // Per-status selected states — each uses !important to beat Material
+  &.att-present {
+    background-color: #4caf50 !important;
+    color: white !important;
+    transform: scale(1.12);
+    box-shadow: 0 2px 8px rgba(76, 175, 80, 0.5) !important;
+  }
+  &.att-absent {
+    background-color: #f44336 !important;
+    color: white !important;
+    transform: scale(1.12);
+    box-shadow: 0 2px 8px rgba(244, 67, 54, 0.5) !important;
+  }
+  &.att-late {
+    background-color: #ff9800 !important;
+    color: white !important;
+    transform: scale(1.12);
+    box-shadow: 0 2px 8px rgba(255, 152, 0, 0.5) !important;
+  }
+  &.att-excused {
+    background-color: #2196f3 !important;
+    color: white !important;
+    transform: scale(1.12);
+    box-shadow: 0 2px 8px rgba(33, 150, 243, 0.5) !important;
+  }
 }
 
 // .save-footer removed — attendance saves per-member immediately
