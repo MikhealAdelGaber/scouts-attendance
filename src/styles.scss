@@ -936,4 +936,64 @@ mat-divider { border-color: var(--border) !important; }
   // ── Login page ─────────────────────────────────────────────────────────────
   .login-container,
   .auth-container { background: var(--bg) !important; }
+
+  // ── Dashboard: stat icon wraps (override inline background styles) ──────────
+  .stat-icon-wrap { background: rgba(255,255,255,0.08) !important; }
+
+  // ── Dashboard: rank badges ───────────────────────────────────────────────────
+  // Silver badge: text must be white on dark
+  .rank-2 { color: #ffffff !important; }
+  // "other" rank: light indigo bg is invisible on dark
+  .rank-other { background: rgba(63,81,181,0.25) !important; color: #9fa8da !important; }
+
+  // ── Dashboard & leaderboard: rank rows ──────────────────────────────────────
+  .rank-row { border-color: var(--border) !important; }
+
+  // ── Global: any component that still hardcodes these classes ────────────────
+  // rank-name / rank-sub (used in dashboard and leaderboard)
+  .rank-name { color: var(--text-primary)   !important; }
+  .rank-sub  { color: var(--text-secondary) !important; }
+
+  // stat-number / stat-label (dashboard stat cards)
+  .stat-number { color: var(--text-primary)   !important; }
+  .stat-label  { color: var(--text-secondary) !important; }
+
+  // troop breakdown card
+  .troop-stat-card {
+    .troop-name      { color: var(--text-primary)   !important; }
+    .group-name      { color: var(--text-secondary) !important; }
+    .troop-card-stats{ color: var(--text-secondary) !important; }
+    .rate-bar-wrapper{ background: var(--border)    !important; }
+  }
+
+  // ── Leaderboard podium ───────────────────────────────────────────────────────
+  .podium-slot {
+    &.first  { background: rgba(255, 215, 0, 0.12)  !important; border-color: rgba(255,215,0,0.4) !important; }
+    &.second { background: rgba(192, 192, 192, 0.12) !important; border-color: rgba(192,192,192,0.4) !important; }
+    &.third  { background: rgba(205, 127, 50, 0.12)  !important; border-color: rgba(205,127,50,0.4) !important; }
+
+    .troop-name   { color: var(--text-primary)   !important; }
+    .troop-points { color: var(--text-secondary) !important; opacity: 1 !important; }
+  }
+
+  // ── Troop list cards ─────────────────────────────────────────────────────────
+  .troop-card {
+    .troop-card-name  { color: var(--text-primary)   !important; }
+    .stat-label       { color: var(--text-secondary) !important; }
+    .stat-value       { color: var(--text-primary)   !important; }
+  }
+
+  // ── Member / form labels and values ──────────────────────────────────────────
+  .info-label { color: var(--text-secondary) !important; }
+  .info-value { color: var(--text-primary)   !important; }
+
+  // ── Section headers ──────────────────────────────────────────────────────────
+  .section-header h2 { color: var(--text-primary) !important; }
+
+  // ── Any inline hardcoded dark text that slips through (safety net) ───────────
+  // Note: this targets only our custom classes, not Material internals
+  [class*="rank-info"] .rank-name,
+  [class*="rank-info"] .rank-sub {
+    color: inherit !important;   // let parent var cascade
+  }
 }

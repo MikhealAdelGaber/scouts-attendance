@@ -14,12 +14,12 @@
     margin: 0;
     font-size: 1.4rem;
     font-weight: 700;
-    color: #1a237e;
+    color: var(--text-primary);   // ← was hardcoded #1a237e
 
     mat-icon { font-size: 28px; width: 28px; height: 28px; }
   }
 
-  .welcome { font-size: 0.9rem; color: #666; }
+  .welcome { font-size: 0.9rem; color: var(--text-secondary); }  // ← was #666
 }
 
 // ─── Quick Actions ─────────────────────────────────────────────────────────────
@@ -128,7 +128,7 @@
   font-size: 28px;
   font-weight: 700;
   line-height: 1.1;
-  color: #1a237e;
+  color: var(--text-primary);   // ← was hardcoded #1a237e
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -149,7 +149,7 @@
 .stat-label {
   font-size: 11px;
   font-weight: 600;
-  color: #888;
+  color: var(--text-secondary);  // ← was hardcoded #888
   margin-top: 4px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -171,7 +171,7 @@
 .ranking-card {
   ::ng-deep mat-card-header {
     padding-bottom: 8px;
-    border-bottom: 1px solid #f0f0f0;
+    border-bottom: 1px solid var(--border);  // ← was hardcoded #f0f0f0
     margin-bottom: 4px;
   }
 
@@ -191,7 +191,7 @@
 
   ::ng-deep mat-card-subtitle {
     font-size: 13px !important;
-    color: #888 !important;
+    color: var(--text-secondary) !important;  // ← was hardcoded #888
   }
 
   ::ng-deep .mat-mdc-card-content {
@@ -211,7 +211,7 @@
   align-items: center;
   gap: 12px;
   padding: 10px 0;
-  border-bottom: 1px solid #f5f5f5;
+  border-bottom: 1px solid var(--border);  // ← was hardcoded #f5f5f5
 
   &:last-of-type { border-bottom: none; }
 }
@@ -266,7 +266,7 @@
 .rank-name {
   font-size: 14px;
   font-weight: 600;
-  color: #222;
+  color: var(--text-primary);   // ← was hardcoded #222
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -274,7 +274,7 @@
 
 .rank-sub {
   font-size: 12px;
-  color: #888;
+  color: var(--text-secondary); // ← was hardcoded #888
   margin-top: 2px;
   white-space: nowrap;
   overflow: hidden;
@@ -288,7 +288,7 @@
   gap: 8px;
   margin-bottom: 16px;
 
-  h2 { margin: 0; font-size: 1.1rem; font-weight: 600; color: #444; }
+  h2 { margin: 0; font-size: 1.1rem; font-weight: 600; color: var(--text-primary); } // ← was #444
   mat-icon { color: #5c6bc0; }
 }
 
@@ -309,12 +309,12 @@
   .troop-name {
     font-weight: 600;
     font-size: 1rem;
-    color: #333;
+    color: var(--text-primary);   // ← was hardcoded #333
   }
 
   .group-name {
     font-size: 0.78rem;
-    color: #777;
+    color: var(--text-secondary); // ← was hardcoded #777
     display: flex;
     align-items: center;
     gap: 3px;
@@ -333,7 +333,7 @@
   }
 
   .rate-bar-wrapper {
-    background: #eee;
+    background: var(--border);   // ← was hardcoded #eee
     border-radius: 4px;
     height: 6px;
     overflow: hidden;
@@ -352,7 +352,7 @@
     flex-wrap: wrap;
     gap: 10px;
     font-size: 0.8rem;
-    color: #555;
+    color: var(--text-secondary); // ← was hardcoded #555
 
     span {
       display: flex;
@@ -360,4 +360,14 @@
       gap: 3px;
     }
   }
+}
+
+// ─── Skeleton cards ────────────────────────────────────────────────────────────
+.skeleton-card {
+  height: 100px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, var(--surface) 25%, var(--surface-raised) 50%, var(--surface) 75%);
+  background-size: 2000px 100%;
+  animation: shimmer 1.6s infinite linear;
+  border: 1px solid var(--border);
 }
