@@ -1,7 +1,12 @@
-.page-header mat-icon { vertical-align: middle; margin-right: 8px; }
+.page-header {
+  mat-icon { vertical-align: middle; margin-right: 8px; }
+
+  .subtitle { color: var(--text-secondary); font-size: 0.9rem; }  // ← was inline #666
+}
+
 .filter-card { .flex-wrap { flex-wrap: wrap; align-items: center; } }
 
-// ─── Podium ──────────────────────────────────────
+// ─── Podium ──────────────────────────────────────────────────────────────────
 .podium {
   display: flex;
   align-items: flex-end;
@@ -16,16 +21,38 @@
   }
 
   .podium-card {
-    background: white;
+    background: var(--surface);        // ← was hardcoded white
     border-radius: 12px 12px 0 0;
     padding: 16px 24px;
     text-align: center;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    box-shadow: var(--shadow-sm);
     width: 100%;
-    &.champion { border: 2px solid #FFD700; background: linear-gradient(135deg, #fffde7, #fff9c4); }
-    .trophy { font-size: 40px; width: 40px; height: 40px; &.gold { color: #FFD700; } &.silver { color: #9E9E9E; } &.bronze { color: #CD7F32; } }
-    .podium-name { font-weight: 600; font-size: 0.95rem; margin: 4px 0; }
-    .podium-pts { font-size: 1rem; color: #666; &.champion-pts { color: #f9a825; font-weight: 700; font-size: 1.2rem; } }
+    border: 1px solid var(--border);   // subtle border for definition
+
+    &.champion {
+      border: 2px solid #FFD700;
+      background: linear-gradient(135deg, #fffde7, #fff9c4);  // overridden in dark mode below
+    }
+
+    .trophy {
+      font-size: 40px; width: 40px; height: 40px;
+      &.gold   { color: #FFD700; }
+      &.silver { color: #9E9E9E; }
+      &.bronze { color: #CD7F32; }
+    }
+
+    .podium-name {
+      font-weight: 600;
+      font-size: 0.95rem;
+      margin: 4px 0;
+      color: var(--text-primary);      // ← was not set (inherited but unreliable)
+    }
+
+    .podium-pts {
+      font-size: 1rem;
+      color: var(--text-secondary);    // ← was hardcoded #666
+      &.champion-pts { color: #f9a825; font-weight: 700; font-size: 1.2rem; }
+    }
   }
 
   .podium-base {
@@ -43,24 +70,70 @@
   }
 }
 
-// ─── Table ───────────────────────────────────────
+// ─── Tab group ───────────────────────────────────────────────────────────────
+.leaderboard-tabs {
+  background: var(--surface) !important;  // ← was hardcoded white
+  border-radius: 8px;
+  box-shadow: var(--shadow-sm);
+}
+
+// ─── Table ───────────────────────────────────────────────────────────────────
 .leaderboard-table {
-  .top-row { background: linear-gradient(90deg, #fffde7, transparent); }
+  .top-row { background: linear-gradient(90deg, #fffde7, transparent); }  // dark override below
+
   .rank-cell { display: flex; align-items: center; gap: 6px; }
+
   .rank-icon {
     font-size: 18px; width: 18px; height: 18px;
     &.rank-1 { color: #FFD700; }
     &.rank-2 { color: #9E9E9E; }
     &.rank-3 { color: #CD7F32; }
   }
+
   .troop-name-cell { font-size: 1rem; }
-  .member-link { color: #3f51b5; text-decoration: none; &:hover { text-decoration: underline; } }
+
+  .member-link {
+    color: var(--primary);            // ← was hardcoded #3f51b5
+    text-decoration: none;
+    &:hover { text-decoration: underline; }
+  }
+
   .pts-breakdown {
     display: inline-flex; align-items: center; gap: 4px; font-size: 0.85rem;
     mat-icon { font-size: 14px; width: 14px; height: 14px; }
     &.attendance { color: #4caf50; }
-    &.bonus { color: #9c27b0; }
+    &.bonus      { color: #9c27b0; }
   }
 }
 
-.leaderboard-tabs { background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+// ─── Dark mode overrides ─────────────────────────────────────────────────────
+// :host-context works with Angular ViewEncapsulation.Emulated
+:host-context(.dark-mode) {
+
+  // Podium cards: dark background, gold/silver/bronze border accents
+  .podium-card {
+    background: #252525 !important;
+    border-color: #333 !important;
+
+    .podium-name { color: #e0e0e0 !important; }
+    .podium-pts  { color: #9e9e9e !important; }
+
+    // 1st place: subtle gold tint
+    &.champion {
+      background: #1e1e1e !important;
+      border: 2px solid #FFD700 !important;
+      .podium-pts { color: #9e9e9e !important; }
+      .podium-pts.champion-pts { color: #f9a825 !important; }
+    }
+  }
+
+  // 2nd place podium slot: silver accent border on card
+  .podium-slot.second .podium-card { border-color: #C0C0C0 !important; }
+  // 3rd place podium slot: bronze accent border on card
+  .podium-slot.third  .podium-card { border-color: #CD7F32 !important; }
+
+  // Top-3 rows: subtle gold tint instead of bright yellow
+  .leaderboard-table .top-row {
+    background: rgba(255, 215, 0, 0.06) !important;
+  }
+}
