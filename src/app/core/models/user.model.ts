@@ -19,6 +19,7 @@ export interface AuthUser {
   canCreateEvents?: boolean;
   canAccessTrips?: boolean;
   // Page-access permissions (default true — missing means "allowed")
+  canAccessDashboard?: boolean;
   canAccessTroops?: boolean;
   canAccessMembers?: boolean;
   canAccessExcuses?: boolean;
@@ -50,6 +51,7 @@ export interface UserDto {
   canCreateEvents: boolean;
   canAccessTrips: boolean;
   // Page-access permissions
+  canAccessDashboard: boolean;
   canAccessTroops: boolean;
   canAccessMembers: boolean;
   canAccessExcuses: boolean;
@@ -74,6 +76,7 @@ export interface CreateUserDto {
   canCreateEvents: boolean;
   canAccessTrips: boolean;
   // Page-access permissions
+  canAccessDashboard: boolean;
   canAccessTroops: boolean;
   canAccessMembers: boolean;
   canAccessExcuses: boolean;
@@ -95,6 +98,7 @@ export interface UpdateUserDto {
   canCreateEvents: boolean;
   canAccessTrips: boolean;
   // Page-access permissions
+  canAccessDashboard: boolean;
   canAccessTroops: boolean;
   canAccessMembers: boolean;
   canAccessExcuses: boolean;

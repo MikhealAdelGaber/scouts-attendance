@@ -103,6 +103,7 @@ export class AuthService {
     return val !== false; // undefined / true → allowed; only explicit false → denied
   }
 
+  canAccessDashboard():   boolean { return this.checkPermission('canAccessDashboard'); }
   canAccessTroops():      boolean { return this.checkPermission('canAccessTroops'); }
   canAccessMembers():     boolean { return this.checkPermission('canAccessMembers'); }
   canAccessExcuses():     boolean { return this.checkPermission('canAccessExcuses'); }
@@ -163,6 +164,7 @@ export class AuthService {
       user.canCreateEvents   = parseBool(payload['canCreateEvents']);
 
       // Sync page-access permissions from JWT (default true when claim is absent)
+      user.canAccessDashboard   = parseBoolDefault(payload['canAccessDashboard'],   true);
       user.canAccessTroops      = parseBoolDefault(payload['canAccessTroops'],      true);
       user.canAccessMembers     = parseBoolDefault(payload['canAccessMembers'],     true);
       user.canAccessExcuses     = parseBoolDefault(payload['canAccessExcuses'],     true);

@@ -30,7 +30,7 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
   private bpSub: Subscription | null = null;
 
   navItems: NavItem[] = [
-    { label: 'Dashboard',   icon: 'dashboard',       route: '/dashboard' },
+    { label: 'Dashboard',   icon: 'dashboard',       route: '/dashboard',   permissionKey: 'canAccessDashboard' },
     // SystemAdmin-only pages — SystemAdmin bypasses permission checks
     { label: 'Users',       icon: 'manage_accounts', route: '/admin/users',  roles: [UserRole.SystemAdmin] },
     { label: 'Groups',      icon: 'group_work',      route: '/groups',       roles: [UserRole.SystemAdmin] },
