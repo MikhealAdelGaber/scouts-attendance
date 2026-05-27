@@ -12,7 +12,7 @@ import {
   TripDto, TripBookingDto, TripAttendanceDto,
   BookingStatus, TripStatus, TripAttendanceEntryDto
 } from '../../../core/models/trip.model';
-import { Member } from '../../../core/models/member.model';
+import { MemberSearchResult } from '../../../core/models/member.model';
 import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog/confirm-dialog.component';
 
 @Component({
@@ -29,8 +29,8 @@ export class TripDetailComponent implements OnInit {
 
   // Booking form
   memberSearch = new FormControl('');
-  memberResults: Member[] = [];
-  selectedMember: Member | null = null;
+  memberResults: MemberSearchResult[] = [];
+  selectedMember: MemberSearchResult | null = null;
   isSibling = false;
   bookingNotes = '';
   booking = false;
@@ -78,15 +78,12 @@ export class TripDetailComponent implements OnInit {
       error: () => { this.loading = false; this.router.navigate(['/trips']); }
     });
 
-    // Member search with debounce — scoped to trip's group
-    this.memberSearch.valueChanges.pipe(debounceTime(300), distinctUntilChanged())
+    // Member search — uses the lightweight /search endpoint (no heavy includes)
+    this.memberSearch.valueChanges.pipe(debounceTime(250), distinctUntilChanged())
       .subscribe(q => {
         if (!q || q.length < 2) { this.memberResults = []; return; }
-        this.memberService.getAll({
-          search:   q,
-          pageSize: 15,
-          groupId:  this.trip?.groupId
-        }).subscribe(r => this.memberResults = r.items);
+        this.memberService.search(q, this.trip?.groupId)
+          .subscribe(results => this.memberResults = results);
       });
   }
 
@@ -121,7 +118,7 @@ export class TripDetailComponent implements OnInit {
     return this.bookings.filter(b => b.bookingStatus === BookingStatus.Waiting);
   }
 
-  selectMember(m: Member): void {
+  selectMember(m: MemberSearchResult): void {
     this.selectedMember = m;
     this.memberSearch.setValue(m.fullName, { emitEvent: false });
     this.memberResults = [];

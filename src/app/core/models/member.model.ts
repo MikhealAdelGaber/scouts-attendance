@@ -31,6 +31,13 @@ export interface Member {
   hasActiveExcuse: boolean;
 }
 
+/** Lightweight result from GET /api/members/search — autocomplete only */
+export interface MemberSearchResult {
+  id:        string;
+  fullName:  string;
+  troopName: string;
+}
+
 export interface CreateMember {
   firstName: string;
   lastName: string;

@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { ApiService, ApiResponse } from './api.service';
-import { Member, CreateMember, UpdateMember, PagedResult, Transfer, CreateTransfer, BulkYearUpdateDto, ImportMembersResult } from '../models/member.model';
+import { Member, MemberSearchResult, CreateMember, UpdateMember, PagedResult, Transfer, CreateTransfer, BulkYearUpdateDto, ImportMembersResult } from '../models/member.model';
 import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
@@ -11,6 +11,17 @@ export class MemberService {
   private baseUrl = environment.apiUrl;
 
   constructor(private api: ApiService, private http: HttpClient) {}
+
+  /**
+   * Fast autocomplete search — hits GET /api/members/search which uses a
+   * single projected SQL query (no MemberPoints/Excuses joins, no COUNT).
+   * Use this instead of getAll() for booking autocomplete dropdowns.
+   */
+  search(q: string, groupId?: string): Observable<MemberSearchResult[]> {
+    const params: Record<string, string> = { q };
+    if (groupId) params['groupId'] = groupId;
+    return this.api.get<MemberSearchResult[]>('members/search', params);
+  }
 
   getAll(params?: {
     groupId?: string;
