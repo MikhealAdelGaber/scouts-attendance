@@ -31,20 +31,20 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
 
   navItems: NavItem[] = [
     { label: 'Dashboard',   icon: 'dashboard',       route: '/dashboard' },
+    // SystemAdmin-only pages — SystemAdmin bypasses permission checks
     { label: 'Users',       icon: 'manage_accounts', route: '/admin/users',  roles: [UserRole.SystemAdmin] },
     { label: 'Groups',      icon: 'group_work',      route: '/groups',       roles: [UserRole.SystemAdmin] },
-    // Troops management: not shown to AttendanceOnly
-    { label: 'Troops',      icon: 'groups',      route: '/troops',      roles: [UserRole.SystemAdmin, UserRole.GroupLeader] },
-    { label: 'Members',     icon: 'people',      route: '/members',     roles: [UserRole.SystemAdmin, UserRole.GroupLeader, UserRole.AttendanceOnly] },
-    // Excuses: AttendanceOnly can grant excuses for members
-    { label: 'Excuses',     icon: 'event_busy',  route: '/excuses',     roles: [UserRole.SystemAdmin, UserRole.GroupLeader, UserRole.AttendanceOnly] },
-    { label: 'Events',      icon: 'event',       route: '/events',      roles: [UserRole.SystemAdmin, UserRole.GroupLeader] },
-    { label: 'Attendance',  icon: 'fact_check',  route: '/attendance' },
-    { label: 'Points',      icon: 'star',        route: '/points',      roles: [UserRole.SystemAdmin, UserRole.GroupLeader, UserRole.AttendanceOnly] },
-    { label: 'Leaderboard', icon: 'leaderboard', route: '/leaderboard', roles: [UserRole.SystemAdmin, UserRole.GroupLeader] },
-    { label: 'Exam Scores', icon: 'school',      route: '/exam-scores', roles: [UserRole.SystemAdmin, UserRole.GroupLeader] },
-    { label: 'Reports',     icon: 'analytics',   route: '/reports',     roles: [UserRole.SystemAdmin, UserRole.GroupLeader, UserRole.AttendanceOnly] },
-    { label: 'Trips & Camps', icon: 'luggage',   route: '/trips',       permissionKey: 'canAccessTrips' },
+    // Pages with both role and page-permission checks
+    { label: 'Troops',      icon: 'groups',      route: '/troops',      roles: [UserRole.SystemAdmin, UserRole.GroupLeader],                                  permissionKey: 'canAccessTroops' },
+    { label: 'Members',     icon: 'people',      route: '/members',     roles: [UserRole.SystemAdmin, UserRole.GroupLeader, UserRole.AttendanceOnly],          permissionKey: 'canAccessMembers' },
+    { label: 'Excuses',     icon: 'event_busy',  route: '/excuses',     roles: [UserRole.SystemAdmin, UserRole.GroupLeader, UserRole.AttendanceOnly],          permissionKey: 'canAccessExcuses' },
+    { label: 'Events',      icon: 'event',       route: '/events',      roles: [UserRole.SystemAdmin, UserRole.GroupLeader],                                  permissionKey: 'canAccessEvents' },
+    { label: 'Attendance',  icon: 'fact_check',  route: '/attendance',                                                                                        permissionKey: 'canAccessAttendance' },
+    { label: 'Points',      icon: 'star',        route: '/points',      roles: [UserRole.SystemAdmin, UserRole.GroupLeader, UserRole.AttendanceOnly],          permissionKey: 'canAccessPoints' },
+    { label: 'Leaderboard', icon: 'leaderboard', route: '/leaderboard', roles: [UserRole.SystemAdmin, UserRole.GroupLeader],                                  permissionKey: 'canAccessLeaderboard' },
+    { label: 'Exam Scores', icon: 'school',      route: '/exam-scores', roles: [UserRole.SystemAdmin, UserRole.GroupLeader],                                  permissionKey: 'canAccessExamScores' },
+    { label: 'Reports',     icon: 'analytics',   route: '/reports',     roles: [UserRole.SystemAdmin, UserRole.GroupLeader, UserRole.AttendanceOnly],          permissionKey: 'canAccessReports' },
+    { label: 'Trips & Camps', icon: 'luggage',   route: '/trips',                                                                                             permissionKey: 'canAccessTrips' },
   ];
 
   constructor(
@@ -76,9 +76,16 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void { this.bpSub?.unsubscribe(); }
 
   isVisible(item: NavItem): boolean {
-    if (item.permissionKey === 'canAccessTrips') return this.auth.canAccessTrips();
-    if (!item.roles) return true;
-    return this.auth.hasRole(...item.roles);
+    // SystemAdmin always sees every item — permission checks do not apply
+    if (this.auth.isSystemAdmin()) return true;
+
+    // Role check: if a role list is defined the user must have one of those roles
+    if (item.roles && !this.auth.hasRole(...item.roles)) return false;
+
+    // Page-permission check: if a permission key is defined the user must have it
+    if (item.permissionKey) return this.auth.checkPermission(item.permissionKey);
+
+    return true;
   }
 
   logout(): void { this.auth.logout(); }

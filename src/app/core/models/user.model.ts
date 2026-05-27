@@ -13,11 +13,21 @@ export interface AuthUser {
   troopId: string | null;
   token: string;
   expiresAt: string;
-  // Fine-grained permission flags decoded from JWT claims
+  // Fine-grained action permission flags decoded from JWT claims
   canTakeAttendance?: boolean;
   canEditMembers?: boolean;
   canCreateEvents?: boolean;
   canAccessTrips?: boolean;
+  // Page-access permissions (default true — missing means "allowed")
+  canAccessTroops?: boolean;
+  canAccessMembers?: boolean;
+  canAccessExcuses?: boolean;
+  canAccessEvents?: boolean;
+  canAccessAttendance?: boolean;
+  canAccessPoints?: boolean;
+  canAccessLeaderboard?: boolean;
+  canAccessExamScores?: boolean;
+  canAccessReports?: boolean;
 }
 
 export interface LoginRequest { username: string; password: string; }
@@ -39,6 +49,16 @@ export interface UserDto {
   canEditMembers: boolean;
   canCreateEvents: boolean;
   canAccessTrips: boolean;
+  // Page-access permissions
+  canAccessTroops: boolean;
+  canAccessMembers: boolean;
+  canAccessExcuses: boolean;
+  canAccessEvents: boolean;
+  canAccessAttendance: boolean;
+  canAccessPoints: boolean;
+  canAccessLeaderboard: boolean;
+  canAccessExamScores: boolean;
+  canAccessReports: boolean;
   createdAt: string;
 }
 
@@ -53,6 +73,16 @@ export interface CreateUserDto {
   canEditMembers: boolean;
   canCreateEvents: boolean;
   canAccessTrips: boolean;
+  // Page-access permissions
+  canAccessTroops: boolean;
+  canAccessMembers: boolean;
+  canAccessExcuses: boolean;
+  canAccessEvents: boolean;
+  canAccessAttendance: boolean;
+  canAccessPoints: boolean;
+  canAccessLeaderboard: boolean;
+  canAccessExamScores: boolean;
+  canAccessReports: boolean;
 }
 
 export interface UpdateUserDto {
@@ -64,6 +94,16 @@ export interface UpdateUserDto {
   canEditMembers: boolean;
   canCreateEvents: boolean;
   canAccessTrips: boolean;
+  // Page-access permissions
+  canAccessTroops: boolean;
+  canAccessMembers: boolean;
+  canAccessExcuses: boolean;
+  canAccessEvents: boolean;
+  canAccessAttendance: boolean;
+  canAccessPoints: boolean;
+  canAccessLeaderboard: boolean;
+  canAccessExamScores: boolean;
+  canAccessReports: boolean;
 }
 
 export interface UserLeaderDto {

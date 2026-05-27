@@ -81,10 +81,10 @@
           </div>
         }
 
-        <!-- Permissions -->
-        <mat-card appearance="outlined" style="margin-bottom:20px">
+        <!-- Action Permissions -->
+        <mat-card appearance="outlined" style="margin-bottom:16px">
           <mat-card-header>
-            <mat-card-title style="font-size:14px">Permissions</mat-card-title>
+            <mat-card-title style="font-size:14px">Action Permissions</mat-card-title>
             <mat-card-subtitle>Override role defaults for fine-grained access</mat-card-subtitle>
           </mat-card-header>
           <mat-card-content>
@@ -104,6 +104,54 @@
               <mat-checkbox formControlName="canAccessTrips">
                 <mat-icon style="vertical-align:middle;font-size:18px;color:#9c27b0">luggage</mat-icon>
                 Can access trips &amp; camps
+              </mat-checkbox>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Page Access Permissions -->
+        <mat-card appearance="outlined" style="margin-bottom:20px">
+          <mat-card-header>
+            <mat-card-title style="font-size:14px">Page Access</mat-card-title>
+            <mat-card-subtitle>Control which sections of the app this user can open</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding-top:8px">
+              <mat-checkbox formControlName="canAccessTroops">
+                <mat-icon style="vertical-align:middle;font-size:18px;color:#607d8b">groups</mat-icon>
+                Troops
+              </mat-checkbox>
+              <mat-checkbox formControlName="canAccessMembers">
+                <mat-icon style="vertical-align:middle;font-size:18px;color:#607d8b">people</mat-icon>
+                Members
+              </mat-checkbox>
+              <mat-checkbox formControlName="canAccessExcuses">
+                <mat-icon style="vertical-align:middle;font-size:18px;color:#607d8b">event_busy</mat-icon>
+                Excuses
+              </mat-checkbox>
+              <mat-checkbox formControlName="canAccessEvents">
+                <mat-icon style="vertical-align:middle;font-size:18px;color:#607d8b">event</mat-icon>
+                Events
+              </mat-checkbox>
+              <mat-checkbox formControlName="canAccessAttendance">
+                <mat-icon style="vertical-align:middle;font-size:18px;color:#607d8b">fact_check</mat-icon>
+                Attendance
+              </mat-checkbox>
+              <mat-checkbox formControlName="canAccessPoints">
+                <mat-icon style="vertical-align:middle;font-size:18px;color:#607d8b">star</mat-icon>
+                Points
+              </mat-checkbox>
+              <mat-checkbox formControlName="canAccessLeaderboard">
+                <mat-icon style="vertical-align:middle;font-size:18px;color:#607d8b">leaderboard</mat-icon>
+                Leaderboard
+              </mat-checkbox>
+              <mat-checkbox formControlName="canAccessExamScores">
+                <mat-icon style="vertical-align:middle;font-size:18px;color:#607d8b">school</mat-icon>
+                Exam Scores
+              </mat-checkbox>
+              <mat-checkbox formControlName="canAccessReports">
+                <mat-icon style="vertical-align:middle;font-size:18px;color:#607d8b">analytics</mat-icon>
+                Reports
               </mat-checkbox>
             </div>
           </mat-card-content>

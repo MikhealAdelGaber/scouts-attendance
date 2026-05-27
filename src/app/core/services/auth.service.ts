@@ -90,6 +90,29 @@ export class AuthService {
     return !!u.canAccessTrips;
   }
 
+  // ─── Page-access permission helpers ────────────────────────────────────────
+  // SystemAdmin bypasses all page-permission checks.
+  // Missing claim (old token) defaults to true for backward compatibility.
+
+  /** Generic page-permission check by JWT claim key. */
+  checkPermission(key: string): boolean {
+    if (!this.currentUser) return false;
+    if (this.isSystemAdmin()) return true;
+    const u = this.currentUser as unknown as Record<string, unknown>;
+    const val = u[key];
+    return val !== false; // undefined / true → allowed; only explicit false → denied
+  }
+
+  canAccessTroops():      boolean { return this.checkPermission('canAccessTroops'); }
+  canAccessMembers():     boolean { return this.checkPermission('canAccessMembers'); }
+  canAccessExcuses():     boolean { return this.checkPermission('canAccessExcuses'); }
+  canAccessEvents():      boolean { return this.checkPermission('canAccessEvents'); }
+  canAccessAttendance():  boolean { return this.checkPermission('canAccessAttendance'); }
+  canAccessPoints():      boolean { return this.checkPermission('canAccessPoints'); }
+  canAccessLeaderboard(): boolean { return this.checkPermission('canAccessLeaderboard'); }
+  canAccessExamScores():  boolean { return this.checkPermission('canAccessExamScores'); }
+  canAccessReports():     boolean { return this.checkPermission('canAccessReports'); }
+
   // ─── Session persistence ─────────────────────────────────────────────────────
 
   private setSession(user: AuthUser): void {
@@ -129,21 +152,26 @@ export class AuthService {
       const parseBool = (v: unknown) =>
         v === true || v === 'true';
 
-      // Only overwrite if the DTO value is still undefined (new backend always sets it)
-      if (user.canAccessTrips    === undefined)
-        user.canAccessTrips    = parseBool(payload['canAccessTrips']);
-      if (user.canTakeAttendance === undefined)
-        user.canTakeAttendance = parseBool(payload['canTakeAttendance']);
-      if (user.canEditMembers    === undefined)
-        user.canEditMembers    = parseBool(payload['canEditMembers']);
-      if (user.canCreateEvents   === undefined)
-        user.canCreateEvents   = parseBool(payload['canCreateEvents']);
+      // For page-access permissions, missing claim means "allowed" (backward compat)
+      const parseBoolDefault = (v: unknown, def: boolean) =>
+        v === undefined || v === null ? def : parseBool(v);
 
-      // Always sync canAccessTrips from JWT (most up-to-date source after login)
+      // Always sync action permissions from JWT
       user.canAccessTrips    = parseBool(payload['canAccessTrips']);
       user.canTakeAttendance = parseBool(payload['canTakeAttendance']);
       user.canEditMembers    = parseBool(payload['canEditMembers']);
       user.canCreateEvents   = parseBool(payload['canCreateEvents']);
+
+      // Sync page-access permissions from JWT (default true when claim is absent)
+      user.canAccessTroops      = parseBoolDefault(payload['canAccessTroops'],      true);
+      user.canAccessMembers     = parseBoolDefault(payload['canAccessMembers'],     true);
+      user.canAccessExcuses     = parseBoolDefault(payload['canAccessExcuses'],     true);
+      user.canAccessEvents      = parseBoolDefault(payload['canAccessEvents'],      true);
+      user.canAccessAttendance  = parseBoolDefault(payload['canAccessAttendance'],  true);
+      user.canAccessPoints      = parseBoolDefault(payload['canAccessPoints'],      true);
+      user.canAccessLeaderboard = parseBoolDefault(payload['canAccessLeaderboard'], true);
+      user.canAccessExamScores  = parseBoolDefault(payload['canAccessExamScores'],  true);
+      user.canAccessReports     = parseBoolDefault(payload['canAccessReports'],     true);
     } catch { /* malformed JWT — leave flags as-is */ }
   }
 

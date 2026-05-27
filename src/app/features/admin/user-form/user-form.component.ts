@@ -55,7 +55,17 @@ export class UserFormComponent implements OnInit {
       canTakeAttendance:[false],
       canEditMembers:   [false],
       canCreateEvents:  [false],
-      canAccessTrips:   [false]
+      canAccessTrips:   [false],
+      // Page-access permissions (all true by default)
+      canAccessTroops:      [true],
+      canAccessMembers:     [true],
+      canAccessExcuses:     [true],
+      canAccessEvents:      [true],
+      canAccessAttendance:  [true],
+      canAccessPoints:      [true],
+      canAccessLeaderboard: [true],
+      canAccessExamScores:  [true],
+      canAccessReports:     [true]
     });
 
     // Pre-fill groupId for non-SystemAdmin editors
@@ -87,7 +97,17 @@ export class UserFormComponent implements OnInit {
           canTakeAttendance: u.canTakeAttendance,
           canEditMembers:    u.canEditMembers,
           canCreateEvents:   u.canCreateEvents,
-          canAccessTrips:    u.canAccessTrips
+          canAccessTrips:    u.canAccessTrips,
+          // Page-access permissions
+          canAccessTroops:      u.canAccessTroops,
+          canAccessMembers:     u.canAccessMembers,
+          canAccessExcuses:     u.canAccessExcuses,
+          canAccessEvents:      u.canAccessEvents,
+          canAccessAttendance:  u.canAccessAttendance,
+          canAccessPoints:      u.canAccessPoints,
+          canAccessLeaderboard: u.canAccessLeaderboard,
+          canAccessExamScores:  u.canAccessExamScores,
+          canAccessReports:     u.canAccessReports
         });
         this.isLoadingData = false;
         this.form.get('username')!.disable();
@@ -136,7 +156,17 @@ export class UserFormComponent implements OnInit {
         canTakeAttendance: val.canTakeAttendance,
         canEditMembers:    val.canEditMembers,
         canCreateEvents:   val.canCreateEvents,
-        canAccessTrips:    val.canAccessTrips
+        canAccessTrips:    val.canAccessTrips,
+        // Page-access permissions
+        canAccessTroops:      val.canAccessTroops,
+        canAccessMembers:     val.canAccessMembers,
+        canAccessExcuses:     val.canAccessExcuses,
+        canAccessEvents:      val.canAccessEvents,
+        canAccessAttendance:  val.canAccessAttendance,
+        canAccessPoints:      val.canAccessPoints,
+        canAccessLeaderboard: val.canAccessLeaderboard,
+        canAccessExamScores:  val.canAccessExamScores,
+        canAccessReports:     val.canAccessReports
       };
       this.userService.update(this.userId, dto).subscribe({
         next: () => {
@@ -160,7 +190,17 @@ export class UserFormComponent implements OnInit {
         canTakeAttendance: val.canTakeAttendance,
         canEditMembers:    val.canEditMembers,
         canCreateEvents:   val.canCreateEvents,
-        canAccessTrips:    val.canAccessTrips
+        canAccessTrips:    val.canAccessTrips,
+        // Page-access permissions
+        canAccessTroops:      val.canAccessTroops,
+        canAccessMembers:     val.canAccessMembers,
+        canAccessExcuses:     val.canAccessExcuses,
+        canAccessEvents:      val.canAccessEvents,
+        canAccessAttendance:  val.canAccessAttendance,
+        canAccessPoints:      val.canAccessPoints,
+        canAccessLeaderboard: val.canAccessLeaderboard,
+        canAccessExamScores:  val.canAccessExamScores,
+        canAccessReports:     val.canAccessReports
       };
       this.userService.create(dto).subscribe({
         next: () => { this.snack.open('User created', 'Close', { duration: 3000 }); this.router.navigate(['/admin/users']); },

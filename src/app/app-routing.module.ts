@@ -4,6 +4,7 @@ import { MainLayoutComponent } from './layout/main-layout/main-layout.component'
 import { AuthGuard } from './core/guards/auth.guard';
 import { RoleGuard } from './core/guards/role.guard';
 import { canAccessTripsGuard } from './core/guards/can-access-trips.guard';
+import { permissionGuard }     from './core/guards/permission.guard';
 import { UserRole } from './core/models/user.model';
 
 const routes: Routes = [
@@ -40,28 +41,38 @@ const routes: Routes = [
       },
       {
         path: 'troops',
+        canActivate: [permissionGuard],
+        data: { permission: 'canAccessTroops' },
         loadChildren: () => import('./features/troops/troops.module').then(m => m.TroopsModule)
       },
       {
         path: 'members',
-        canActivate: [RoleGuard],
-        data: { roles: [UserRole.SystemAdmin, UserRole.GroupLeader, UserRole.AttendanceOnly] },
+        canActivate: [RoleGuard, permissionGuard],
+        data: { roles: [UserRole.SystemAdmin, UserRole.GroupLeader, UserRole.AttendanceOnly], permission: 'canAccessMembers' },
         loadChildren: () => import('./features/members/members.module').then(m => m.MembersModule)
       },
       {
         path: 'events',
+        canActivate: [permissionGuard],
+        data: { permission: 'canAccessEvents' },
         loadChildren: () => import('./features/events/events.module').then(m => m.EventsModule)
       },
       {
         path: 'attendance',
+        canActivate: [permissionGuard],
+        data: { permission: 'canAccessAttendance' },
         loadChildren: () => import('./features/attendance/attendance.module').then(m => m.AttendanceModule)
       },
       {
         path: 'points',
+        canActivate: [permissionGuard],
+        data: { permission: 'canAccessPoints' },
         loadChildren: () => import('./features/points/points.module').then(m => m.PointsModule)
       },
       {
         path: 'leaderboard',
+        canActivate: [permissionGuard],
+        data: { permission: 'canAccessLeaderboard' },
         loadChildren: () => import('./features/leaderboard/leaderboard.module').then(m => m.LeaderboardModule)
       },
       {
@@ -70,20 +81,20 @@ const routes: Routes = [
       },
       {
         path: 'excuses',
-        canActivate: [RoleGuard],
-        data: { roles: [UserRole.SystemAdmin, UserRole.GroupLeader, UserRole.AttendanceOnly] },
+        canActivate: [RoleGuard, permissionGuard],
+        data: { roles: [UserRole.SystemAdmin, UserRole.GroupLeader, UserRole.AttendanceOnly], permission: 'canAccessExcuses' },
         loadChildren: () => import('./features/excuses/excuses.module').then(m => m.ExcusesModule)
       },
       {
         path: 'exam-scores',
-        canActivate: [RoleGuard],
-        data: { roles: [UserRole.SystemAdmin, UserRole.GroupLeader] },
+        canActivate: [RoleGuard, permissionGuard],
+        data: { roles: [UserRole.SystemAdmin, UserRole.GroupLeader], permission: 'canAccessExamScores' },
         loadChildren: () => import('./features/exam-scores/exam-scores.module').then(m => m.ExamScoresModule)
       },
       {
         path: 'reports',
-        canActivate: [RoleGuard],
-        data: { roles: [UserRole.SystemAdmin, UserRole.GroupLeader, UserRole.AttendanceOnly] },
+        canActivate: [RoleGuard, permissionGuard],
+        data: { roles: [UserRole.SystemAdmin, UserRole.GroupLeader, UserRole.AttendanceOnly], permission: 'canAccessReports' },
         loadChildren: () => import('./features/reports/reports.module').then(m => m.ReportsModule)
       },
       {
