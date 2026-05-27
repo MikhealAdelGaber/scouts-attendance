@@ -5,7 +5,8 @@ import { environment } from '../../../environments/environment';
 import {
   TripDto, CreateTripDto, UpdateTripDto,
   TripBookingDto, CreateBookingDto,
-  TripAttendanceDto, SaveTripAttendanceDto
+  TripAttendanceDto, SaveTripAttendanceDto,
+  BookingPaymentDto
 } from '../models/trip.model';
 
 interface ApiResponse<T> { success: boolean; message?: string; data: T; }
@@ -63,6 +64,18 @@ export class TripService {
   markPaid(tripId: string, bookingId: string): Observable<TripBookingDto> {
     return this.http.post<ApiResponse<TripBookingDto>>(
       `${this.base}/${tripId}/bookings/${bookingId}/mark-paid`, {}
+    ).pipe(map(r => r.data));
+  }
+
+  getPayments(tripId: string, bookingId: string): Observable<BookingPaymentDto[]> {
+    return this.http.get<ApiResponse<BookingPaymentDto[]>>(
+      `${this.base}/${tripId}/bookings/${bookingId}/payments`
+    ).pipe(map(r => r.data));
+  }
+
+  markInstallmentPaid(tripId: string, bookingId: string, paymentId: string): Observable<BookingPaymentDto> {
+    return this.http.put<ApiResponse<BookingPaymentDto>>(
+      `${this.base}/${tripId}/bookings/${bookingId}/payments/${paymentId}/mark-paid`, {}
     ).pipe(map(r => r.data));
   }
 

@@ -59,6 +59,9 @@
       <div>
         <div class="summary-value">{{ totalCollected() | number:'1.0-0' }}</div>
         <div class="summary-label">Collected / {{ totalExpected() | number:'1.0-0' }} EGP</div>
+        <div class="summary-remaining" *ngIf="totalRemaining() > 0">
+          {{ totalRemaining() | number:'1.0-0' }} remaining
+        </div>
       </div>
     </div>
     <div class="summary-card purple" *ngIf="trip.hasPoints && trip.pointValue">
@@ -127,36 +130,132 @@
           <p>No confirmed bookings yet</p>
         </div>
         <div class="booking-list" *ngIf="confirmedBookings.length > 0">
-          <div class="booking-row" *ngFor="let b of confirmedBookings">
-            <div class="booking-info">
-              <span class="member-name">{{ b.memberName }}</span>
-              <span class="troop-name">{{ b.troopName }}</span>
-              <span class="booking-notes" *ngIf="b.notes">{{ b.notes }}</span>
+          <ng-container *ngFor="let b of confirmedBookings">
+            <div class="booking-row">
+              <div class="booking-info">
+                <span class="member-name">{{ b.memberName }}</span>
+                <span class="troop-name">{{ b.troopName }}</span>
+                <span class="booking-notes" *ngIf="b.notes">{{ b.notes }}</span>
+              </div>
+
+              <!-- Standard single-payment amount -->
+              <div class="booking-amount" *ngIf="!b.allowInstallments">
+                <span class="amount">{{ b.amountDue | number:'1.0-0' }} EGP</span>
+                <span class="sibling-tag" *ngIf="b.isSibling">Sibling</span>
+              </div>
+
+              <!-- Installment progress -->
+              <div class="booking-installments" *ngIf="b.allowInstallments">
+                <div class="inst-progress-wrap">
+                  <span class="inst-count"
+                        [class.all-paid]="b.isPaid"
+                        [class.partial]="!b.isPaid && (b.installmentsPaid ?? 0) > 0">
+                    {{ b.installmentsPaid }}/{{ b.installmentsTotal }} paid
+                  </span>
+                  <div class="inst-bar">
+                    <div class="inst-fill"
+                         [style.width.%]="b.installmentsTotal ? ((b.installmentsPaid ?? 0) / b.installmentsTotal) * 100 : 0"
+                         [class.complete]="b.isPaid">
+                    </div>
+                  </div>
+                </div>
+                <span class="amount">{{ b.amountDue | number:'1.0-0' }} EGP</span>
+                <span class="sibling-tag" *ngIf="b.isSibling">Sibling</span>
+              </div>
+
+              <div class="booking-actions">
+                <!-- Single-payment toggle (non-installment bookings) -->
+                <button mat-icon-button
+                        *ngIf="!b.allowInstallments"
+                        [color]="b.isPaid ? 'primary' : ''"
+                        (click)="togglePaid(b)"
+                        [matTooltip]="b.isPaid ? 'Mark as unpaid' : 'Mark as paid'">
+                  <mat-icon>{{ b.isPaid ? 'paid' : 'money_off' }}</mat-icon>
+                </button>
+                <span class="paid-date" *ngIf="!b.allowInstallments && b.isPaid && b.paidAt">
+                  {{ b.paidAt | date:'shortDate' }}
+                </span>
+
+                <!-- Expand installments button -->
+                <button mat-icon-button
+                        *ngIf="b.allowInstallments"
+                        [color]="isExpanded(b.id) ? 'primary' : ''"
+                        (click)="toggleExpanded(b.id)"
+                        [matTooltip]="isExpanded(b.id) ? 'Hide installments' : 'View installments'">
+                  <mat-icon>{{ isExpanded(b.id) ? 'expand_less' : 'expand_more' }}</mat-icon>
+                </button>
+
+                <!-- Cancel booking: all roles with CanAccessTrips -->
+                <button mat-icon-button color="warn"
+                        (click)="cancelBooking(b)"
+                        matTooltip="Cancel booking"
+                        *ngIf="auth.canAccessTrips()">
+                  <mat-icon>cancel</mat-icon>
+                </button>
+              </div>
             </div>
-            <div class="booking-amount">
-              <span class="amount">{{ b.amountDue | number:'1.0-0' }} EGP</span>
-              <span class="sibling-tag" *ngIf="b.isSibling">Sibling</span>
+
+            <!-- ── Installment panel ──────────────────────────── -->
+            <div class="installment-panel" *ngIf="b.allowInstallments && isExpanded(b.id)">
+              <table class="inst-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Amount Due</th>
+                    <th>Paid</th>
+                    <th>Remaining</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let p of b.payments" [class.inst-row-paid]="p.isPaid">
+                    <td class="inst-num">{{ p.installmentNumber }}</td>
+                    <td>{{ p.amountDue | number:'1.0-2' }} EGP</td>
+                    <td class="inst-paid-amt">
+                      {{ p.isPaid ? (p.amountDue | number:'1.0-2') + ' EGP' : '—' }}
+                    </td>
+                    <td class="inst-remaining" [class.zero]="p.isPaid">
+                      {{ p.isPaid ? '0.00' : (p.amountDue | number:'1.0-2') }} EGP
+                    </td>
+                    <td>
+                      <span class="inst-status-chip"
+                            [class.paid]="p.isPaid"
+                            [class.unpaid]="!p.isPaid">
+                        {{ p.isPaid ? 'Paid' : 'Unpaid' }}
+                      </span>
+                    </td>
+                    <td>
+                      <button mat-icon-button
+                              [color]="p.isPaid ? 'primary' : ''"
+                              [disabled]="savingPayment[p.id]"
+                              (click)="markInstallmentPaid(b, p)"
+                              [matTooltip]="p.isPaid ? 'Mark as unpaid' : 'Mark as paid'">
+                        <mat-icon>{{ p.isPaid ? 'paid' : 'money_off' }}</mat-icon>
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <!-- Member payment summary -->
+              <div class="member-payment-summary">
+                <span class="summary-item paid">
+                  <mat-icon>check_circle</mat-icon>
+                  Paid: <strong>{{ bookingCollected(b) | number:'1.0-2' }} EGP</strong>
+                </span>
+                <span class="summary-sep">|</span>
+                <span class="summary-item total">
+                  Total: <strong>{{ b.amountDue | number:'1.0-2' }} EGP</strong>
+                </span>
+                <span class="summary-sep">|</span>
+                <span class="summary-item remaining" [class.zero]="bookingRemaining(b) === 0">
+                  <mat-icon>{{ bookingRemaining(b) === 0 ? 'check' : 'pending' }}</mat-icon>
+                  Remaining: <strong>{{ bookingRemaining(b) | number:'1.0-2' }} EGP</strong>
+                </span>
+              </div>
             </div>
-            <div class="booking-actions">
-              <!-- All roles with CanAccessTrips can toggle paid status -->
-              <button mat-icon-button
-                      [color]="b.isPaid ? 'primary' : ''"
-                      (click)="togglePaid(b)"
-                      [matTooltip]="b.isPaid ? 'Mark as unpaid' : 'Mark as paid'">
-                <mat-icon>{{ b.isPaid ? 'paid' : 'money_off' }}</mat-icon>
-              </button>
-              <span class="paid-date" *ngIf="b.isPaid && b.paidAt">
-                {{ b.paidAt | date:'shortDate' }}
-              </span>
-              <!-- Cancel booking: all roles with CanAccessTrips -->
-              <button mat-icon-button color="warn"
-                      (click)="cancelBooking(b)"
-                      matTooltip="Cancel booking"
-                      *ngIf="auth.canAccessTrips()">
-                <mat-icon>cancel</mat-icon>
-              </button>
-            </div>
-          </div>
+          </ng-container>
         </div>
       </div>
 

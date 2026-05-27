@@ -10,7 +10,8 @@ import { MemberService } from '../../../core/services/member.service';
 import { AuthService } from '../../../core/services/auth.service';
 import {
   TripDto, TripBookingDto, TripAttendanceDto,
-  BookingStatus, TripStatus, TripAttendanceEntryDto
+  BookingStatus, TripStatus, TripAttendanceEntryDto,
+  BookingPaymentDto
 } from '../../../core/models/trip.model';
 import { Member } from '../../../core/models/member.model';
 import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog/confirm-dialog.component';
@@ -39,6 +40,10 @@ export class TripDetailComponent implements OnInit {
   attendanceEdits: Record<string, number> = {};
   // Per-member saving state (shows spinner on the row being saved)
   savingMember: Record<string, boolean> = {};
+  // Per-payment saving state
+  savingPayment: Record<string, boolean> = {};
+  // Expanded booking rows (installment view)
+  expandedBookingIds = new Set<string>();
   exporting = false;
 
   BookingStatus = BookingStatus;
@@ -187,13 +192,77 @@ export class TripDetailComponent implements OnInit {
   }
 
   totalCollected(): number {
-    return this.confirmedBookings
-      .filter(b => b.isPaid)
-      .reduce((sum, b) => sum + b.amountDue, 0);
+    let total = 0;
+    for (const b of this.confirmedBookings) {
+      if (b.allowInstallments && b.payments.length > 0) {
+        // Sum only the paid installment amounts
+        total += b.payments.filter(p => p.isPaid).reduce((sum, p) => sum + p.amountDue, 0);
+      } else if (b.isPaid) {
+        total += b.amountDue;
+      }
+    }
+    return total;
   }
 
   totalExpected(): number {
     return this.confirmedBookings.reduce((sum, b) => sum + b.amountDue, 0);
+  }
+
+  totalRemaining(): number {
+    return this.totalExpected() - this.totalCollected();
+  }
+
+  /** Sum of paid installment amounts for a single booking. */
+  bookingCollected(b: TripBookingDto): number {
+    if (b.allowInstallments && b.payments.length > 0)
+      return b.payments.filter(p => p.isPaid).reduce((s, p) => s + p.amountDue, 0);
+    return b.isPaid ? b.amountDue : 0;
+  }
+
+  /** Remaining amount owed for a single booking. */
+  bookingRemaining(b: TripBookingDto): number {
+    return b.amountDue - this.bookingCollected(b);
+  }
+
+  // ─── Installment payments ─────────────────────────────────────────────────
+
+  toggleExpanded(bookingId: string): void {
+    if (this.expandedBookingIds.has(bookingId)) {
+      this.expandedBookingIds.delete(bookingId);
+    } else {
+      this.expandedBookingIds.add(bookingId);
+    }
+  }
+
+  isExpanded(bookingId: string): boolean {
+    return this.expandedBookingIds.has(bookingId);
+  }
+
+  markInstallmentPaid(b: TripBookingDto, payment: BookingPaymentDto): void {
+    this.savingPayment[payment.id] = true;
+    this.tripService.markInstallmentPaid(this.trip.id, b.id, payment.id).subscribe({
+      next: updated => {
+        // Update the specific payment in the local array (no full reload needed)
+        const idx = this.bookings.findIndex(x => x.id === b.id);
+        if (idx >= 0) {
+          const payments = this.bookings[idx].payments.map(p =>
+            p.id === payment.id ? updated : p
+          );
+          const paidCount = payments.filter(p => p.isPaid).length;
+          this.bookings[idx] = {
+            ...this.bookings[idx],
+            payments,
+            installmentsPaid: paidCount,
+            isPaid: paidCount === this.bookings[idx].installmentsTotal
+          };
+        }
+        this.savingPayment[payment.id] = false;
+      },
+      error: () => {
+        this.snack.open('Failed to update installment', 'Close', { duration: 3000 });
+        this.savingPayment[payment.id] = false;
+      }
+    });
   }
 
   // ─── Attendance ───────────────────────────────────────────────────────────

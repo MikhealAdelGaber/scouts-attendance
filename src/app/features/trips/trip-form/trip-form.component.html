@@ -92,6 +92,38 @@
           <input matInput type="number" min="1" formControlName="pointValue">
         </mat-form-field>
 
+        <!-- Installments -->
+        <div class="checkbox-row">
+          <mat-checkbox formControlName="allowInstallments">Allow payment in installments</mat-checkbox>
+        </div>
+
+        <div *ngIf="form.get('allowInstallments')?.value" class="installment-row">
+          <mat-form-field appearance="outline" style="min-width:220px">
+            <mat-label>Number of installments</mat-label>
+            <mat-icon matPrefix>event_repeat</mat-icon>
+            <input matInput type="number" min="2" max="12" formControlName="numberOfInstallments"
+                   placeholder="e.g. 3">
+            <mat-hint>Minimum 2, maximum 12</mat-hint>
+            <mat-error *ngIf="form.get('numberOfInstallments')?.hasError('min')">Minimum is 2</mat-error>
+            <mat-error *ngIf="form.get('numberOfInstallments')?.hasError('max')">Maximum is 12</mat-error>
+          </mat-form-field>
+
+          <div class="installment-preview" *ngIf="installmentPreview !== null">
+            <div class="preview-row">
+              <mat-icon>payments</mat-icon>
+              <span>Each installment: <strong>{{ installmentPreview | number:'1.0-2' }} EGP</strong></span>
+            </div>
+            <div class="preview-row" *ngIf="form.get('siblingPrice')?.value > 0">
+              <mat-icon>family_restroom</mat-icon>
+              <span>Sibling installment: <strong>{{ siblingInstallmentPreview | number:'1.0-2' }} EGP</strong></span>
+            </div>
+            <div class="preview-row muted">
+              <mat-icon>info</mat-icon>
+              <span>{{ form.get('numberOfInstallments')?.value }} payments per booking — mark each paid individually on the trip detail page.</span>
+            </div>
+          </div>
+        </div>
+
         <!-- Status (edit only) -->
         <mat-form-field appearance="outline" class="full-width" *ngIf="isEdit">
           <mat-label>Status</mat-label>

@@ -85,6 +85,12 @@
     color: var(--text-secondary);
     margin-top: 2px;
   }
+  .summary-remaining {
+    font-size: 0.72rem;
+    color: #e65100;
+    margin-top: 3px;
+    font-weight: 600;
+  }
 }
 
 // ─── Tabs ─────────────────────────────────────────────────────────────────
@@ -234,6 +240,160 @@
 
 .paid-date { font-size: 11px; color: var(--text-secondary); }
 
+// ─── Installment progress (in booking row) ────────────────────────────────
+.booking-installments {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+
+  .amount { font-weight: 600; color: var(--text-primary); font-size: 0.9rem; }
+  .sibling-tag {
+    display: block;
+    font-size: 10px;
+    background: rgba(33,150,243,0.15);
+    color: #1565c0;
+    border-radius: 8px;
+    padding: 1px 6px;
+  }
+}
+
+.inst-progress-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+}
+
+.inst-count {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+
+  &.partial { color: #e65100; }
+  &.all-paid { color: #388e3c; }
+}
+
+.inst-bar {
+  width: 80px;
+  height: 5px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.inst-fill {
+  height: 100%;
+  background: #ff9800;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+
+  &.complete { background: #4caf50; }
+}
+
+// ─── Installment panel ────────────────────────────────────────────────────
+.installment-panel {
+  background: var(--background, #fafafa);
+  border: 1px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  padding: 0 14px 12px;
+  margin-bottom: 2px;
+}
+
+.inst-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+
+  thead tr {
+    border-bottom: 1px solid var(--border);
+  }
+
+  th {
+    padding: 8px 6px 6px;
+    text-align: left;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  td {
+    padding: 4px 6px;
+    color: var(--text-primary);
+    vertical-align: middle;
+  }
+
+  tr.inst-row-paid td { opacity: 0.7; }
+}
+
+.inst-num {
+  font-weight: 700;
+  color: var(--text-secondary);
+  min-width: 24px;
+}
+
+.inst-paid-amt {
+  color: #388e3c;
+  font-weight: 600;
+  font-size: 0.82rem;
+}
+
+.inst-remaining {
+  color: #c62828;
+  font-weight: 600;
+  font-size: 0.82rem;
+
+  &.zero { color: #388e3c; }
+}
+
+.inst-date { font-size: 11px; color: var(--text-secondary); }
+
+// ─── Member payment summary bar ──────────────────────────────────────────
+.member-payment-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  padding: 8px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 0.83rem;
+}
+
+.summary-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-secondary);
+
+  mat-icon { font-size: 14px; width: 14px; height: 14px; }
+  strong   { color: var(--text-primary); }
+
+  &.paid      mat-icon { color: #4caf50; }
+  &.remaining mat-icon { color: #e65100; }
+  &.remaining.zero mat-icon { color: #4caf50; }
+  &.remaining.zero strong   { color: #4caf50; }
+}
+
+.summary-sep { color: var(--border); font-size: 1rem; }
+
+.inst-status-chip {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 10px;
+  text-transform: uppercase;
+
+  &.paid   { background: #e8f5e9; color: #388e3c; }
+  &.unpaid { background: #fce4ec; color: #c62828; }
+}
+
 // ─── Attendance ───────────────────────────────────────────────────────────
 .attendance-container { padding: 4px 0; }
 
@@ -341,4 +501,10 @@
   }
 
   .booking-amount .sibling-tag { background: rgba(21,101,192,0.25); color: #64b5f6; }
+  .booking-installments .sibling-tag { background: rgba(21,101,192,0.25); color: #64b5f6; }
+
+  .inst-status-chip {
+    &.paid   { background: rgba(56,142,60,0.25);  color: #81c784; }
+    &.unpaid { background: rgba(198,40,40,0.25);  color: #ef9a9a; }
+  }
 }
