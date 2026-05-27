@@ -10,8 +10,7 @@ import { MemberService } from '../../../core/services/member.service';
 import { AuthService } from '../../../core/services/auth.service';
 import {
   TripDto, TripBookingDto, TripAttendanceDto,
-  BookingStatus, TripStatus, TripAttendanceEntryDto,
-  BookingPaymentDto
+  BookingStatus, TripStatus, TripAttendanceEntryDto
 } from '../../../core/models/trip.model';
 import { Member } from '../../../core/models/member.model';
 import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog/confirm-dialog.component';
@@ -38,16 +37,22 @@ export class TripDetailComponent implements OnInit {
 
   // Attendance edited map: memberId → status
   attendanceEdits: Record<string, number> = {};
-  // Per-member saving state (shows spinner on the row being saved)
+  // Per-member saving state
   savingMember: Record<string, boolean> = {};
-  // Per-payment saving state
-  savingPayment: Record<string, boolean> = {};
-  // Expanded booking rows (installment view)
+
+  // Expanded booking rows (payment view)
   expandedBookingIds = new Set<string>();
+
+  // Per-booking add-payment form state
+  newPaymentAmount: Record<string, number>  = {};
+  newPaymentNotes:  Record<string, string>  = {};
+  addingPayment:    Record<string, boolean> = {};
+  deletingPayment:  Record<string, boolean> = {};
+
   exporting = false;
 
   BookingStatus = BookingStatus;
-  TripStatus = TripStatus;
+  TripStatus    = TripStatus;
 
   readonly attendanceStatuses = [
     { value: 0, label: 'Present',  icon: 'check_circle',   color: '#4caf50' },
@@ -73,15 +78,14 @@ export class TripDetailComponent implements OnInit {
       error: () => { this.loading = false; this.router.navigate(['/trips']); }
     });
 
-    // Member search with debounce — scoped to trip's group (Bug 4 fix)
+    // Member search with debounce — scoped to trip's group
     this.memberSearch.valueChanges.pipe(debounceTime(300), distinctUntilChanged())
       .subscribe(q => {
         if (!q || q.length < 2) { this.memberResults = []; return; }
-        // Always filter by the trip's groupId so only group-members are shown
         this.memberService.getAll({
           search:   q,
           pageSize: 15,
-          groupId:  this.trip?.groupId   // scopes to the trip's group
+          groupId:  this.trip?.groupId
         }).subscribe(r => this.memberResults = r.items);
       });
   }
@@ -93,11 +97,8 @@ export class TripDetailComponent implements OnInit {
   loadAttendance(): void {
     this.tripService.getAttendance(this.trip.id).subscribe(a => {
       this.attendance = a;
-      // Pre-populate edits from existing records
       this.attendanceEdits = {};
       a.forEach(r => this.attendanceEdits[r.memberId] = r.status);
-
-      // Also add confirmed-booked members not yet in attendance
       this.confirmedBookings.forEach(b => {
         if (!(b.memberId in this.attendanceEdits))
           this.attendanceEdits[b.memberId] = 1; // default Absent
@@ -147,7 +148,6 @@ export class TripDetailComponent implements OnInit {
         this.isSibling = false;
         this.bookingNotes = '';
         this.loadBookings();
-        // Reload trip to update counts
         this.tripService.getById(this.trip.id).subscribe(t => this.trip = t);
       },
       error: (err) => {
@@ -191,17 +191,10 @@ export class TripDetailComponent implements OnInit {
     });
   }
 
+  // ─── Summary totals ───────────────────────────────────────────────────────
+
   totalCollected(): number {
-    let total = 0;
-    for (const b of this.confirmedBookings) {
-      if (b.allowInstallments && b.payments.length > 0) {
-        // Sum only the paid installment amounts
-        total += b.payments.filter(p => p.isPaid).reduce((sum, p) => sum + p.amountDue, 0);
-      } else if (b.isPaid) {
-        total += b.amountDue;
-      }
-    }
-    return total;
+    return this.confirmedBookings.reduce((sum, b) => sum + this.bookingCollected(b), 0);
   }
 
   totalExpected(): number {
@@ -212,19 +205,16 @@ export class TripDetailComponent implements OnInit {
     return this.totalExpected() - this.totalCollected();
   }
 
-  /** Sum of paid installment amounts for a single booking. */
   bookingCollected(b: TripBookingDto): number {
-    if (b.allowInstallments && b.payments.length > 0)
-      return b.payments.filter(p => p.isPaid).reduce((s, p) => s + p.amountDue, 0);
+    if (b.allowInstallments) return b.totalPaid;
     return b.isPaid ? b.amountDue : 0;
   }
 
-  /** Remaining amount owed for a single booking. */
   bookingRemaining(b: TripBookingDto): number {
     return b.amountDue - this.bookingCollected(b);
   }
 
-  // ─── Installment payments ─────────────────────────────────────────────────
+  // ─── Flexible payments ────────────────────────────────────────────────────
 
   toggleExpanded(bookingId: string): void {
     if (this.expandedBookingIds.has(bookingId)) {
@@ -238,29 +228,75 @@ export class TripDetailComponent implements OnInit {
     return this.expandedBookingIds.has(bookingId);
   }
 
-  markInstallmentPaid(b: TripBookingDto, payment: BookingPaymentDto): void {
-    this.savingPayment[payment.id] = true;
-    this.tripService.markInstallmentPaid(this.trip.id, b.id, payment.id).subscribe({
-      next: updated => {
-        // Update the specific payment in the local array (no full reload needed)
+  paymentProgress(b: TripBookingDto): number {
+    if (!b.amountDue) return 0;
+    return Math.min(100, (b.totalPaid / b.amountDue) * 100);
+  }
+
+  paymentProgressClass(b: TripBookingDto): string {
+    const pct = this.paymentProgress(b);
+    if (pct >= 100) return 'complete';
+    if (pct > 0)    return 'partial';
+    return '';
+  }
+
+  addPayment(b: TripBookingDto): void {
+    const amount = this.newPaymentAmount[b.id];
+    if (!amount || amount <= 0) {
+      this.snack.open('Enter a valid amount', 'Close', { duration: 2000 });
+      return;
+    }
+    this.addingPayment[b.id] = true;
+    this.tripService.addPayment(this.trip.id, b.id, {
+      amountPaid: amount,
+      notes:      this.newPaymentNotes[b.id] ?? ''
+    }).subscribe({
+      next: newPayment => {
         const idx = this.bookings.findIndex(x => x.id === b.id);
         if (idx >= 0) {
-          const payments = this.bookings[idx].payments.map(p =>
-            p.id === payment.id ? updated : p
-          );
-          const paidCount = payments.filter(p => p.isPaid).length;
+          const payments  = [...this.bookings[idx].payments, newPayment];
+          const totalPaid = payments.reduce((s, p) => s + p.amountPaid, 0);
           this.bookings[idx] = {
             ...this.bookings[idx],
             payments,
-            installmentsPaid: paidCount,
-            isPaid: paidCount === this.bookings[idx].installmentsTotal
+            totalPaid,
+            isPaid: totalPaid >= this.bookings[idx].amountDue
           };
         }
-        this.savingPayment[payment.id] = false;
+        this.newPaymentAmount[b.id] = 0;
+        this.newPaymentNotes[b.id]  = '';
+        this.addingPayment[b.id]    = false;
+        this.snack.open('Payment recorded', 'Close', { duration: 2000 });
+      },
+      error: (err) => {
+        const msg = err?.error?.message || 'Failed to record payment';
+        this.snack.open(msg, 'Close', { duration: 4000 });
+        this.addingPayment[b.id] = false;
+      }
+    });
+  }
+
+  deletePayment(b: TripBookingDto, paymentId: string): void {
+    this.deletingPayment[paymentId] = true;
+    this.tripService.deletePayment(this.trip.id, b.id, paymentId).subscribe({
+      next: () => {
+        const idx = this.bookings.findIndex(x => x.id === b.id);
+        if (idx >= 0) {
+          const payments  = this.bookings[idx].payments.filter(p => p.id !== paymentId);
+          const totalPaid = payments.reduce((s, p) => s + p.amountPaid, 0);
+          this.bookings[idx] = {
+            ...this.bookings[idx],
+            payments,
+            totalPaid,
+            isPaid: totalPaid >= this.bookings[idx].amountDue
+          };
+        }
+        this.deletingPayment[paymentId] = false;
+        this.snack.open('Payment deleted', 'Close', { duration: 2000 });
       },
       error: () => {
-        this.snack.open('Failed to update installment', 'Close', { duration: 3000 });
-        this.savingPayment[payment.id] = false;
+        this.snack.open('Failed to delete payment', 'Close', { duration: 3000 });
+        this.deletingPayment[paymentId] = false;
       }
     });
   }
@@ -268,7 +304,6 @@ export class TripDetailComponent implements OnInit {
   // ─── Attendance ───────────────────────────────────────────────────────────
 
   attendanceMembers(): Array<{ memberId: string; memberName: string; troopName: string }> {
-    // Merge confirmed bookings + existing attendance records for display
     const map = new Map<string, { memberId: string; memberName: string; troopName: string }>();
     this.confirmedBookings.forEach(b => map.set(b.memberId, {
       memberId: b.memberId, memberName: b.memberName, troopName: b.troopName
@@ -287,7 +322,6 @@ export class TripDetailComponent implements OnInit {
     this.attendanceEdits[memberId] = status;
   }
 
-  /** Computed attendance summary across confirmed members. */
   get attendanceSummary() {
     const members = this.attendanceMembers();
     return {
@@ -298,12 +332,9 @@ export class TripDetailComponent implements OnInit {
     };
   }
 
-  /** Save a single member's attendance immediately on status-button click. */
   saveOneAttendance(memberId: string, status: number): void {
-    // Optimistic local update
     this.setAttendanceStatus(memberId, status);
     this.savingMember[memberId] = true;
-
     this.tripService.saveAttendance(this.trip.id, {
       records: [{ memberId, status, notes: '' }]
     }).subscribe({
@@ -327,10 +358,6 @@ export class TripDetailComponent implements OnInit {
     return this.attendanceStatuses.find(s => s.value === status) ?? this.attendanceStatuses[1];
   }
 
-  /**
-   * Returns the CSS class to highlight the correct status button.
-   * Uses per-status !important classes so they override mat-mini-fab defaults.
-   */
   getAttendanceBtnClass(memberId: string, statusValue: number): string {
     if (this.getAttendanceStatus(memberId) !== statusValue) return '';
     const map: Record<number, string> = { 0: 'att-present', 1: 'att-absent', 2: 'att-late', 3: 'att-excused' };

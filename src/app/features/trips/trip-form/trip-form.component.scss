@@ -28,36 +28,19 @@
 
 .checkbox-row { margin-bottom: 12px; }
 
-.installment-row {
+.installment-info {
   display: flex;
-  flex-wrap: wrap;
   align-items: flex-start;
-  gap: 16px;
-  margin-bottom: 12px;
-}
-
-.installment-preview {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+  gap: 8px;
+  padding: 10px 14px;
   background: rgba(92,107,192,0.08);
   border: 1px solid rgba(92,107,192,0.2);
   border-radius: 8px;
-  padding: 10px 14px;
-  align-self: flex-start;
-}
-
-.preview-row {
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  margin-bottom: 14px;
   font-size: 0.85rem;
-  color: var(--text-primary);
+  color: var(--text-secondary);
 
-  mat-icon { font-size: 16px; width: 16px; height: 16px; color: #5c6bc0; }
-  strong   { color: #5c6bc0; }
-
-  &.muted { color: var(--text-secondary); mat-icon { color: var(--text-secondary); } }
+  mat-icon { font-size: 18px; width: 18px; height: 18px; color: #5c6bc0; flex-shrink: 0; margin-top: 1px; }
 }
 
 .flex-gap {

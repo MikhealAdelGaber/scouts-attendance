@@ -6,7 +6,7 @@ import {
   TripDto, CreateTripDto, UpdateTripDto,
   TripBookingDto, CreateBookingDto,
   TripAttendanceDto, SaveTripAttendanceDto,
-  BookingPaymentDto
+  BookingPaymentDto, AddPaymentDto
 } from '../models/trip.model';
 
 interface ApiResponse<T> { success: boolean; message?: string; data: T; }
@@ -67,16 +67,24 @@ export class TripService {
     ).pipe(map(r => r.data));
   }
 
+  // ─── Flexible payments ────────────────────────────────────────────────────
+
   getPayments(tripId: string, bookingId: string): Observable<BookingPaymentDto[]> {
     return this.http.get<ApiResponse<BookingPaymentDto[]>>(
       `${this.base}/${tripId}/bookings/${bookingId}/payments`
     ).pipe(map(r => r.data));
   }
 
-  markInstallmentPaid(tripId: string, bookingId: string, paymentId: string): Observable<BookingPaymentDto> {
-    return this.http.put<ApiResponse<BookingPaymentDto>>(
-      `${this.base}/${tripId}/bookings/${bookingId}/payments/${paymentId}/mark-paid`, {}
+  addPayment(tripId: string, bookingId: string, dto: AddPaymentDto): Observable<BookingPaymentDto> {
+    return this.http.post<ApiResponse<BookingPaymentDto>>(
+      `${this.base}/${tripId}/bookings/${bookingId}/payments`, dto
     ).pipe(map(r => r.data));
+  }
+
+  deletePayment(tripId: string, bookingId: string, paymentId: string): Observable<void> {
+    return this.http.delete<ApiResponse<void>>(
+      `${this.base}/${tripId}/bookings/${bookingId}/payments/${paymentId}`
+    ).pipe(map(() => void 0));
   }
 
   // ─── Attendance ───────────────────────────────────────────────────────────

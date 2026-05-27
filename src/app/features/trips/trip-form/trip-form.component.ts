@@ -39,29 +39,23 @@ export class TripFormComponent implements OnInit {
 
   ngOnInit(): void {
     this.form = this.fb.group({
-      name:                 ['', [Validators.required, Validators.minLength(3)]],
-      description:          [''],
-      location:             ['', Validators.required],
-      tripDate:             [null, Validators.required],
-      price:                [0,   [Validators.required, Validators.min(0)]],
-      siblingPrice:         [0,   [Validators.required, Validators.min(0)]],
-      maxCapacity:          [null],
-      hasPoints:            [false],
-      pointValue:           [null],
-      allowInstallments:    [false],
-      numberOfInstallments: [null, [Validators.min(2), Validators.max(24)]],
-      status:               [TripStatus.Open],
-      groupId:              [null]  // required for SystemAdmin only (validated in submit)
+      name:             ['', [Validators.required, Validators.minLength(3)]],
+      description:      [''],
+      location:         ['', Validators.required],
+      tripDate:         [null, Validators.required],
+      price:            [0,   [Validators.required, Validators.min(0)]],
+      siblingPrice:     [0,   [Validators.required, Validators.min(0)]],
+      maxCapacity:      [null],
+      hasPoints:        [false],
+      pointValue:       [null],
+      allowInstallments: [false],
+      status:           [TripStatus.Open],
+      groupId:          [null]  // required for SystemAdmin only
     });
 
     // When hasPoints is toggled off, clear pointValue
     this.form.get('hasPoints')!.valueChanges.subscribe(has => {
       if (!has) this.form.patchValue({ pointValue: null });
-    });
-
-    // When allowInstallments is toggled off, clear numberOfInstallments
-    this.form.get('allowInstallments')!.valueChanges.subscribe(allow => {
-      if (!allow) this.form.patchValue({ numberOfInstallments: null });
     });
 
     // Load groups for SystemAdmin group picker
@@ -74,36 +68,21 @@ export class TripFormComponent implements OnInit {
       this.isEdit = true;
       this.tripService.getById(this.tripId).subscribe(t => {
         this.form.patchValue({
-          name:                 t.name,
-          description:          t.description,
-          location:             t.location,
-          tripDate:             new Date(t.tripDate),
-          price:                t.price,
-          siblingPrice:         t.siblingPrice,
-          maxCapacity:          t.maxCapacity,
-          hasPoints:            t.hasPoints,
-          pointValue:           t.pointValue,
-          allowInstallments:    t.allowInstallments,
-          numberOfInstallments: t.numberOfInstallments,
-          status:               t.status,
-          groupId:              t.groupId
+          name:             t.name,
+          description:      t.description,
+          location:         t.location,
+          tripDate:         new Date(t.tripDate),
+          price:            t.price,
+          siblingPrice:     t.siblingPrice,
+          maxCapacity:      t.maxCapacity,
+          hasPoints:        t.hasPoints,
+          pointValue:       t.pointValue,
+          allowInstallments: t.allowInstallments,
+          status:           t.status,
+          groupId:          t.groupId
         });
       });
     }
-  }
-
-  get installmentPreview(): number | null {
-    const price = this.form.get('price')?.value ?? 0;
-    const n     = this.form.get('numberOfInstallments')?.value;
-    if (!n || n < 2 || !price) return null;
-    return Math.round((price / n) * 100) / 100;
-  }
-
-  get siblingInstallmentPreview(): number | null {
-    const price = this.form.get('siblingPrice')?.value ?? 0;
-    const n     = this.form.get('numberOfInstallments')?.value;
-    if (!n || n < 2) return null;
-    return Math.round((price / n) * 100) / 100;
   }
 
   submit(): void {
@@ -123,19 +102,18 @@ export class TripFormComponent implements OnInit {
       : new Date(val.tripDate).toISOString();
 
     const base = {
-      name:                 val.name,
-      description:          val.description ?? '',
-      location:             val.location,
+      name:             val.name,
+      description:      val.description ?? '',
+      location:         val.location,
       tripDate,
-      price:                val.price,
-      siblingPrice:         val.siblingPrice,
-      maxCapacity:          val.maxCapacity || null,
-      hasPoints:            val.hasPoints,
-      pointValue:           val.hasPoints ? val.pointValue : null,
-      allowInstallments:    val.allowInstallments,
-      numberOfInstallments: val.allowInstallments ? (val.numberOfInstallments || null) : null,
+      price:            val.price,
+      siblingPrice:     val.siblingPrice,
+      maxCapacity:      val.maxCapacity || null,
+      hasPoints:        val.hasPoints,
+      pointValue:       val.hasPoints ? val.pointValue : null,
+      allowInstallments: val.allowInstallments,
       // SystemAdmin: send groupId so backend can scope correctly
-      groupId:              this.auth.isSystemAdmin() ? val.groupId : undefined
+      groupId:          this.auth.isSystemAdmin() ? val.groupId : undefined
     };
 
     if (this.isEdit) {

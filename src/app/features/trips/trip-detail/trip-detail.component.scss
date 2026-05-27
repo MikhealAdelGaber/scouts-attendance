@@ -240,14 +240,13 @@
 
 .paid-date { font-size: 11px; color: var(--text-secondary); }
 
-// ─── Installment progress (in booking row) ────────────────────────────────
+// ─── Flexible payment progress (in booking row) ───────────────────────────
 .booking-installments {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   gap: 4px;
 
-  .amount { font-weight: 600; color: var(--text-primary); font-size: 0.9rem; }
   .sibling-tag {
     display: block;
     font-size: 10px;
@@ -258,50 +257,61 @@
   }
 }
 
-.inst-progress-wrap {
+.pay-progress-wrap {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   gap: 3px;
 }
 
-.inst-count {
-  font-size: 11px;
+.pay-label {
+  font-size: 0.82rem;
   font-weight: 600;
-  color: var(--text-secondary);
-
-  &.partial { color: #e65100; }
-  &.all-paid { color: #388e3c; }
+  color: var(--text-primary);
 }
 
-.inst-bar {
-  width: 80px;
-  height: 5px;
+.pay-bar {
+  width: 90px;
+  height: 6px;
   background: var(--border);
   border-radius: 3px;
   overflow: hidden;
 }
 
-.inst-fill {
+.pay-fill {
   height: 100%;
-  background: #ff9800;
+  background: #f44336;   // red = nothing paid
   border-radius: 3px;
   transition: width 0.3s ease;
 
-  &.complete { background: #4caf50; }
+  &.partial  { background: #ff9800; }  // orange = partial
+  &.complete { background: #4caf50; }  // green = fully paid
 }
 
-// ─── Installment panel ────────────────────────────────────────────────────
-.installment-panel {
+// ─── Payment panel ────────────────────────────────────────────────────────
+.payment-panel {
   background: var(--background, #fafafa);
   border: 1px solid var(--border);
   border-top: none;
   border-radius: 0 0 8px 8px;
-  padding: 0 14px 12px;
+  padding: 14px 16px 14px;
   margin-bottom: 2px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-.inst-table {
+.add-payment-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 10px;
+
+  mat-form-field { flex: 1; }
+  button { align-self: center; }
+}
+
+.pay-table {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.85rem;
@@ -311,7 +321,7 @@
   }
 
   th {
-    padding: 8px 6px 6px;
+    padding: 6px 8px;
     text-align: left;
     font-size: 0.75rem;
     font-weight: 600;
@@ -321,35 +331,18 @@
   }
 
   td {
-    padding: 4px 6px;
+    padding: 5px 8px;
     color: var(--text-primary);
     vertical-align: middle;
   }
 
-  tr.inst-row-paid td { opacity: 0.7; }
+  tr:hover td { background: rgba(0,0,0,0.02); }
 }
 
-.inst-num {
-  font-weight: 700;
-  color: var(--text-secondary);
-  min-width: 24px;
-}
-
-.inst-paid-amt {
-  color: #388e3c;
-  font-weight: 600;
-  font-size: 0.82rem;
-}
-
-.inst-remaining {
-  color: #c62828;
-  font-weight: 600;
-  font-size: 0.82rem;
-
-  &.zero { color: #388e3c; }
-}
-
-.inst-date { font-size: 11px; color: var(--text-secondary); }
+.pay-num   { font-weight: 700; color: var(--text-secondary); min-width: 24px; }
+.pay-amount { font-weight: 600; color: #388e3c; }
+.pay-date  { font-size: 11px; color: var(--text-secondary); white-space: nowrap; }
+.pay-notes { font-size: 0.8rem; color: var(--text-secondary); font-style: italic; }
 
 // ─── Member payment summary bar ──────────────────────────────────────────
 .member-payment-summary {
@@ -357,7 +350,6 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 6px;
-  margin-top: 10px;
   padding: 8px 12px;
   background: var(--surface);
   border: 1px solid var(--border);
@@ -381,18 +373,6 @@
 }
 
 .summary-sep { color: var(--border); font-size: 1rem; }
-
-.inst-status-chip {
-  display: inline-block;
-  font-size: 10px;
-  font-weight: 700;
-  padding: 2px 8px;
-  border-radius: 10px;
-  text-transform: uppercase;
-
-  &.paid   { background: #e8f5e9; color: #388e3c; }
-  &.unpaid { background: #fce4ec; color: #c62828; }
-}
 
 // ─── Attendance ───────────────────────────────────────────────────────────
 .attendance-container { padding: 4px 0; }
@@ -449,13 +429,11 @@
 .att-btn {
   width: 36px;
   height: 36px;
-  // Neutral unselected state — overrides mat-mini-fab defaults
   background-color: var(--border) !important;
   color: var(--text-secondary) !important;
   transition: background-color 0.15s, transform 0.12s, box-shadow 0.12s;
   mat-icon { font-size: 18px; width: 18px; height: 18px; }
 
-  // Per-status selected states — each uses !important to beat Material
   &.att-present {
     background-color: #4caf50 !important;
     color: white !important;
@@ -482,8 +460,6 @@
   }
 }
 
-// .save-footer removed — attendance saves per-member immediately
-
 .empty-state {
   text-align: center;
   padding: 40px;
@@ -502,9 +478,4 @@
 
   .booking-amount .sibling-tag { background: rgba(21,101,192,0.25); color: #64b5f6; }
   .booking-installments .sibling-tag { background: rgba(21,101,192,0.25); color: #64b5f6; }
-
-  .inst-status-chip {
-    &.paid   { background: rgba(56,142,60,0.25);  color: #81c784; }
-    &.unpaid { background: rgba(198,40,40,0.25);  color: #ef9a9a; }
-  }
 }
