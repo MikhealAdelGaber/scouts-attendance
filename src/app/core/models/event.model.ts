@@ -11,6 +11,7 @@ export interface ScoutEvent {
   attendanceCount: number;
   presentPoints: number;
   latePoints: number;
+  tooLatePoints: number;
   excusedPoints: number;
   absentPoints: number;
   createdAt: string;
@@ -24,6 +25,7 @@ export interface CreateEvent {
   groupId?: string;
   presentPoints?: number;
   latePoints?: number;
+  tooLatePoints?: number;
   excusedPoints?: number;
   absentPoints?: number;
 }
@@ -35,6 +37,7 @@ export interface UpdateEvent {
   isActive: boolean;
   presentPoints?: number;
   latePoints?: number;
+  tooLatePoints?: number;
   excusedPoints?: number;
   absentPoints?: number;
 }

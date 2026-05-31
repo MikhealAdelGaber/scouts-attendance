@@ -82,6 +82,13 @@
             <div class="lbl">Late</div>
           </mat-card-content>
         </mat-card>
+        <mat-card class="summary-card" style="border-top:3px solid #e65100">
+          <mat-card-content>
+            <mat-icon style="color:#e65100">watch_later</mat-icon>
+            <div class="val" style="color:#e65100">{{ tooLateCount }}</div>
+            <div class="lbl">Too Late</div>
+          </mat-card-content>
+        </mat-card>
         <mat-card class="summary-card absent">
           <mat-card-content>
             <mat-icon>cancel</mat-icon>
@@ -97,7 +104,7 @@
             <div class="lbl">Excused</div>
           </mat-card-content>
         </mat-card>
-        <!-- Rate = (Present + Late + Excused) / Total × 100 -->
+        <!-- Rate = (Present + Late + TooLate + Excused) / Total × 100 -->
         <mat-card class="summary-card rate">
           <mat-card-content>
             <mat-icon>percent</mat-icon>

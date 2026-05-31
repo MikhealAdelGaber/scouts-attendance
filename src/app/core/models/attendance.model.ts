@@ -1,4 +1,4 @@
-export enum AttendanceStatus { Present = 1, Late = 2, Absent = 3, Excused = 4 }
+export enum AttendanceStatus { Present = 1, Late = 2, Absent = 3, Excused = 4, TooLate = 5 }
 
 export interface AttendanceRecord {
   id: string;
@@ -63,6 +63,7 @@ export interface AttendanceSummary {
   totalMembers: number;
   present: number;
   late: number;
+  tooLate: number;
   absent: number;
   excused: number;
   attendanceRate: number;

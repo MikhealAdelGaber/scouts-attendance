@@ -48,10 +48,11 @@ export class MarkAttendanceComponent implements OnInit, OnDestroy {
 
   AttendanceStatus = AttendanceStatus;
   statusOptions = [
-    { value: AttendanceStatus.Present, label: 'Present', icon: 'check_circle', color: '#4caf50' },
-    { value: AttendanceStatus.Late,    label: 'Late',    icon: 'schedule',     color: '#ff9800' },
-    { value: AttendanceStatus.Absent,  label: 'Absent',  icon: 'cancel',       color: '#f44336' },
-    { value: AttendanceStatus.Excused, label: 'Excused', icon: 'info',         color: '#2196f3' }
+    { value: AttendanceStatus.Present, label: 'Present',  icon: 'check_circle', color: '#4caf50' },
+    { value: AttendanceStatus.Late,    label: 'Late',     icon: 'schedule',     color: '#ff9800' },
+    { value: AttendanceStatus.TooLate, label: 'Too Late', icon: 'watch_later',  color: '#e65100' },
+    { value: AttendanceStatus.Absent,  label: 'Absent',   icon: 'cancel',       color: '#f44336' },
+    { value: AttendanceStatus.Excused, label: 'Excused',  icon: 'info',         color: '#2196f3' }
   ];
   displayedColumns = ['member', 'troop', 'status', 'notes'];
 
@@ -253,15 +254,16 @@ export class MarkAttendanceComponent implements OnInit, OnDestroy {
   // backend (Excused if an active excuse covers the event date, Absent otherwise),
   // so these counts are always accurate — no API round-trip needed.
 
-  get presentCount(): number  { return this.rows.filter(r => r.status === AttendanceStatus.Present).length; }
-  get lateCount():    number  { return this.rows.filter(r => r.status === AttendanceStatus.Late).length; }
-  get absentCount():  number  { return this.rows.filter(r => r.status === AttendanceStatus.Absent).length; }
-  get excusedCount(): number  { return this.rows.filter(r => r.status === AttendanceStatus.Excused).length; }
+  get presentCount():  number { return this.rows.filter(r => r.status === AttendanceStatus.Present).length; }
+  get lateCount():     number { return this.rows.filter(r => r.status === AttendanceStatus.Late).length; }
+  get tooLateCount():  number { return this.rows.filter(r => r.status === AttendanceStatus.TooLate).length; }
+  get absentCount():   number { return this.rows.filter(r => r.status === AttendanceStatus.Absent).length; }
+  get excusedCount():  number { return this.rows.filter(r => r.status === AttendanceStatus.Excused).length; }
 
-  /** Rate = (Present + Late + Excused) / TotalMembers × 100 */
+  /** Rate = (Present + Late + TooLate + Excused) / TotalMembers × 100 */
   get attendanceRate(): number {
     const total = this.rows.length;
     if (total === 0) return 0;
-    return Math.round((this.presentCount + this.lateCount + this.excusedCount) * 1000 / total) / 10;
+    return Math.round((this.presentCount + this.lateCount + this.tooLateCount + this.excusedCount) * 1000 / total) / 10;
   }
 }

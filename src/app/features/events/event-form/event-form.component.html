@@ -82,6 +82,14 @@
             </mat-form-field>
 
             <mat-form-field appearance="outline" style="flex:1;min-width:140px">
+              <mat-label>Too Late Points</mat-label>
+              <mat-icon matPrefix style="color:#e65100">watch_later</mat-icon>
+              <input matInput type="number" formControlName="tooLatePoints">
+              <mat-hint>Very late arrival (default 0)</mat-hint>
+              <mat-error *ngIf="form.get('tooLatePoints')?.hasError('required')">Required</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" style="flex:1;min-width:140px">
               <mat-label>Absent Points</mat-label>
               <mat-icon matPrefix style="color:#f44336">cancel</mat-icon>
               <input matInput type="number" formControlName="absentPoints">

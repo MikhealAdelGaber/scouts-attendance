@@ -48,9 +48,10 @@ export class EventFormComponent implements OnInit {
       troopId:       [''],
       groupId:       [''],
       isActive:      [true],
-      presentPoints: [100, [Validators.required, Validators.min(-10000), Validators.max(10000)]],
-      latePoints:    [50,  [Validators.required, Validators.min(-10000), Validators.max(10000)]],
-      absentPoints:  [-10, [Validators.required, Validators.min(-10000), Validators.max(10000)]]
+      presentPoints:  [100, [Validators.required, Validators.min(-10000), Validators.max(10000)]],
+      latePoints:     [50,  [Validators.required, Validators.min(-10000), Validators.max(10000)]],
+      tooLatePoints:  [0,   [Validators.required, Validators.min(-10000), Validators.max(10000)]],
+      absentPoints:   [-10, [Validators.required, Validators.min(-10000), Validators.max(10000)]]
       // excusedPoints is not shown — backend always awards Present points for Excused
     }, { validators: pointsOrderValidator });
 
@@ -67,9 +68,10 @@ export class EventFormComponent implements OnInit {
         this.form.patchValue({
           ...e,
           eventDate:     new Date(e.eventDate),
-          presentPoints: e.presentPoints,
-          latePoints:    e.latePoints,
-          absentPoints:  e.absentPoints
+          presentPoints:  e.presentPoints,
+          latePoints:     e.latePoints,
+          tooLatePoints:  e.tooLatePoints,
+          absentPoints:   e.absentPoints
         })
       );
     }
@@ -102,10 +104,11 @@ export class EventFormComponent implements OnInit {
       eventDate:     utcMidnight,
       troopId:       val.troopId || undefined,
       isActive:      val.isActive,
-      presentPoints: val.presentPoints ?? 100,
-      latePoints:    val.latePoints    ?? 50,
-      excusedPoints: val.presentPoints ?? 100,   // Excused = Present points
-      absentPoints:  val.absentPoints  ?? -10
+      presentPoints:  val.presentPoints  ?? 100,
+      latePoints:     val.latePoints     ?? 50,
+      tooLatePoints:  val.tooLatePoints  ?? 0,
+      excusedPoints:  val.presentPoints  ?? 100,   // Excused = Present points
+      absentPoints:   val.absentPoints   ?? -10
     };
     if (this.auth.isSystemAdmin() && val.groupId) {
       payload.groupId = val.groupId;
