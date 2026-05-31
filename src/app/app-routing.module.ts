@@ -34,6 +34,12 @@ const routes: Routes = [
         loadChildren: () => import('./features/admin/admin.module').then(m => m.AdminModule)
       },
       {
+        path: 'admin/badges',
+        canActivate: [RoleGuard],
+        data: { roles: [UserRole.SystemAdmin] },
+        loadChildren: () => import('./features/admin/badge-catalog/badge-catalog.module').then(m => m.BadgeCatalogModule)
+      },
+      {
         path: 'groups',
         canActivate: [RoleGuard],
         data: { roles: [UserRole.SystemAdmin] },

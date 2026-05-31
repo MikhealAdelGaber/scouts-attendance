@@ -1,0 +1,68 @@
+<mat-card class="tab-card">
+  <mat-card-header>
+    <mat-card-title>
+      <mat-icon style="vertical-align:middle;margin-right:6px;color:#7b1fa2">military_tech</mat-icon>
+      Badges
+      @if (badges.length > 0) {
+        <span class="badge-count-chip">{{ badges.length }}</span>
+      }
+    </mat-card-title>
+    <mat-card-subtitle>Achievements and earned badges</mat-card-subtitle>
+  </mat-card-header>
+
+  <mat-card-content>
+    @if (loading) {
+      <div class="loading-row">
+        <mat-progress-spinner mode="indeterminate" diameter="32"></mat-progress-spinner>
+      </div>
+    } @else if (badges.length === 0) {
+      <div class="empty-state">
+        <mat-icon style="font-size:48px;width:48px;height:48px;color:#ccc">military_tech</mat-icon>
+        <p>No badges awarded yet.</p>
+      </div>
+    } @else {
+      <div class="badges-grid">
+        @for (mb of badges; track mb.id) {
+          <div class="badge-tile" [style.border-color]="badgeColor(mb.badgeCategory)">
+            <div class="badge-icon-wrap" [style.background]="badgeColor(mb.badgeCategory) + '1a'">
+              <mat-icon [style.color]="badgeColor(mb.badgeCategory)">military_tech</mat-icon>
+            </div>
+            <div class="badge-info">
+              <div class="badge-name">{{ mb.badgeName }}</div>
+              @if (mb.badgeCategory) {
+                <div class="badge-cat" [style.color]="badgeColor(mb.badgeCategory)">
+                  {{ mb.badgeCategory }}
+                </div>
+              }
+              <div class="badge-meta">
+                <mat-icon style="font-size:12px;width:12px;height:12px">calendar_today</mat-icon>
+                {{ mb.awardedDate | date:'mediumDate' }}
+              </div>
+              <div class="badge-meta">
+                <mat-icon style="font-size:12px;width:12px;height:12px">person</mat-icon>
+                {{ mb.awardedBy }}
+              </div>
+              @if (mb.notes) {
+                <div class="badge-notes">{{ mb.notes }}</div>
+              }
+            </div>
+            @if (canRemove()) {
+              <button mat-icon-button color="warn" class="remove-btn"
+                (click)="remove(mb)" matTooltip="Remove badge">
+                <mat-icon>close</mat-icon>
+              </button>
+            }
+          </div>
+        }
+      </div>
+    }
+  </mat-card-content>
+
+  @if (canAward()) {
+    <mat-card-actions>
+      <button mat-stroked-button color="primary" (click)="openAwardDialog()">
+        <mat-icon>add</mat-icon> Award Badge
+      </button>
+    </mat-card-actions>
+  }
+</mat-card>

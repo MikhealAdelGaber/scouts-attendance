@@ -1,0 +1,131 @@
+<div class="page-container">
+
+  <!-- ── Page Header ─────────────────────────────────────────────── -->
+  <div class="page-header">
+    <h1><mat-icon>military_tech</mat-icon> Badge Catalog</h1>
+    <button mat-raised-button color="primary" (click)="openCreate()">
+      <mat-icon>add</mat-icon> New Badge
+    </button>
+  </div>
+
+  <!-- ── Create / Edit Form ─────────────────────────────────────── -->
+  @if (showForm) {
+    <mat-card class="form-card mb-16">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>{{ editingId ? 'edit' : 'add_circle' }}</mat-icon>
+          {{ editingId ? 'Edit Badge' : 'Create Badge' }}
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <form [formGroup]="form" class="form-row">
+          <mat-form-field appearance="outline" class="field-name">
+            <mat-label>Badge Name</mat-label>
+            <input matInput formControlName="name" required maxlength="100">
+            <mat-error>Name is required (max 100 chars)</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="field-cat">
+            <mat-label>Category</mat-label>
+            <mat-select formControlName="category">
+              @for (cat of categories; track cat) {
+                <mat-option [value]="cat">{{ cat }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="field-desc">
+            <mat-label>Description</mat-label>
+            <textarea matInput formControlName="description" rows="2" maxlength="500"></textarea>
+          </mat-form-field>
+        </form>
+      </mat-card-content>
+      <mat-card-actions align="end">
+        <button mat-button (click)="cancelForm()" [disabled]="saving">Cancel</button>
+        <button mat-raised-button color="primary" (click)="save()" [disabled]="form.invalid || saving">
+          @if (saving) {
+            <mat-progress-spinner mode="indeterminate" diameter="20"
+              style="display:inline-block;margin-right:4px"></mat-progress-spinner>
+          }
+          {{ editingId ? 'Update' : 'Create' }}
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  }
+
+  <!-- ── Badge Table ─────────────────────────────────────────────── -->
+  <mat-card>
+    <mat-card-content style="padding:0">
+      @if (loading) {
+        <app-loading-spinner></app-loading-spinner>
+      } @else {
+        <div class="table-scroll">
+          <table mat-table [dataSource]="badges" class="full-width">
+
+            <!-- Name -->
+            <ng-container matColumnDef="name">
+              <th mat-header-cell *matHeaderCellDef>Badge</th>
+              <td mat-cell *matCellDef="let b">
+                <div class="badge-cell">
+                  <div class="badge-icon-sm" [style.background]="badgeColor(b.category) + '1a'">
+                    <mat-icon [style.color]="badgeColor(b.category)">military_tech</mat-icon>
+                  </div>
+                  <span class="badge-name">{{ b.name }}</span>
+                </div>
+              </td>
+            </ng-container>
+
+            <!-- Category -->
+            <ng-container matColumnDef="category">
+              <th mat-header-cell *matHeaderCellDef>Category</th>
+              <td mat-cell *matCellDef="let b">
+                @if (b.category) {
+                  <span class="cat-chip" [style.background]="badgeColor(b.category) + '22'"
+                    [style.color]="badgeColor(b.category)">
+                    {{ b.category }}
+                  </span>
+                } @else { — }
+              </td>
+            </ng-container>
+
+            <!-- Description -->
+            <ng-container matColumnDef="description">
+              <th mat-header-cell *matHeaderCellDef>Description</th>
+              <td mat-cell *matCellDef="let b" class="desc-cell">{{ b.description || '—' }}</td>
+            </ng-container>
+
+            <!-- Award count -->
+            <ng-container matColumnDef="awardCount">
+              <th mat-header-cell *matHeaderCellDef>Awarded</th>
+              <td mat-cell *matCellDef="let b">
+                <span class="count-badge">{{ b.awardCount }}</span>
+              </td>
+            </ng-container>
+
+            <!-- Actions -->
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef></th>
+              <td mat-cell *matCellDef="let b" class="actions-cell">
+                <button mat-icon-button (click)="openEdit(b)" matTooltip="Edit">
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <button mat-icon-button color="warn" (click)="delete(b)" matTooltip="Delete">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+            <tr class="mat-row" *matNoDataRow>
+              <td [attr.colspan]="displayedColumns.length" class="empty-cell">
+                No badges in catalog. Click "New Badge" to add one.
+              </td>
+            </tr>
+          </table>
+        </div>
+      }
+    </mat-card-content>
+  </mat-card>
+
+</div>

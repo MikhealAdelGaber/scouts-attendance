@@ -1,0 +1,122 @@
+.loading-row {
+  display: flex;
+  justify-content: center;
+  padding: 24px;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 32px 0;
+  color: #999;
+  p { margin: 0; font-size: 0.9rem; }
+}
+
+.badge-count-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #7b1fa2;
+  color: #fff;
+  border-radius: 12px;
+  padding: 0 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  min-width: 22px;
+  height: 22px;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+.badges-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.badge-tile {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  border: 2px solid #e0e0e0;
+  border-radius: 10px;
+  background: #fafafa;
+  position: relative;
+  transition: box-shadow 0.2s;
+
+  &:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.10); }
+}
+
+.badge-icon-wrap {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  mat-icon {
+    font-size: 26px;
+    width: 26px;
+    height: 26px;
+  }
+}
+
+.badge-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.badge-name {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text-primary, #212121);
+  margin-bottom: 2px;
+}
+
+.badge-cat {
+  font-size: 0.78rem;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.badge-meta {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.76rem;
+  color: #757575;
+  margin-bottom: 2px;
+}
+
+.badge-notes {
+  font-size: 0.78rem;
+  color: #9e9e9e;
+  margin-top: 4px;
+  font-style: italic;
+}
+
+.remove-btn {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  transform: scale(0.8);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.badge-tile:hover .remove-btn { opacity: 1; }
+
+// Dark mode
+:host-context(.dark-mode) {
+  .badge-tile {
+    background: #1e1e1e;
+    border-color: #444;
+  }
+  .badge-name { color: #ffffff; }
+}

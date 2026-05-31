@@ -34,6 +34,7 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
     // SystemAdmin-only pages — SystemAdmin bypasses permission checks
     { label: 'Users',       icon: 'manage_accounts', route: '/admin/users',  roles: [UserRole.SystemAdmin] },
     { label: 'Groups',      icon: 'group_work',      route: '/groups',       roles: [UserRole.SystemAdmin] },
+    { label: 'Badges',      icon: 'military_tech',   route: '/admin/badges',  roles: [UserRole.SystemAdmin] },
     // Pages with both role and page-permission checks
     { label: 'Troops',      icon: 'groups',      route: '/troops',      roles: [UserRole.SystemAdmin, UserRole.GroupLeader],                                  permissionKey: 'canAccessTroops' },
     { label: 'Members',     icon: 'people',      route: '/members',     roles: [UserRole.SystemAdmin, UserRole.GroupLeader, UserRole.AttendanceOnly],          permissionKey: 'canAccessMembers' },

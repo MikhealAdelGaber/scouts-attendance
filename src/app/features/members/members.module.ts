@@ -4,6 +4,8 @@ import { SharedModule } from '../../shared/shared.module';
 import { MemberListComponent } from './member-list/member-list.component';
 import { MemberDetailComponent } from './member-detail/member-detail.component';
 import { MemberFormComponent } from './member-form/member-form.component';
+import { MemberBadgesComponent } from './member-badges/member-badges.component';
+import { AwardBadgeDialogComponent } from './award-badge-dialog/award-badge-dialog.component';
 import { RoleGuard } from '../../core/guards/role.guard';
 import { UserRole } from '../../core/models/user.model';
 
@@ -27,7 +29,8 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  declarations: [MemberListComponent, MemberDetailComponent, MemberFormComponent],
+  declarations: [MemberListComponent, MemberDetailComponent, MemberFormComponent,
+                 MemberBadgesComponent, AwardBadgeDialogComponent],
   imports: [SharedModule, RouterModule.forChild(routes)]
 })
 export class MembersModule {}

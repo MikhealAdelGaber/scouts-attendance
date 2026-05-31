@@ -1,0 +1,57 @@
+<h2 mat-dialog-title>
+  <mat-icon style="vertical-align:middle;margin-right:8px;color:#7b1fa2">military_tech</mat-icon>
+  Award Badge — {{ data.memberName }}
+</h2>
+
+<mat-dialog-content style="min-width:320px;padding-top:12px">
+  @if (loading) {
+    <div style="text-align:center;padding:24px">
+      <mat-progress-spinner mode="indeterminate" diameter="40" style="margin:auto"></mat-progress-spinner>
+    </div>
+  } @else {
+    <form [formGroup]="form" style="display:flex;flex-direction:column;gap:16px">
+
+      <mat-form-field appearance="outline">
+        <mat-label>Badge</mat-label>
+        <mat-select formControlName="badgeId" required>
+          @for (cat of categories; track cat) {
+            <mat-optgroup [label]="cat">
+              @for (b of badgesByCategory(cat); track b.id) {
+                <mat-option [value]="b.id">{{ b.name }}</mat-option>
+              }
+            </mat-optgroup>
+          }
+        </mat-select>
+        <mat-icon matPrefix style="color:#7b1fa2">military_tech</mat-icon>
+        <mat-error>Please select a badge</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Awarded Date</mat-label>
+        <input matInput type="date" formControlName="awardedDate" required>
+        <mat-icon matPrefix style="color:#7b1fa2">calendar_today</mat-icon>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Notes (optional)</mat-label>
+        <textarea matInput formControlName="notes" rows="2"
+          placeholder="Reason for award or any notes..."></textarea>
+      </mat-form-field>
+
+    </form>
+  }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="cancel()" [disabled]="saving">Cancel</button>
+  <button mat-raised-button color="primary" (click)="save()"
+    [disabled]="form.invalid || saving || loading">
+    @if (saving) {
+      <mat-progress-spinner mode="indeterminate" diameter="20"
+        style="display:inline-block;margin-right:4px"></mat-progress-spinner>
+    } @else {
+      <mat-icon>military_tech</mat-icon>
+    }
+    Award Badge
+  </button>
+</mat-dialog-actions>
