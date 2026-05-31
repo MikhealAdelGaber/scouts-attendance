@@ -11,6 +11,7 @@ import { Member } from '../../../core/models/member.model';
 import { Troop } from '../../../core/models/troop.model';
 import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog/confirm-dialog.component';
 import { ImportResultDialogComponent } from '../../../shared/components/import-result-dialog/import-result-dialog.component';
+import { ACADEMIC_GRADES } from '../../../core/constants/academic-grades';
 
 @Component({
   selector: 'app-member-list',
@@ -44,10 +45,7 @@ export class MemberListComponent implements OnInit {
   /** True when the troop dropdown is set to the "Unassigned" option. */
   get showUnassigned(): boolean { return this.selectedTroopId === this.UNASSIGNED; }
 
-  readonly academicYears = [
-    'Grade 1','Grade 2','Grade 3','Grade 4','Grade 5','Grade 6',
-    'Grade 7','Grade 8','Grade 9','Grade 10','Grade 11','Grade 12'
-  ];
+  readonly academicYears = ACADEMIC_GRADES;
 
   displayedColumns = ['photo', 'customId', 'fullName', 'troop', 'region', 'academicYear', 'neckerchief', 'phone', 'totalPoints', 'actions'];
 

@@ -6,6 +6,7 @@ import { MemberService } from '../../../core/services/member.service';
 import { TroopService } from '../../../core/services/troop.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { Troop } from '../../../core/models/troop.model';
+import { ACADEMIC_GRADES } from '../../../core/constants/academic-grades';
 
 @Component({
   selector: 'app-member-form',
@@ -25,10 +26,7 @@ export class MemberFormComponent implements OnInit {
   photoPreviewName = '';
   uploadingPhoto = false;
 
-  readonly academicYears = [
-    'Grade 1','Grade 2','Grade 3','Grade 4','Grade 5','Grade 6',
-    'Grade 7','Grade 8','Grade 9','Grade 10','Grade 11','Grade 12'
-  ];
+  readonly academicYears = ACADEMIC_GRADES;
 
   constructor(
     private fb: FormBuilder,

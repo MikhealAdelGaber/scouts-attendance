@@ -98,9 +98,10 @@
         <h3 class="section-title">Scout Details</h3>
         <div class="form-row">
           <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Academic Year / Grade (المرحلة)</mat-label>
+            <mat-label>Academic Grade (المرحلة الدراسية)</mat-label>
+            <mat-icon matPrefix>school</mat-icon>
             <mat-select formControlName="academicYear">
-              <mat-option value="">— Not set —</mat-option>
+              <mat-option value="">— غير محدد —</mat-option>
               @for (y of academicYears; track y) {
                 <mat-option [value]="y">{{ y }}</mat-option>
               }
