@@ -32,19 +32,43 @@
         <mat-icon>pending</mat-icon>
         <strong>{{ members.length - gradedCount }}</strong> Ungraded
       </div>
+      <div class="summary-chip auto-hint">
+        <mat-icon>save</mat-icon>
+        Scores save automatically
+      </div>
     </div>
 
-    <!-- Search -->
-    <mat-form-field appearance="outline" class="search-field">
-      <mat-label>Search members</mat-label>
-      <mat-icon matPrefix>search</mat-icon>
-      <input matInput [(ngModel)]="search" placeholder="Name, ID or troop...">
-      @if (search) {
-        <button matSuffix mat-icon-button (click)="search = ''">
-          <mat-icon>close</mat-icon>
-        </button>
+    <!-- Filters row -->
+    <div class="filters-row">
+      <mat-form-field appearance="outline" class="search-field">
+        <mat-label>Search members</mat-label>
+        <mat-icon matPrefix>search</mat-icon>
+        <input matInput [(ngModel)]="search" placeholder="Name or ID...">
+        @if (search) {
+          <button matSuffix mat-icon-button (click)="search = ''">
+            <mat-icon>close</mat-icon>
+          </button>
+        }
+      </mat-form-field>
+
+      @if (availableTroops.length > 1) {
+        <mat-form-field appearance="outline" class="troop-field">
+          <mat-label>Filter by Troop</mat-label>
+          <mat-icon matPrefix>groups</mat-icon>
+          <mat-select [(ngModel)]="selectedTroop">
+            <mat-option value="">All Troops</mat-option>
+            @for (t of availableTroops; track t) {
+              <mat-option [value]="t">{{ t }}</mat-option>
+            }
+          </mat-select>
+          @if (selectedTroop) {
+            <button matSuffix mat-icon-button (click)="selectedTroop = ''; $event.stopPropagation()">
+              <mat-icon>close</mat-icon>
+            </button>
+          }
+        </mat-form-field>
       }
-    </mat-form-field>
+    </div>
 
     <!-- Grading table -->
     <mat-card>
@@ -72,13 +96,17 @@
               <td mat-cell *matCellDef="let m">
                 @if (rowState.get(m.memberId); as state) {
                   <div class="score-input-wrap">
-                    <mat-form-field appearance="outline" class="score-field">
+                    <mat-form-field appearance="outline" class="score-field"
+                      [class.score-error]="!!state.scoreError">
                       <input matInput type="number" [min]="0" [max]="project?.maxScore ?? null"
                         [(ngModel)]="state.score"
                         (ngModelChange)="onScoreChange(m.memberId)"
                         placeholder="0">
                       <span matSuffix style="color:#9e9e9e"> / {{ project?.maxScore }}</span>
                     </mat-form-field>
+                    @if (state.scoreError) {
+                      <div class="score-error-msg">{{ state.scoreError }}</div>
+                    }
                   </div>
                 }
               </td>
@@ -119,30 +147,26 @@
                 @if (rowState.get(m.memberId); as state) {
                   <mat-form-field appearance="outline" class="notes-field">
                     <input matInput [(ngModel)]="state.notes"
-                      (ngModelChange)="onScoreChange(m.memberId)"
+                      (ngModelChange)="onNotesChange(m.memberId)"
                       placeholder="Optional notes">
                   </mat-form-field>
                 }
               </td>
             </ng-container>
 
-            <!-- Save button -->
-            <ng-container matColumnDef="save">
-              <th mat-header-cell *matHeaderCellDef></th>
-              <td mat-cell *matCellDef="let m">
+            <!-- Auto-save status icon (replaces Save button) -->
+            <ng-container matColumnDef="status">
+              <th mat-header-cell *matHeaderCellDef style="width:48px"></th>
+              <td mat-cell *matCellDef="let m" style="text-align:center">
                 @if (rowState.get(m.memberId); as state) {
-                  <button mat-raised-button color="primary"
-                    [disabled]="state.saving || state.score === null"
-                    (click)="saveScore(m)"
-                    style="font-size:0.8rem">
-                    @if (state.saving) {
-                      <mat-progress-spinner mode="indeterminate" diameter="16"
-                        style="display:inline-block;margin-right:4px"></mat-progress-spinner>
-                    } @else {
-                      <mat-icon style="font-size:16px">save</mat-icon>
-                    }
-                    {{ m.isGraded ? 'Update' : 'Save' }}
-                  </button>
+                  @if (state.saveStatus === 'saving') {
+                    <mat-progress-spinner mode="indeterminate" diameter="20"
+                      matTooltip="Saving…"></mat-progress-spinner>
+                  } @else if (state.saveStatus === 'saved') {
+                    <mat-icon class="status-saved" matTooltip="Saved">check_circle</mat-icon>
+                  } @else if (state.saveStatus === 'error') {
+                    <mat-icon class="status-error" matTooltip="Save failed — try again">error</mat-icon>
+                  }
                 }
               </td>
             </ng-container>
@@ -161,8 +185,8 @@
               </td>
             </ng-container>
 
-            <tr mat-header-row *matHeaderRowDef="['member','score','percentage','grade','notes','save','gradedBy']"></tr>
-            <tr mat-row *matRowDef="let row; columns: ['member','score','percentage','grade','notes','save','gradedBy'];"
+            <tr mat-header-row *matHeaderRowDef="['member','score','percentage','grade','notes','status','gradedBy']"></tr>
+            <tr mat-row *matRowDef="let row; columns: ['member','score','percentage','grade','notes','status','gradedBy'];"
               [class.graded-row]="row.isGraded"></tr>
             <tr class="mat-row" *matNoDataRow>
               <td class="mat-cell" colspan="7" style="padding:24px;text-align:center;color:#9e9e9e">

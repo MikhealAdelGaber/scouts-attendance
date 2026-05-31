@@ -1,15 +1,17 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ProjectService } from '../project.service';
 import { Project, ProjectMemberScore, getGradeColor } from '../project.model';
 import { AuthService } from '../../../core/services/auth.service';
 
+type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
+
 interface RowState {
-  score:   number | null;
-  notes:   string | null;
-  saving:  boolean;
-  dirty:   boolean;
+  score:      number | null;
+  notes:      string | null;
+  saveStatus: SaveStatus;
+  scoreError: string | null;   // validation message
 }
 
 @Component({
@@ -17,14 +19,20 @@ interface RowState {
   templateUrl: './project-detail.component.html',
   styleUrls: ['./project-detail.component.scss']
 })
-export class ProjectDetailComponent implements OnInit {
+export class ProjectDetailComponent implements OnInit, OnDestroy {
   project:  Project | null = null;
   members:  ProjectMemberScore[] = [];
   rowState: Map<string, RowState> = new Map();
-  loading   = true;
-  search    = '';
+  loading      = true;
+  search       = '';
+  selectedTroop = '';   // '' = all troops
 
   getGradeColor = getGradeColor;
+
+  // Per-row debounce timers (memberId → timeout handle)
+  private saveTimers = new Map<string, ReturnType<typeof setTimeout>>();
+  // Per-row "saved" reset timers
+  private savedTimers = new Map<string, ReturnType<typeof setTimeout>>();
 
   constructor(
     private route: ActivatedRoute,
@@ -39,6 +47,11 @@ export class ProjectDetailComponent implements OnInit {
     this.loadMembers(id);
   }
 
+  ngOnDestroy(): void {
+    this.saveTimers.forEach(t => clearTimeout(t));
+    this.savedTimers.forEach(t => clearTimeout(t));
+  }
+
   loadMembers(id: string): void {
     this.loading = true;
     this.svc.getProjectMembers(id).subscribe({
@@ -46,10 +59,10 @@ export class ProjectDetailComponent implements OnInit {
         this.members = list;
         this.rowState.clear();
         list.forEach(m => this.rowState.set(m.memberId, {
-          score:  m.score,
-          notes:  m.notes ?? '',
-          saving: false,
-          dirty:  false
+          score:      m.score,
+          notes:      m.notes ?? '',
+          saveStatus: 'idle',
+          scoreError: null
         }));
         this.loading = false;
       },
@@ -57,50 +70,104 @@ export class ProjectDetailComponent implements OnInit {
     });
   }
 
+  // ── Filters ───────────────────────────────────────────────────────────────
+
+  /** Unique troop names from the loaded members (for the filter dropdown). */
+  get availableTroops(): string[] {
+    const set = new Set<string>();
+    this.members.forEach(m => { if (m.troopName) set.add(m.troopName); });
+    return Array.from(set).sort();
+  }
+
   get filtered(): ProjectMemberScore[] {
-    if (!this.search.trim()) return this.members;
-    const q = this.search.toLowerCase();
-    return this.members.filter(m =>
-      m.memberName.toLowerCase().includes(q) ||
-      m.customId.toString().includes(q) ||
-      (m.troopName ?? '').toLowerCase().includes(q)
-    );
+    return this.members.filter(m => {
+      const matchSearch = !this.search.trim() ||
+        m.memberName.toLowerCase().includes(this.search.toLowerCase()) ||
+        m.customId.toString().includes(this.search) ||
+        (m.troopName ?? '').toLowerCase().includes(this.search.toLowerCase());
+      const matchTroop = !this.selectedTroop || m.troopName === this.selectedTroop;
+      return matchSearch && matchTroop;
+    });
   }
 
   get gradedCount(): number { return this.members.filter(m => m.isGraded).length; }
 
+  // ── Score change with validation + auto-save ──────────────────────────────
+
   onScoreChange(memberId: string): void {
-    const s = this.rowState.get(memberId);
-    if (s) s.dirty = true;
+    const state = this.rowState.get(memberId);
+    if (!state || !this.project) return;
+
+    // Validate & clamp
+    if (state.score !== null && state.score !== undefined) {
+      if (state.score < 0) {
+        state.score = 0;
+        state.scoreError = 'Score cannot be negative.';
+      } else if (state.score > this.project.maxScore) {
+        state.score = this.project.maxScore;     // clamp to max
+        state.scoreError = `Maximum score is ${this.project.maxScore}.`;
+        // Clear the error message after 2 seconds
+        setTimeout(() => { if (state.scoreError) state.scoreError = null; }, 2000);
+      } else {
+        state.scoreError = null;
+      }
+    }
+
+    this.scheduleAutoSave(memberId);
   }
 
-  saveScore(member: ProjectMemberScore): void {
+  onNotesChange(memberId: string): void {
+    this.scheduleAutoSave(memberId);
+  }
+
+  private scheduleAutoSave(memberId: string): void {
+    // Cancel any pending save for this row
+    const existing = this.saveTimers.get(memberId);
+    if (existing) clearTimeout(existing);
+
+    // Schedule a new save after 800 ms of inactivity
+    const timer = setTimeout(() => {
+      this.saveTimers.delete(memberId);
+      const member = this.members.find(m => m.memberId === memberId);
+      if (member) this.executeAutoSave(member);
+    }, 800);
+
+    this.saveTimers.set(memberId, timer);
+  }
+
+  private executeAutoSave(member: ProjectMemberScore): void {
     if (!this.project) return;
     const state = this.rowState.get(member.memberId);
-    if (!state) return;
+    if (!state || state.score === null || state.scoreError) return;
 
-    const score = state.score;
-    if (score === null || score === undefined) return;
+    state.saveStatus = 'saving';
 
-    state.saving = true;
-    this.svc.saveScore(this.project.id, member.memberId, score, state.notes || null).subscribe({
-      next: updated => {
-        state.saving = false;
-        state.dirty  = false;
-        // Update the row with returned data
-        const idx = this.members.findIndex(m => m.memberId === member.memberId);
-        if (idx >= 0) {
-          this.members[idx] = { ...this.members[idx], ...updated, isGraded: true };
-          this.rowState.set(member.memberId, { ...state, saving: false, dirty: false });
+    this.svc.saveScore(this.project.id, member.memberId, state.score, state.notes || null)
+      .subscribe({
+        next: updated => {
+          state.saveStatus = 'saved';
+
+          // Update the member row with the returned data
+          const idx = this.members.findIndex(m => m.memberId === member.memberId);
+          if (idx >= 0) {
+            this.members[idx] = { ...this.members[idx], ...updated, isGraded: true };
+          }
+
+          // Reset status icon to idle after 2 seconds
+          const t = setTimeout(() => { state.saveStatus = 'idle'; }, 2000);
+          this.savedTimers.set(member.memberId, t);
+        },
+        error: err => {
+          state.saveStatus = 'error';
+          this.snack.open(
+            err?.error?.message || `Failed to save score for ${member.memberName}.`,
+            'Close', { duration: 5000 }
+          );
         }
-        this.snack.open(`Score saved for ${member.memberName}.`, 'Close', { duration: 2500 });
-      },
-      error: err => {
-        state.saving = false;
-        this.snack.open(err?.error?.message || 'Failed to save score.', 'Close', { duration: 5000 });
-      }
-    });
+      });
   }
+
+  // ── Display helpers ────────────────────────────────────────────────────────
 
   percentage(memberId: string): number | null {
     const s = this.rowState.get(memberId);
