@@ -23,10 +23,12 @@ export class TransferRequestService {
       .pipe(map(r => r.data));
   }
 
-  /** List transfer requests (scoped by server-side role). */
+  /** List transfer requests (scoped by server-side role).
+   *  Uses SUPPRESS_ERROR_SNACK — errors shown inline, not as a global toast. */
   getList(): Observable<TransferRequest[]> {
-    return this.http.get<ApiResponse<TransferRequest[]>>(this.base)
-      .pipe(map(r => r.data));
+    return this.http.get<ApiResponse<TransferRequest[]>>(this.base, {
+      context: new HttpContext().set(SUPPRESS_ERROR_SNACK, true)
+    }).pipe(map(r => r.data));
   }
 
   /** Approve a pending request (SystemAdmin only). */
@@ -47,10 +49,12 @@ export class TransferRequestService {
       .pipe(map(() => void 0));
   }
 
-  /** Transfer history for a specific member (approved only). */
+  /** Transfer history for a specific member (approved only).
+   *  Uses SUPPRESS_ERROR_SNACK — failure shows empty state, not a toast. */
   getMemberHistory(memberId: string): Observable<TransferRequest[]> {
     return this.http.get<ApiResponse<TransferRequest[]>>(
-      `${environment.apiUrl}/members/${memberId}/transfer-history`
+      `${environment.apiUrl}/members/${memberId}/transfer-history`,
+      { context: new HttpContext().set(SUPPRESS_ERROR_SNACK, true) }
     ).pipe(map(r => r.data));
   }
 

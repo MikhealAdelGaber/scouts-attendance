@@ -29,9 +29,10 @@ export class TransferRequestsPageComponent implements OnInit {
 
   load(): void {
     this.loading = true;
+    // getList() uses SUPPRESS_ERROR_SNACK — failures show as empty state, not a toast
     this.transferSvc.getList().subscribe({
       next: list => { this.requests = list; this.loading = false; },
-      error: ()   => { this.loading = false; }
+      error: ()   => { this.requests = []; this.loading = false; }
     });
   }
 

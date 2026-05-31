@@ -550,14 +550,15 @@
             </mat-card>
           </mat-tab>
 
-          <!-- ── TAB 6: Transfer History ────────────────────── -->
+          <!-- ── TAB 6: Transfer History (lazy — only loads when tab is clicked) ── -->
           @if (auth.isAdmin()) {
             <mat-tab>
               <ng-template mat-tab-label>
                 <mat-icon class="tab-icon">swap_horiz</mat-icon> Transfers
               </ng-template>
-
-              <app-member-transfer-history [memberId]="member.id"></app-member-transfer-history>
+              <ng-template matTabContent>
+                <app-member-transfer-history [memberId]="member.id"></app-member-transfer-history>
+              </ng-template>
             </mat-tab>
           }
 

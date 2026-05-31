@@ -7,12 +7,21 @@
   <p class="member-name-line">
     <mat-icon style="vertical-align:middle;font-size:16px;color:#666">person</mat-icon>
     <strong>{{ data.memberName }}</strong>
-    &nbsp;→ Transfer from <em>{{ data.currentGroupName }}</em>
+    &nbsp;— currently in <em>{{ data.currentGroupName }}</em>
   </p>
 
   @if (loading) {
     <div style="display:flex;justify-content:center;padding:24px">
       <mat-progress-spinner mode="indeterminate" diameter="32"></mat-progress-spinner>
+    </div>
+  } @else if (noGroupsAvailable) {
+    <!-- Only 1 group in the system — nowhere to transfer to -->
+    <div class="empty-groups">
+      <mat-icon style="font-size:40px;width:40px;height:40px;color:#bdbdbd">group_off</mat-icon>
+      <p>No other groups are available to transfer this member to.</p>
+      <p style="font-size:0.8rem;color:#9e9e9e">
+        A second group must exist in the system before a transfer can be requested.
+      </p>
     </div>
   } @else {
     <form [formGroup]="form" class="dialog-form">
@@ -21,7 +30,12 @@
         <mat-label>Transfer To Group</mat-label>
         <mat-select formControlName="toGroupId" required>
           @for (g of groups; track g.id) {
-            <mat-option [value]="g.id">{{ g.name }}</mat-option>
+            <mat-option [value]="g.id">
+              {{ g.name }}
+              @if (g.memberCount != null) {
+                <span style="color:#9e9e9e;font-size:0.8rem"> · {{ g.memberCount }} members</span>
+              }
+            </mat-option>
           }
         </mat-select>
         <mat-icon matPrefix style="color:#1565c0">group_work</mat-icon>
@@ -37,19 +51,49 @@
         <mat-icon matPrefix style="color:#757575">notes</mat-icon>
       </mat-form-field>
 
+      <mat-hint style="font-size:0.78rem;color:#ff9800;display:flex;align-items:center;gap:4px;margin-top:-8px">
+        <mat-icon style="font-size:14px;width:14px;height:14px">info</mat-icon>
+        The transfer will be reviewed by a System Admin before taking effect.
+      </mat-hint>
+
     </form>
   }
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
   <button mat-button (click)="cancel()">Cancel</button>
-  <button mat-raised-button color="primary"
-    (click)="save()"
-    [disabled]="saving || loading || form.invalid">
-    @if (saving) {
-      <mat-progress-spinner mode="indeterminate" diameter="18"
-        style="display:inline-block;margin-right:6px"></mat-progress-spinner>
-    }
-    Submit Request
-  </button>
+  @if (!noGroupsAvailable && !loading) {
+    <button mat-raised-button color="primary"
+      (click)="save()"
+      [disabled]="saving || form.invalid">
+      @if (saving) {
+        <mat-progress-spinner mode="indeterminate" diameter="18"
+          style="display:inline-block;margin-right:6px"></mat-progress-spinner>
+      }
+      Submit Request
+    </button>
+  }
 </mat-dialog-actions>
+
+<style>
+.member-name-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #555;
+  margin-bottom: 16px;
+  font-size: 0.9rem;
+}
+.dialog-form { display: flex; flex-direction: column; gap: 8px; min-width: 380px; }
+.full-width  { width: 100%; }
+.empty-groups {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 24px 16px;
+  text-align: center;
+  color: #666;
+  p { margin: 0; }
+}
+</style>

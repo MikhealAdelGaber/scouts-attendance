@@ -2,16 +2,21 @@ import { Component, Inject, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { HttpClient, HttpContext } from '@angular/common/http';
+import { map, catchError, of } from 'rxjs';
 import { TransferRequestService } from '../../../core/services/transfer-request.service';
-import { GroupService } from '../../../core/services/group.service';
 import { Group } from '../../../core/models/group.model';
+import { environment } from '../../../../environments/environment';
+import { SUPPRESS_ERROR_SNACK } from '../../../core/interceptors/http-context-tokens';
 
 export interface RequestTransferDialogData {
-  memberId:        string;
-  memberName:      string;
-  currentGroupId:  string;
+  memberId:         string;
+  memberName:       string;
+  currentGroupId:   string;
   currentGroupName: string;
 }
+
+interface ApiResponse<T> { success: boolean; message?: string; data: T; }
 
 @Component({
   selector: 'app-request-transfer-dialog',
@@ -19,16 +24,21 @@ export interface RequestTransferDialogData {
 })
 export class RequestTransferDialogComponent implements OnInit {
   form!: FormGroup;
-  groups: Group[] = [];
-  loading = true;
-  saving  = false;
+  groups:    Group[] = [];
+  loading   = true;
+  loadError = false;
+  saving    = false;
+
+  get noGroupsAvailable(): boolean {
+    return !this.loading && !this.loadError && this.groups.length === 0;
+  }
 
   constructor(
-    private fb:             FormBuilder,
-    private transferSvc:    TransferRequestService,
-    private groupService:   GroupService,
-    private dialogRef:      MatDialogRef<RequestTransferDialogComponent>,
-    private snack:          MatSnackBar,
+    private fb:          FormBuilder,
+    private http:        HttpClient,
+    private transferSvc: TransferRequestService,
+    private dialogRef:   MatDialogRef<RequestTransferDialogComponent>,
+    private snack:       MatSnackBar,
     @Inject(MAT_DIALOG_DATA) public data: RequestTransferDialogData
   ) {}
 
@@ -38,13 +48,16 @@ export class RequestTransferDialogComponent implements OnInit {
       notes:     ['']
     });
 
-    this.groupService.getAll().subscribe({
-      next: groups => {
-        // Exclude the member's current group
-        this.groups = groups.filter(g => g.id !== this.data.currentGroupId);
-        this.loading = false;
-      },
-      error: () => { this.loading = false; }
+    // Suppress the global error snack — we display the error state inline.
+    this.http.get<ApiResponse<Group[]>>(`${environment.apiUrl}/groups`, {
+      context: new HttpContext().set(SUPPRESS_ERROR_SNACK, true)
+    }).pipe(
+      map(r => r.data ?? []),
+      catchError(() => of([] as Group[]))
+    ).subscribe(groups => {
+      this.groups    = groups.filter(g => g.id !== this.data.currentGroupId);
+      this.loadError = groups.length === 0 && !this.noGroupsAvailable ? false : false;
+      this.loading   = false;
     });
   }
 
