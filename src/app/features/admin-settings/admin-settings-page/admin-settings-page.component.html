@@ -93,8 +93,15 @@
                   [matTooltip]="expandedArchiveId === a.id ? 'Collapse' : 'View Details'">
                   <mat-icon>{{ expandedArchiveId === a.id ? 'expand_less' : 'expand_more' }}</mat-icon>
                 </button>
-                <button mat-icon-button color="primary" (click)="exportArchive(a.id)" matTooltip="Export Excel">
-                  <mat-icon>download</mat-icon>
+                <button mat-icon-button color="primary"
+                  (click)="exportArchive(a)"
+                  [disabled]="exportingId === a.id"
+                  matTooltip="Export Excel">
+                  @if (exportingId === a.id) {
+                    <mat-progress-spinner mode="indeterminate" diameter="18"></mat-progress-spinner>
+                  } @else {
+                    <mat-icon>download</mat-icon>
+                  }
                 </button>
               </td>
             </ng-container>

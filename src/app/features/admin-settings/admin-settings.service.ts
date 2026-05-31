@@ -37,8 +37,19 @@ export class AdminSettingsService {
       .pipe(map(r => r.data));
   }
 
-  /** Build the export URL (opened in a new tab). */
-  exportUrl(id: string): string {
-    return `${this.base}/year-archives/${id}/export`;
+  /** Download the archive Excel file with the JWT token attached. */
+  downloadArchiveExcel(id: string, archiveYear: string): Observable<void> {
+    return this.http.get(`${this.base}/year-archives/${id}/export`, { responseType: 'blob' }).pipe(
+      map(blob => {
+        const url = URL.createObjectURL(blob);
+        const a   = document.createElement('a');
+        a.href     = url;
+        a.download = `Year-Archive-${archiveYear}.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      })
+    );
   }
 }

@@ -16,7 +16,8 @@ export class AdminSettingsPageComponent implements OnInit {
 
   expandedArchiveId: string | null = null;
   archiveDetail: YearlyArchiveDetail | null = null;
-  detailLoading = false;
+  detailLoading  = false;
+  exportingId:    string | null = null;
 
   readonly archiveColumns = ['archiveYear', 'archivedAt', 'archivedBy', 'totalMembers', 'totalGroups', 'actions'];
   readonly memberColumns   = ['memberName', 'groupName', 'troopName', 'grade', 'points', 'attendance', 'attended', 'excuses'];
@@ -80,7 +81,15 @@ export class AdminSettingsPageComponent implements OnInit {
     });
   }
 
-  exportArchive(id: string): void {
-    window.open(this.svc.exportUrl(id), '_blank');
+  exportArchive(archive: YearlyArchiveSummary): void {
+    if (this.exportingId) return;
+    this.exportingId = archive.id;
+    this.svc.downloadArchiveExcel(archive.id, archive.archiveYear).subscribe({
+      next:  () => { this.exportingId = null; },
+      error: () => {
+        this.exportingId = null;
+        this.snack.open('Export failed — please try again.', 'Close', { duration: 4000 });
+      }
+    });
   }
 }
