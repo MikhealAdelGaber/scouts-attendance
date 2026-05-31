@@ -10,6 +10,11 @@
         <button mat-button routerLink="/members">
           <mat-icon>arrow_back</mat-icon> Back
         </button>
+        @if (auth.isAdmin()) {
+          <button mat-stroked-button color="primary" (click)="openTransferDialog()">
+            <mat-icon>swap_horiz</mat-icon> Request Transfer
+          </button>
+        }
         @if (auth.canEditMembers()) {
           <a mat-raised-button color="primary" [routerLink]="['..', member.id, 'edit']">
             <mat-icon>edit</mat-icon> Edit
@@ -544,6 +549,17 @@
               </mat-card-content>
             </mat-card>
           </mat-tab>
+
+          <!-- ── TAB 6: Transfer History ────────────────────── -->
+          @if (auth.isAdmin()) {
+            <mat-tab>
+              <ng-template mat-tab-label>
+                <mat-icon class="tab-icon">swap_horiz</mat-icon> Transfers
+              </ng-template>
+
+              <app-member-transfer-history [memberId]="member.id"></app-member-transfer-history>
+            </mat-tab>
+          }
 
         </mat-tab-group>
       </div><!-- /right-panel -->

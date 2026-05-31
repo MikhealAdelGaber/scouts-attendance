@@ -1,0 +1,142 @@
+<div class="page-container">
+
+  <!-- ── Header ──────────────────────────────────────────────────────── -->
+  <div class="page-header">
+    <h1>
+      <mat-icon style="vertical-align:middle;margin-right:8px;color:#1565c0">swap_horiz</mat-icon>
+      Transfer Requests
+      @if (pendingCount > 0) {
+        <span class="pending-badge">{{ pendingCount }} pending</span>
+      }
+    </h1>
+    <button mat-icon-button (click)="load()" matTooltip="Refresh">
+      <mat-icon>refresh</mat-icon>
+    </button>
+  </div>
+
+  <!-- ── Filter tabs ────────────────────────────────────────────────── -->
+  <div class="filter-row">
+    <mat-button-toggle-group [(ngModel)]="statusFilter" class="status-toggle">
+      <mat-button-toggle value="pending">
+        <mat-icon style="font-size:16px;margin-right:4px">pending</mat-icon>
+        Pending
+        @if (pendingCount > 0) {
+          <span class="toggle-badge">{{ pendingCount }}</span>
+        }
+      </mat-button-toggle>
+      <mat-button-toggle value="approved">
+        <mat-icon style="font-size:16px;margin-right:4px">check_circle</mat-icon>
+        Approved
+      </mat-button-toggle>
+      <mat-button-toggle value="rejected">
+        <mat-icon style="font-size:16px;margin-right:4px">cancel</mat-icon>
+        Rejected
+      </mat-button-toggle>
+      <mat-button-toggle value="cancelled">
+        <mat-icon style="font-size:16px;margin-right:4px">remove_circle</mat-icon>
+        Cancelled
+      </mat-button-toggle>
+      <mat-button-toggle value="all">All</mat-button-toggle>
+    </mat-button-toggle-group>
+  </div>
+
+  <!-- ── Content ───────────────────────────────────────────────────── -->
+  @if (loading) {
+    <div class="loading-center">
+      <mat-progress-spinner mode="indeterminate" diameter="40"></mat-progress-spinner>
+    </div>
+  } @else if (filtered.length === 0) {
+    <mat-card>
+      <mat-card-content class="empty-state">
+        <mat-icon style="font-size:64px;width:64px;height:64px;color:#ccc">swap_horiz</mat-icon>
+        <p>No {{ statusFilter === 'all' ? '' : statusFilter }} transfer requests.</p>
+      </mat-card-content>
+    </mat-card>
+  } @else {
+    <div class="requests-list">
+      @for (r of filtered; track r.id) {
+        <mat-card class="request-card" [class.pending-card]="r.status === TransferRequestStatus.Pending">
+          <mat-card-content>
+
+            <!-- Status badge + timestamp -->
+            <div class="card-top">
+              <span class="status-chip" [style.background]="statusColor(r.status) + '22'"
+                [style.color]="statusColor(r.status)">
+                <mat-icon style="font-size:14px;width:14px;height:14px">{{ statusIcon(r.status) }}</mat-icon>
+                {{ r.statusLabel }}
+              </span>
+              <span class="card-date">
+                <mat-icon style="font-size:12px;width:12px;height:12px">schedule</mat-icon>
+                {{ r.requestedAt | date:'mediumDate' }}
+              </span>
+            </div>
+
+            <!-- Member + route -->
+            <div class="transfer-route">
+              <div class="member-name">
+                <mat-icon>person</mat-icon>
+                <a [routerLink]="['/members', r.memberId]">{{ r.memberName }}</a>
+              </div>
+              <div class="group-route">
+                <span class="group-chip from">{{ r.fromGroupName }}</span>
+                <mat-icon class="route-arrow">arrow_forward</mat-icon>
+                <span class="group-chip to">{{ r.toGroupName }}</span>
+              </div>
+            </div>
+
+            <!-- Meta row -->
+            <div class="meta-row">
+              <span>
+                <mat-icon style="font-size:12px;width:12px;height:12px">person_outline</mat-icon>
+                Requested by {{ r.requestedBy }}
+              </span>
+              @if (r.reviewedBy) {
+                <span>
+                  <mat-icon style="font-size:12px;width:12px;height:12px">rate_review</mat-icon>
+                  Reviewed by {{ r.reviewedBy }}
+                  ({{ r.reviewedAt | date:'shortDate' }})
+                </span>
+              }
+            </div>
+
+            <!-- Notes -->
+            @if (r.notes) {
+              <div class="notes-line">
+                <mat-icon style="font-size:12px;width:12px;height:12px">notes</mat-icon>
+                {{ r.notes }}
+              </div>
+            }
+
+            <!-- Rejection reason -->
+            @if (r.rejectionReason) {
+              <div class="rejection-line">
+                <mat-icon style="font-size:12px;width:12px;height:12px;color:#f44336">info</mat-icon>
+                Reason: {{ r.rejectionReason }}
+              </div>
+            }
+
+            <!-- Actions -->
+            @if (r.status === TransferRequestStatus.Pending) {
+              <div class="action-row">
+                @if (auth.isSystemAdmin()) {
+                  <button mat-raised-button color="primary" (click)="approve(r)">
+                    <mat-icon>check_circle</mat-icon> Approve
+                  </button>
+                  <button mat-stroked-button color="warn" (click)="reject(r)">
+                    <mat-icon>cancel</mat-icon> Reject
+                  </button>
+                }
+                @if (auth.isAdmin()) {
+                  <button mat-stroked-button (click)="cancel(r)">
+                    <mat-icon>remove_circle</mat-icon> Cancel
+                  </button>
+                }
+              </div>
+            }
+
+          </mat-card-content>
+        </mat-card>
+      }
+    </div>
+  }
+</div>

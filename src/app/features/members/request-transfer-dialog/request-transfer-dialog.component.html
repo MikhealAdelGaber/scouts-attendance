@@ -1,0 +1,55 @@
+<h2 mat-dialog-title>
+  <mat-icon style="vertical-align:middle;margin-right:6px;color:#1565c0">swap_horiz</mat-icon>
+  Request Transfer
+</h2>
+
+<mat-dialog-content>
+  <p class="member-name-line">
+    <mat-icon style="vertical-align:middle;font-size:16px;color:#666">person</mat-icon>
+    <strong>{{ data.memberName }}</strong>
+    &nbsp;→ Transfer from <em>{{ data.currentGroupName }}</em>
+  </p>
+
+  @if (loading) {
+    <div style="display:flex;justify-content:center;padding:24px">
+      <mat-progress-spinner mode="indeterminate" diameter="32"></mat-progress-spinner>
+    </div>
+  } @else {
+    <form [formGroup]="form" class="dialog-form">
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Transfer To Group</mat-label>
+        <mat-select formControlName="toGroupId" required>
+          @for (g of groups; track g.id) {
+            <mat-option [value]="g.id">{{ g.name }}</mat-option>
+          }
+        </mat-select>
+        <mat-icon matPrefix style="color:#1565c0">group_work</mat-icon>
+        @if (form.get('toGroupId')?.invalid && form.get('toGroupId')?.touched) {
+          <mat-error>Please select a target group.</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Notes (optional)</mat-label>
+        <textarea matInput formControlName="notes" rows="3"
+          placeholder="Reason for transfer, any additional context..."></textarea>
+        <mat-icon matPrefix style="color:#757575">notes</mat-icon>
+      </mat-form-field>
+
+    </form>
+  }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="cancel()">Cancel</button>
+  <button mat-raised-button color="primary"
+    (click)="save()"
+    [disabled]="saving || loading || form.invalid">
+    @if (saving) {
+      <mat-progress-spinner mode="indeterminate" diameter="18"
+        style="display:inline-block;margin-right:6px"></mat-progress-spinner>
+    }
+    Submit Request
+  </button>
+</mat-dialog-actions>

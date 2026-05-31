@@ -1,6 +1,7 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatDialog } from '@angular/material/dialog';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { MemberService }     from '../../../core/services/member.service';
@@ -12,6 +13,7 @@ import { MemberPointsSummary } from '../../../core/models/points.model';
 import { AttendanceRecord, AttendanceStatus } from '../../../core/models/attendance.model';
 import { ExamScore, getGrade } from '../../../core/models/exam-score.model';
 import { AuthService }       from '../../../core/services/auth.service';
+import { RequestTransferDialogComponent } from '../request-transfer-dialog/request-transfer-dialog.component';
 
 @Component({
   selector: 'app-member-detail',
@@ -36,13 +38,14 @@ export class MemberDetailComponent implements OnInit {
   getGrade = getGrade;
 
   constructor(
-    private route:          ActivatedRoute,
-    private memberService:  MemberService,
-    private pointsService:  PointsService,
+    private route:             ActivatedRoute,
+    private memberService:     MemberService,
+    private pointsService:     PointsService,
     private attendanceService: AttendanceService,
     private examScoreService:  ExamScoreService,
-    public  auth: AuthService,
-    private snack: MatSnackBar
+    public  auth:              AuthService,
+    private snack:             MatSnackBar,
+    private dialog:            MatDialog
   ) {}
 
   ngOnInit(): void {
@@ -136,6 +139,27 @@ export class MemberDetailComponent implements OnInit {
         this.snack.open('Photo removed', 'Close', { duration: 3000 });
       },
       error: () => this.snack.open('Could not remove photo.', 'Close', { duration: 4000 })
+    });
+  }
+
+  // ── Transfer request ──────────────────────────────────────────────────────
+
+  openTransferDialog(): void {
+    if (!this.member) return;
+    const ref = this.dialog.open(RequestTransferDialogComponent, {
+      width: '480px',
+      data: {
+        memberId:         this.member.id,
+        memberName:       this.member.fullName,
+        currentGroupId:   this.member.groupId,
+        currentGroupName: this.member.groupName ?? ''
+      }
+    });
+
+    ref.afterClosed().subscribe(result => {
+      if (result) {
+        this.snack.open('Transfer request submitted successfully.', 'Close', { duration: 4000 });
+      }
     });
   }
 }

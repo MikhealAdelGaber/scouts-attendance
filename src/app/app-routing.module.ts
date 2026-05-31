@@ -113,6 +113,12 @@ const routes: Routes = [
         canActivate: [permissionGuard],
         data: { permission: 'canAccessBadges' },
         loadChildren: () => import('./features/badges/badges.module').then(m => m.BadgesModule)
+      },
+      {
+        path: 'transfers',
+        canActivate: [RoleGuard],
+        data: { roles: [UserRole.SystemAdmin, UserRole.GroupLeader] },
+        loadChildren: () => import('./features/transfers/transfers.module').then(m => m.TransfersModule)
       }
     ]
   },

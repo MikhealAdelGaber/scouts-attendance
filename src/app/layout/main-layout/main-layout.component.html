@@ -17,6 +17,11 @@
                 matBadgeSize="small" [matBadgeHidden]="pendingExcuseCount === 0">
                 {{ item.icon }}
               </mat-icon>
+            } @else if (item.route === '/transfers' && pendingTransferCount > 0) {
+              <mat-icon matListItemIcon [matBadge]="pendingTransferCount" matBadgeColor="accent"
+                matBadgeSize="small" [matBadgeHidden]="pendingTransferCount === 0">
+                {{ item.icon }}
+              </mat-icon>
             } @else {
               <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
             }

@@ -6,6 +6,8 @@ import { MemberDetailComponent } from './member-detail/member-detail.component';
 import { MemberFormComponent } from './member-form/member-form.component';
 import { MemberBadgesComponent } from './member-badges/member-badges.component';
 import { AwardBadgeDialogComponent } from './award-badge-dialog/award-badge-dialog.component';
+import { RequestTransferDialogComponent } from './request-transfer-dialog/request-transfer-dialog.component';
+import { MemberTransferHistoryComponent } from './member-transfer-history/member-transfer-history.component';
 import { RoleGuard } from '../../core/guards/role.guard';
 import { UserRole } from '../../core/models/user.model';
 
@@ -30,7 +32,8 @@ const routes: Routes = [
 
 @NgModule({
   declarations: [MemberListComponent, MemberDetailComponent, MemberFormComponent,
-                 MemberBadgesComponent, AwardBadgeDialogComponent],
+                 MemberBadgesComponent, AwardBadgeDialogComponent,
+                 RequestTransferDialogComponent, MemberTransferHistoryComponent],
   imports: [SharedModule, RouterModule.forChild(routes)]
 })
 export class MembersModule {}

@@ -4,6 +4,7 @@ import { Subscription } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 import { ThemeService } from '../../core/services/theme.service';
 import { PendingExcuseService } from '../../core/services/pending-excuse.service';
+import { TransferRequestService } from '../../core/services/transfer-request.service';
 import { UserRole } from '../../core/models/user.model';
 import { Router } from '@angular/router';
 
@@ -26,7 +27,8 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
   isMobile = false;
   sidenavMode: 'side' | 'over' = 'side';
   currentUser$ = this.auth.currentUser$;
-  pendingExcuseCount = 0;
+  pendingExcuseCount    = 0;
+  pendingTransferCount  = 0;
   private bpSub: Subscription | null = null;
 
   navItems: NavItem[] = [
@@ -46,6 +48,7 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
     { label: 'Reports',     icon: 'analytics',   route: '/reports',     roles: [UserRole.SystemAdmin, UserRole.GroupLeader, UserRole.AttendanceOnly],          permissionKey: 'canAccessReports' },
     { label: 'Trips & Camps', icon: 'luggage',   route: '/trips',                                                                                             permissionKey: 'canAccessTrips' },
     { label: 'Badges',        icon: 'military_tech', route: '/badges',                                                                                          permissionKey: 'canAccessBadges' },
+    { label: 'Transfers',     icon: 'swap_horiz',    route: '/transfers',   roles: [UserRole.SystemAdmin, UserRole.GroupLeader] },
   ];
 
   constructor(
@@ -53,7 +56,8 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
     public theme: ThemeService,
     private router: Router,
     private bp: BreakpointObserver,
-    private pendingExcuseService: PendingExcuseService
+    private pendingExcuseService:   PendingExcuseService,
+    private transferRequestService: TransferRequestService
   ) {}
 
   ngOnInit(): void {
@@ -69,6 +73,14 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
       const groupId = this.auth.currentUser?.groupId ?? undefined;
       this.pendingExcuseService.getPendingCount(groupId).subscribe({
         next: count => this.pendingExcuseCount = count,
+        error: () => {}  // non-critical — badge just stays 0
+      });
+    }
+
+    // Load pending transfer request count (SystemAdmin and GroupLeader only)
+    if (this.auth.isAdmin()) {
+      this.transferRequestService.getPendingCount().subscribe({
+        next: count => this.pendingTransferCount = count,
         error: () => {}  // non-critical — badge just stays 0
       });
     }

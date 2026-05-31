@@ -1,0 +1,49 @@
+<mat-card class="tab-card">
+  <mat-card-header>
+    <mat-card-title>
+      <mat-icon style="vertical-align:middle;margin-right:6px;color:#1565c0">swap_horiz</mat-icon>
+      Transfer History
+      @if (history.length > 0) {
+        <span class="history-count-chip">{{ history.length }}</span>
+      }
+    </mat-card-title>
+    <mat-card-subtitle>Group transfers this member has been part of</mat-card-subtitle>
+  </mat-card-header>
+
+  <mat-card-content>
+    @if (loading) {
+      <div class="loading-row">
+        <mat-progress-spinner mode="indeterminate" diameter="32"></mat-progress-spinner>
+      </div>
+    } @else if (history.length === 0) {
+      <div class="empty-state">
+        <mat-icon style="font-size:48px;width:48px;height:48px;color:#ccc">swap_horiz</mat-icon>
+        <p>No transfer history for this member.</p>
+      </div>
+    } @else {
+      <div class="history-list">
+        @for (r of history; track r.id) {
+          <div class="history-item">
+            <div class="transfer-arrow">
+              <span class="group-name from">{{ r.fromGroupName }}</span>
+              <mat-icon class="arrow-icon">arrow_forward</mat-icon>
+              <span class="group-name to">{{ r.toGroupName }}</span>
+            </div>
+            <div class="transfer-meta">
+              <mat-icon style="font-size:12px;width:12px;height:12px">calendar_today</mat-icon>
+              {{ r.reviewedAt | date:'mediumDate' }}
+              &nbsp;·&nbsp;
+              <mat-icon style="font-size:12px;width:12px;height:12px">person</mat-icon>
+              Reviewed by {{ r.reviewedBy }}
+              @if (r.notes) {
+                &nbsp;·&nbsp;
+                <mat-icon style="font-size:12px;width:12px;height:12px">notes</mat-icon>
+                {{ r.notes }}
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </mat-card-content>
+</mat-card>
