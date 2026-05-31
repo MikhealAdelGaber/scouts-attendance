@@ -1,0 +1,107 @@
+<mat-card class="proj-card">
+  <mat-card-header>
+    <mat-icon mat-card-avatar style="color:#1a237e;font-size:28px;width:28px;height:28px">assignment</mat-icon>
+    <mat-card-title>Projects & Assessments</mat-card-title>
+    <mat-card-subtitle>Grades across all assessed projects</mat-card-subtitle>
+  </mat-card-header>
+
+  <mat-card-content>
+    @if (loading) {
+      <div style="display:flex;justify-content:center;padding:24px">
+        <mat-progress-spinner mode="indeterminate" diameter="32"></mat-progress-spinner>
+      </div>
+    } @else if (!summary || summary.projectCount === 0) {
+      <div class="empty-state">
+        <mat-icon>assignment_late</mat-icon>
+        <p>No project grades recorded yet.</p>
+      </div>
+    } @else {
+      <!-- Scores table -->
+      <div class="table-scroll">
+        <table mat-table [dataSource]="summary.projects" class="proj-table">
+
+          <ng-container matColumnDef="projectName">
+            <th mat-header-cell *matHeaderCellDef>Project</th>
+            <td mat-cell *matCellDef="let p"><strong>{{ p.projectName }}</strong></td>
+          </ng-container>
+
+          <ng-container matColumnDef="score">
+            <th mat-header-cell *matHeaderCellDef>Score</th>
+            <td mat-cell *matCellDef="let p">{{ p.score | number:'1.0-1' }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="maxScore">
+            <th mat-header-cell *matHeaderCellDef>Max</th>
+            <td mat-cell *matCellDef="let p">{{ p.maxScore }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="percentage">
+            <th mat-header-cell *matHeaderCellDef>%</th>
+            <td mat-cell *matCellDef="let p">
+              <span class="pct-badge"
+                [style.background]="getGradeColor(p.grade) + '22'"
+                [style.color]="getGradeColor(p.grade)">
+                {{ p.percentage | number:'1.1-1' }}%
+              </span>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="grade">
+            <th mat-header-cell *matHeaderCellDef>Grade</th>
+            <td mat-cell *matCellDef="let p">
+              <span class="grade-chip"
+                [style.background]="getGradeColor(p.grade) + '22'"
+                [style.color]="getGradeColor(p.grade)">
+                {{ p.grade }} — {{ p.gradeArabic }}
+              </span>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="gradedBy">
+            <th mat-header-cell *matHeaderCellDef>Graded By</th>
+            <td mat-cell *matCellDef="let p" style="font-size:0.8rem;color:#555">{{ p.gradedBy }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="gradedAt">
+            <th mat-header-cell *matHeaderCellDef>Date</th>
+            <td mat-cell *matCellDef="let p" style="font-size:0.8rem">{{ p.gradedAt | date:'shortDate' }}</td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="columns"></tr>
+          <tr mat-row *matRowDef="let row; columns: columns;"></tr>
+        </table>
+      </div>
+
+      <!-- Summary footer -->
+      <div class="summary-footer">
+        <div class="summary-item">
+          <span class="label">Total Score</span>
+          <span class="value">{{ summary.totalScored | number:'1.0-1' }} / {{ summary.totalPossible }}</span>
+        </div>
+        <div class="summary-divider"></div>
+        <div class="summary-item">
+          <span class="label">Overall Success Rate</span>
+          <div class="rate-row">
+            <mat-progress-bar mode="determinate" [value]="summary.successRate"
+              [color]="summary.successRate >= 75 ? 'primary' : summary.successRate >= 50 ? 'accent' : 'warn'"
+              style="width:120px;display:inline-flex"></mat-progress-bar>
+            <span class="pct-badge"
+              [style.background]="getGradeColor(summary.overallGrade) + '22'"
+              [style.color]="getGradeColor(summary.overallGrade)">
+              {{ summary.successRate | number:'1.1-1' }}%
+            </span>
+          </div>
+        </div>
+        <div class="summary-divider"></div>
+        <div class="summary-item">
+          <span class="label">Overall Grade</span>
+          <span class="grade-chip grade-large"
+            [style.background]="getGradeColor(summary.overallGrade) + '22'"
+            [style.color]="getGradeColor(summary.overallGrade)">
+            {{ summary.overallGrade }} — {{ summary.overallGradeArabic }}
+          </span>
+        </div>
+      </div>
+    }
+  </mat-card-content>
+</mat-card>

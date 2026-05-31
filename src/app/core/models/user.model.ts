@@ -30,6 +30,7 @@ export interface AuthUser {
   canAccessExamScores?: boolean;
   canAccessReports?: boolean;
   canAccessBadges?: boolean;
+  canAccessProjects?: boolean;
 }
 
 export interface LoginRequest { username: string; password: string; }
@@ -63,6 +64,7 @@ export interface UserDto {
   canAccessExamScores: boolean;
   canAccessReports: boolean;
   canAccessBadges: boolean;
+  canAccessProjects: boolean;
   createdAt: string;
 }
 
@@ -89,6 +91,7 @@ export interface CreateUserDto {
   canAccessExamScores: boolean;
   canAccessReports: boolean;
   canAccessBadges: boolean;
+  canAccessProjects: boolean;
 }
 
 export interface UpdateUserDto {
@@ -112,6 +115,7 @@ export interface UpdateUserDto {
   canAccessExamScores: boolean;
   canAccessReports: boolean;
   canAccessBadges: boolean;
+  canAccessProjects: boolean;
 }
 
 export interface UserLeaderDto {

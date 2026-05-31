@@ -9,6 +9,7 @@ import { AwardBadgeDialogComponent } from './award-badge-dialog/award-badge-dial
 import { RequestTransferDialogComponent } from './request-transfer-dialog/request-transfer-dialog.component';
 import { MemberTransferHistoryComponent } from './member-transfer-history/member-transfer-history.component';
 import { MemberTransferArchiveComponent } from './member-transfer-archive/member-transfer-archive.component';
+import { MemberProjectsComponent } from './member-projects/member-projects.component';
 import { RoleGuard } from '../../core/guards/role.guard';
 import { UserRole } from '../../core/models/user.model';
 
@@ -35,7 +36,7 @@ const routes: Routes = [
   declarations: [MemberListComponent, MemberDetailComponent, MemberFormComponent,
                  MemberBadgesComponent, AwardBadgeDialogComponent,
                  RequestTransferDialogComponent, MemberTransferHistoryComponent,
-                 MemberTransferArchiveComponent],
+                 MemberTransferArchiveComponent, MemberProjectsComponent],
   imports: [SharedModule, RouterModule.forChild(routes)]
 })
 export class MembersModule {}

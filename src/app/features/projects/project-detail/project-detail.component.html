@@ -1,0 +1,177 @@
+<div class="page-container">
+  <div class="page-header">
+    <div>
+      <button mat-button routerLink="/projects">
+        <mat-icon>arrow_back</mat-icon> Projects
+      </button>
+      @if (project) {
+        <h1><mat-icon>assignment</mat-icon> {{ project.name }}</h1>
+        <p class="project-sub">
+          Max Score: <strong>{{ project.maxScore }}</strong>
+          &nbsp;·&nbsp;
+          {{ project.troopName ? project.troopName : 'All Troops' }}
+          &nbsp;·&nbsp;
+          Created by {{ project.createdBy }}
+        </p>
+      }
+    </div>
+  </div>
+
+  @if (loading) {
+    <div style="display:flex;justify-content:center;padding:40px">
+      <mat-progress-spinner mode="indeterminate" diameter="36"></mat-progress-spinner>
+    </div>
+  } @else {
+    <!-- Summary bar -->
+    <div class="summary-bar">
+      <div class="summary-chip graded">
+        <mat-icon>how_to_reg</mat-icon>
+        <strong>{{ gradedCount }}</strong> / {{ members.length }} Graded
+      </div>
+      <div class="summary-chip ungraded">
+        <mat-icon>pending</mat-icon>
+        <strong>{{ members.length - gradedCount }}</strong> Ungraded
+      </div>
+    </div>
+
+    <!-- Search -->
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-label>Search members</mat-label>
+      <mat-icon matPrefix>search</mat-icon>
+      <input matInput [(ngModel)]="search" placeholder="Name, ID or troop...">
+      @if (search) {
+        <button matSuffix mat-icon-button (click)="search = ''">
+          <mat-icon>close</mat-icon>
+        </button>
+      }
+    </mat-form-field>
+
+    <!-- Grading table -->
+    <mat-card>
+      <mat-card-content>
+        <div class="table-scroll">
+          <table mat-table [dataSource]="filtered" class="grade-table">
+
+            <!-- Member -->
+            <ng-container matColumnDef="member">
+              <th mat-header-cell *matHeaderCellDef>Member</th>
+              <td mat-cell *matCellDef="let m">
+                <div class="member-cell">
+                  <span class="member-name">{{ m.memberName }}</span>
+                  <span class="member-id">#{{ m.customId }}</span>
+                  @if (m.troopName) {
+                    <span class="troop-chip">{{ m.troopName }}</span>
+                  }
+                </div>
+              </td>
+            </ng-container>
+
+            <!-- Score input -->
+            <ng-container matColumnDef="score">
+              <th mat-header-cell *matHeaderCellDef>Score / {{ project?.maxScore }}</th>
+              <td mat-cell *matCellDef="let m">
+                @if (rowState.get(m.memberId); as state) {
+                  <div class="score-input-wrap">
+                    <mat-form-field appearance="outline" class="score-field">
+                      <input matInput type="number" [min]="0" [max]="project?.maxScore ?? null"
+                        [(ngModel)]="state.score"
+                        (ngModelChange)="onScoreChange(m.memberId)"
+                        placeholder="0">
+                      <span matSuffix style="color:#9e9e9e"> / {{ project?.maxScore }}</span>
+                    </mat-form-field>
+                  </div>
+                }
+              </td>
+            </ng-container>
+
+            <!-- Percentage -->
+            <ng-container matColumnDef="percentage">
+              <th mat-header-cell *matHeaderCellDef>%</th>
+              <td mat-cell *matCellDef="let m">
+                @if (percentage(m.memberId); as pct) {
+                  <span class="grade-badge"
+                    [style.background]="getGradeColor(gradeLabel(pct)) + '22'"
+                    [style.color]="getGradeColor(gradeLabel(pct))">
+                    {{ pct }}%
+                  </span>
+                } @else { — }
+              </td>
+            </ng-container>
+
+            <!-- Grade -->
+            <ng-container matColumnDef="grade">
+              <th mat-header-cell *matHeaderCellDef>Grade</th>
+              <td mat-cell *matCellDef="let m">
+                @if (percentage(m.memberId); as pct) {
+                  <span class="grade-badge grade-large"
+                    [style.background]="getGradeColor(gradeLabel(pct)) + '22'"
+                    [style.color]="getGradeColor(gradeLabel(pct))">
+                    {{ gradeLabel(pct) }}
+                  </span>
+                } @else { — }
+              </td>
+            </ng-container>
+
+            <!-- Notes -->
+            <ng-container matColumnDef="notes">
+              <th mat-header-cell *matHeaderCellDef>Notes</th>
+              <td mat-cell *matCellDef="let m">
+                @if (rowState.get(m.memberId); as state) {
+                  <mat-form-field appearance="outline" class="notes-field">
+                    <input matInput [(ngModel)]="state.notes"
+                      (ngModelChange)="onScoreChange(m.memberId)"
+                      placeholder="Optional notes">
+                  </mat-form-field>
+                }
+              </td>
+            </ng-container>
+
+            <!-- Save button -->
+            <ng-container matColumnDef="save">
+              <th mat-header-cell *matHeaderCellDef></th>
+              <td mat-cell *matCellDef="let m">
+                @if (rowState.get(m.memberId); as state) {
+                  <button mat-raised-button color="primary"
+                    [disabled]="state.saving || state.score === null"
+                    (click)="saveScore(m)"
+                    style="font-size:0.8rem">
+                    @if (state.saving) {
+                      <mat-progress-spinner mode="indeterminate" diameter="16"
+                        style="display:inline-block;margin-right:4px"></mat-progress-spinner>
+                    } @else {
+                      <mat-icon style="font-size:16px">save</mat-icon>
+                    }
+                    {{ m.isGraded ? 'Update' : 'Save' }}
+                  </button>
+                }
+              </td>
+            </ng-container>
+
+            <!-- Graded by -->
+            <ng-container matColumnDef="gradedBy">
+              <th mat-header-cell *matHeaderCellDef>Graded By</th>
+              <td mat-cell *matCellDef="let m">
+                @if (m.isGraded) {
+                  <span style="font-size:0.8rem;color:#555">
+                    {{ m.gradedBy }} · {{ m.gradedAt | date:'shortDate' }}
+                  </span>
+                } @else {
+                  <span style="color:#bdbdbd;font-size:0.8rem">Not graded</span>
+                }
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="['member','score','percentage','grade','notes','save','gradedBy']"></tr>
+            <tr mat-row *matRowDef="let row; columns: ['member','score','percentage','grade','notes','save','gradedBy'];"
+              [class.graded-row]="row.isGraded"></tr>
+            <tr class="mat-row" *matNoDataRow>
+              <td class="mat-cell" colspan="7" style="padding:24px;text-align:center;color:#9e9e9e">
+                No members found.
+              </td>
+            </tr>
+          </table>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  }
+</div>

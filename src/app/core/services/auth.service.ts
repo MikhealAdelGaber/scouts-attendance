@@ -125,6 +125,17 @@ export class AuthService {
     return u.canAccessBadges === true;
   }
 
+  /**
+   * True for SystemAdmin, GroupLeader, or any user with canAccessProjects = true in their JWT.
+   * Defaults to FALSE when the claim is absent (opt-in like badges).
+   */
+  canAccessProjects(): boolean {
+    const u = this.currentUser;
+    if (!u) return false;
+    if (this.isSystemAdmin() || this.isGroupLeader()) return true;
+    return u.canAccessProjects === true;
+  }
+
   /** True if the current user can award badges (same as canAccessBadges). */
   canAwardBadge(): boolean { return this.canAccessBadges(); }
 
@@ -192,7 +203,9 @@ export class AuthService {
       user.canAccessExamScores  = parseBoolDefault(payload['canAccessExamScores'],  true);
       user.canAccessReports     = parseBoolDefault(payload['canAccessReports'],     true);
       // canAccessBadges defaults FALSE (opt-in, unlike other page permissions)
-      user.canAccessBadges      = parseBool(payload['canAccessBadges']);
+      user.canAccessBadges    = parseBool(payload['canAccessBadges']);
+      // canAccessProjects defaults FALSE (opt-in for non-admin roles)
+      user.canAccessProjects  = parseBool(payload['canAccessProjects']);
     } catch { /* malformed JWT — leave flags as-is */ }
   }
 

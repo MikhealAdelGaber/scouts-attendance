@@ -125,6 +125,12 @@ const routes: Routes = [
         canActivate: [RoleGuard],
         data: { roles: [UserRole.SystemAdmin, UserRole.GroupLeader] },
         loadChildren: () => import('./features/transfers/transfers.module').then(m => m.TransfersModule)
+      },
+      {
+        path: 'projects',
+        canActivate: [permissionGuard],
+        data: { permission: 'canAccessProjects' },
+        loadChildren: () => import('./features/projects/projects.module').then(m => m.ProjectsModule)
       }
     ]
   },

@@ -1,0 +1,89 @@
+<div class="page-container">
+  <div class="page-header">
+    <h1><mat-icon>assignment</mat-icon> Projects & Assessments</h1>
+    @if (auth.isAdmin()) {
+      <button mat-raised-button color="primary" (click)="openCreate()">
+        <mat-icon>add</mat-icon> New Project
+      </button>
+    }
+  </div>
+
+  @if (loading) {
+    <div style="display:flex;justify-content:center;padding:40px">
+      <mat-progress-spinner mode="indeterminate" diameter="40"></mat-progress-spinner>
+    </div>
+  } @else if (projects.length === 0) {
+    <mat-card>
+      <mat-card-content class="empty-state">
+        <mat-icon>assignment_late</mat-icon>
+        <p>No projects yet.</p>
+        @if (auth.isAdmin()) {
+          <button mat-raised-button color="primary" (click)="openCreate()">
+            <mat-icon>add</mat-icon> Create First Project
+          </button>
+        }
+      </mat-card-content>
+    </mat-card>
+  } @else {
+    <div class="projects-grid">
+      @for (project of projects; track project.id) {
+        <mat-card class="project-card" [class.inactive-card]="!project.isActive"
+          (click)="viewDetail(project.id)" style="cursor:pointer">
+          <mat-card-header>
+            <mat-icon mat-card-avatar class="project-icon"
+              [style.color]="project.isActive ? '#1a237e' : '#9e9e9e'">assignment</mat-icon>
+            <mat-card-title>{{ project.name }}</mat-card-title>
+            <mat-card-subtitle>
+              Max Score: <strong>{{ project.maxScore }}</strong>
+              @if (project.troopName) {
+                &nbsp;·&nbsp;<mat-icon style="font-size:14px;vertical-align:middle">groups</mat-icon> {{ project.troopName }}
+              } @else {
+                &nbsp;·&nbsp;All Troops
+              }
+            </mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            @if (project.description) {
+              <p class="desc-text">{{ project.description }}</p>
+            }
+            <div class="project-meta">
+              <span class="graded-chip">
+                <mat-icon>how_to_reg</mat-icon>
+                {{ project.gradedCount }} graded
+              </span>
+              @if (!project.isActive) {
+                <span class="inactive-chip">Inactive</span>
+              }
+            </div>
+            <div class="created-meta">
+              <mat-icon style="font-size:12px;width:12px;height:12px">person</mat-icon>
+              {{ project.createdBy }} · {{ project.createdAt | date:'shortDate' }}
+            </div>
+          </mat-card-content>
+          <mat-card-actions align="end" (click)="$event.stopPropagation()">
+            <button mat-icon-button (click)="viewDetail(project.id)" matTooltip="Grade Members">
+              <mat-icon>grading</mat-icon>
+            </button>
+            <button mat-icon-button [disabled]="exportingId === project.id"
+              (click)="exportProject(project, $event)" matTooltip="Export Excel">
+              @if (exportingId === project.id) {
+                <mat-progress-spinner mode="indeterminate" diameter="18"></mat-progress-spinner>
+              } @else {
+                <mat-icon>download</mat-icon>
+              }
+            </button>
+            @if (auth.isAdmin()) {
+              <button mat-icon-button (click)="openEdit(project, $event)" matTooltip="Edit">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button mat-icon-button color="warn"
+                (click)="deleteProject(project, $event)" matTooltip="Delete">
+                <mat-icon>delete</mat-icon>
+              </button>
+            }
+          </mat-card-actions>
+        </mat-card>
+      }
+    </div>
+  }
+</div>

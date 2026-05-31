@@ -1,0 +1,58 @@
+<h2 mat-dialog-title>
+  <mat-icon style="vertical-align:middle;margin-right:6px;color:#1a237e">assignment</mat-icon>
+  {{ isEdit ? 'Edit Project' : 'New Project' }}
+</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="form" style="display:flex;flex-direction:column;gap:12px;min-width:420px;padding-top:8px">
+
+    <mat-form-field appearance="outline">
+      <mat-label>Project Name</mat-label>
+      <mat-icon matPrefix>assignment</mat-icon>
+      <input matInput formControlName="name" placeholder="e.g. First Aid Assessment">
+      <mat-error *ngIf="form.get('name')?.hasError('required')">Required</mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Description (optional)</mat-label>
+      <mat-icon matPrefix>notes</mat-icon>
+      <textarea matInput formControlName="description" rows="2"></textarea>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Max Score</mat-label>
+      <mat-icon matPrefix>score</mat-icon>
+      <input matInput type="number" formControlName="maxScore" min="1">
+      <mat-error *ngIf="form.get('maxScore')?.hasError('required')">Required</mat-error>
+      <mat-error *ngIf="form.get('maxScore')?.hasError('min')">Must be at least 1</mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Apply To</mat-label>
+      <mat-icon matPrefix>groups</mat-icon>
+      <mat-select formControlName="troopId">
+        <mat-option [value]="null">All Troops in Group</mat-option>
+        @for (t of troops; track t.id) {
+          <mat-option [value]="t.id">{{ t.name }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    @if (isEdit) {
+      <mat-checkbox formControlName="isActive">Project is Active</mat-checkbox>
+    }
+
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="cancel()">Cancel</button>
+  <button mat-raised-button color="primary"
+    (click)="save()" [disabled]="saving || form.invalid">
+    @if (saving) {
+      <mat-progress-spinner mode="indeterminate" diameter="18"
+        style="display:inline-block;margin-right:6px"></mat-progress-spinner>
+    }
+    {{ isEdit ? 'Update' : 'Create' }}
+  </button>
+</mat-dialog-actions>
