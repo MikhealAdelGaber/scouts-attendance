@@ -42,6 +42,12 @@
                 <mat-icon style="font-size:12px;width:12px;height:12px">person</mat-icon>
                 {{ mb.awardedBy }}
               </div>
+              @if (mb.troopName) {
+                <div class="badge-meta badge-troop">
+                  <mat-icon style="font-size:12px;width:12px;height:12px">groups</mat-icon>
+                  Awarded in: <strong>{{ mb.troopName }}</strong>
+                </div>
+              }
               @if (mb.notes) {
                 <div class="badge-notes">{{ mb.notes }}</div>
               }

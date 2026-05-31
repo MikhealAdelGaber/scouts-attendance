@@ -94,6 +94,11 @@
   margin-bottom: 2px;
 }
 
+.badge-troop {
+  color: #5c6bc0 !important;   // indigo accent — marks it as a "group" field
+  strong { font-weight: 600; }
+}
+
 .badge-notes {
   font-size: 0.78rem;
   color: #9e9e9e;
