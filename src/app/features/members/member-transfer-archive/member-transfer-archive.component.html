@@ -1,0 +1,88 @@
+<mat-card class="archive-card">
+  <mat-card-header>
+    <mat-icon mat-card-avatar style="color:#1565c0;font-size:28px;width:28px;height:28px;line-height:28px">history</mat-icon>
+    <mat-card-title>Previous Groups History</mat-card-title>
+    <mat-card-subtitle>Stats snapshot captured at the time of each transfer</mat-card-subtitle>
+  </mat-card-header>
+
+  <mat-card-content>
+
+    @if (loading) {
+      <div style="display:flex;justify-content:center;padding:24px">
+        <mat-progress-spinner mode="indeterminate" diameter="32"></mat-progress-spinner>
+      </div>
+    } @else if (archives.length === 0) {
+      <div class="empty-archive">
+        <mat-icon>manage_history</mat-icon>
+        <p>No previous group history yet.</p>
+        <p style="font-size:0.8rem;color:#9e9e9e">Snapshots appear here once a transfer is approved.</p>
+      </div>
+    } @else {
+      <div class="table-scroll">
+        <table mat-table [dataSource]="archives" class="archive-table">
+
+          <!-- Group Name -->
+          <ng-container matColumnDef="group">
+            <th mat-header-cell *matHeaderCellDef>Previous Group</th>
+            <td mat-cell *matCellDef="let a">
+              <div class="group-chip from">
+                <mat-icon style="font-size:14px;width:14px;height:14px">group_work</mat-icon>
+                {{ a.fromGroupName }}
+              </div>
+              <div class="group-arrow">
+                <mat-icon style="font-size:14px;color:#9e9e9e">arrow_forward</mat-icon>
+                <span style="font-size:0.78rem;color:#555">{{ a.toGroupName }}</span>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Transfer Date -->
+          <ng-container matColumnDef="transferDate">
+            <th mat-header-cell *matHeaderCellDef>Transfer Date</th>
+            <td mat-cell *matCellDef="let a">
+              <span style="font-size:0.88rem">{{ a.transferDate | date:'mediumDate' }}</span>
+            </td>
+          </ng-container>
+
+          <!-- Points at Transfer -->
+          <ng-container matColumnDef="points">
+            <th mat-header-cell *matHeaderCellDef>Points at Transfer</th>
+            <td mat-cell *matCellDef="let a">
+              <span class="stat-badge points-badge">
+                <mat-icon style="font-size:14px;width:14px;height:14px">star</mat-icon>
+                {{ a.totalPointsAtTransfer | number:'1.0-1' }}
+              </span>
+            </td>
+          </ng-container>
+
+          <!-- Attendance Count -->
+          <ng-container matColumnDef="attendance">
+            <th mat-header-cell *matHeaderCellDef>Attendance Records</th>
+            <td mat-cell *matCellDef="let a">
+              <span class="stat-badge att-badge">
+                <mat-icon style="font-size:14px;width:14px;height:14px">fact_check</mat-icon>
+                {{ a.totalAttendanceCount }}
+              </span>
+            </td>
+          </ng-container>
+
+          <!-- Events Attended -->
+          <ng-container matColumnDef="attended">
+            <th mat-header-cell *matHeaderCellDef>Events Attended</th>
+            <td mat-cell *matCellDef="let a">
+              <span class="stat-badge present-badge">
+                <mat-icon style="font-size:14px;width:14px;height:14px">check_circle</mat-icon>
+                {{ a.totalEventsAttended }}
+              </span>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="columns"></tr>
+          <tr mat-row *matRowDef="let row; columns: columns;" class="archive-row"></tr>
+
+        </table>
+      </div>
+    }
+
+  </mat-card-content>
+</mat-card>

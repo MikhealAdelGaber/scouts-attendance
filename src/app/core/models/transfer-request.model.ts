@@ -32,3 +32,19 @@ export interface CreateTransferRequest {
 export interface ReviewTransferRequest {
   rejectionReason?: string;
 }
+
+/** Immutable snapshot created when a transfer is approved. */
+export interface MemberTransferArchive {
+  id:                    string;
+  memberId:              string;
+  memberName:            string;
+  fromGroupId:           string;
+  fromGroupName:         string;
+  toGroupId:             string;
+  toGroupName:           string;
+  transferDate:          string;
+  totalPointsAtTransfer: number;
+  totalAttendanceCount:  number;
+  totalEventsAttended:   number;
+  archivedAt:            string;
+}

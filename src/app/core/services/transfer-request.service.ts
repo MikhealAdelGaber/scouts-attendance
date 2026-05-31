@@ -5,7 +5,8 @@ import { environment } from '../../../environments/environment';
 import {
   TransferRequest,
   CreateTransferRequest,
-  ReviewTransferRequest
+  ReviewTransferRequest,
+  MemberTransferArchive
 } from '../models/transfer-request.model';
 import { SUPPRESS_ERROR_SNACK } from '../interceptors/http-context-tokens';
 
@@ -56,6 +57,15 @@ export class TransferRequestService {
       `${environment.apiUrl}/members/${memberId}/transfer-history`,
       { context: new HttpContext().set(SUPPRESS_ERROR_SNACK, true) }
     ).pipe(map(r => r.data));
+  }
+
+  /** Previous-group archive snapshots for a member (read-only).
+   *  Uses SUPPRESS_ERROR_SNACK — failure shows empty state, not a toast. */
+  getTransferArchive(memberId: string): Observable<MemberTransferArchive[]> {
+    return this.http.get<ApiResponse<MemberTransferArchive[]>>(
+      `${environment.apiUrl}/members/${memberId}/transfer-archive`,
+      { context: new HttpContext().set(SUPPRESS_ERROR_SNACK, true) }
+    ).pipe(map(r => r.data ?? []));
   }
 
   /** Count of pending requests visible to the current user (nav badge).

@@ -551,14 +551,17 @@
             </mat-card>
           </mat-tab>
 
-          <!-- ── TAB 6: Transfer History (lazy — only loads when tab is clicked) ── -->
+          <!-- ── TAB 6: Transfers (lazy — only loads when tab is clicked) ──────── -->
           @if (auth.isAdmin()) {
             <mat-tab>
               <ng-template mat-tab-label>
                 <mat-icon class="tab-icon">swap_horiz</mat-icon> Transfers
               </ng-template>
               <ng-template matTabContent>
+                <!-- Active/approved transfer requests for this member -->
                 <app-member-transfer-history [memberId]="member.id"></app-member-transfer-history>
+                <!-- Read-only archive: stats snapshot per previous group -->
+                <app-member-transfer-archive [memberId]="member.id"></app-member-transfer-archive>
               </ng-template>
             </mat-tab>
           }
