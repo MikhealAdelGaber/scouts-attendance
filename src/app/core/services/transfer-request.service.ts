@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpContext } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {
@@ -7,6 +7,7 @@ import {
   CreateTransferRequest,
   ReviewTransferRequest
 } from '../models/transfer-request.model';
+import { SUPPRESS_ERROR_SNACK } from '../interceptors/http-context-tokens';
 
 interface ApiResponse<T> { success: boolean; message?: string; data: T; }
 
@@ -53,9 +54,11 @@ export class TransferRequestService {
     ).pipe(map(r => r.data));
   }
 
-  /** Count of pending requests visible to the current user (nav badge). */
+  /** Count of pending requests visible to the current user (nav badge).
+   *  Uses SUPPRESS_ERROR_SNACK so failures never show a global error toast. */
   getPendingCount(): Observable<number> {
-    return this.http.get<ApiResponse<number>>(`${this.base}/pending-count`)
-      .pipe(map(r => r.data));
+    return this.http.get<ApiResponse<number>>(`${this.base}/pending-count`, {
+      context: new HttpContext().set(SUPPRESS_ERROR_SNACK, true)
+    }).pipe(map(r => r.data));
   }
 }

@@ -4,6 +4,7 @@ import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { AuthService } from '../services/auth.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { SUPPRESS_ERROR_SNACK } from './http-context-tokens';
 
 @Injectable()
 export class ErrorInterceptor implements HttpInterceptor {
@@ -19,6 +20,13 @@ export class ErrorInterceptor implements HttpInterceptor {
           if (!isAuthRequest) {
             this.auth.logout();
           }
+          return throwError(() => err);
+        }
+
+        // ── Suppress snackbar for background / optional requests ─────────────
+        // Callers can set SUPPRESS_ERROR_SNACK on the HttpContext to opt out of
+        // the global error snackbar (e.g. nav badge count calls that are non-critical).
+        if (req.context.get(SUPPRESS_ERROR_SNACK)) {
           return throwError(() => err);
         }
 
