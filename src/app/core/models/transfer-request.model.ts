@@ -46,5 +46,6 @@ export interface MemberTransferArchive {
   totalPointsAtTransfer: number;
   totalAttendanceCount:  number;
   totalEventsAttended:   number;
+  totalExcusesCount:     number;
   archivedAt:            string;
 }

@@ -13,7 +13,7 @@ export class MemberTransferArchiveComponent implements OnInit {
   archives: MemberTransferArchive[] = [];
   loading = true;
 
-  readonly columns = ['group', 'transferDate', 'points', 'attendance', 'attended'];
+  readonly columns = ['group', 'transferDate', 'points', 'attendance', 'attended', 'excuses'];
 
   constructor(private transferSvc: TransferRequestService) {}
 
