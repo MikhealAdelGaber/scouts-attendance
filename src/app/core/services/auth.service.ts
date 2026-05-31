@@ -114,6 +114,23 @@ export class AuthService {
   canAccessExamScores():  boolean { return this.checkPermission('canAccessExamScores'); }
   canAccessReports():     boolean { return this.checkPermission('canAccessReports'); }
 
+  /**
+   * True for SystemAdmin, GroupLeader, or any user with canAccessBadges = true in their JWT.
+   * Unlike other page permissions this defaults to FALSE when the claim is absent.
+   */
+  canAccessBadges(): boolean {
+    const u = this.currentUser;
+    if (!u) return false;
+    if (this.isSystemAdmin() || this.isGroupLeader()) return true;
+    return u.canAccessBadges === true;
+  }
+
+  /** True if the current user can award badges (same as canAccessBadges). */
+  canAwardBadge(): boolean { return this.canAccessBadges(); }
+
+  /** True if the current user can remove an awarded badge (SystemAdmin or GroupLeader only). */
+  canRemoveBadge(): boolean { return this.isAdmin(); }
+
   // ─── Session persistence ─────────────────────────────────────────────────────
 
   private setSession(user: AuthUser): void {
@@ -174,6 +191,8 @@ export class AuthService {
       user.canAccessLeaderboard = parseBoolDefault(payload['canAccessLeaderboard'], true);
       user.canAccessExamScores  = parseBoolDefault(payload['canAccessExamScores'],  true);
       user.canAccessReports     = parseBoolDefault(payload['canAccessReports'],     true);
+      // canAccessBadges defaults FALSE (opt-in, unlike other page permissions)
+      user.canAccessBadges      = parseBool(payload['canAccessBadges']);
     } catch { /* malformed JWT — leave flags as-is */ }
   }
 

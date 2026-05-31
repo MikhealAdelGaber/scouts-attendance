@@ -55,4 +55,11 @@ export class BadgeService {
     return this.http.delete<ApiResponse<void>>(`${this.base}/member/${memberId}/${memberBadgeId}`)
       .pipe(map(() => void 0));
   }
+
+  // ─── Activity feed ────────────────────────────────────────────────────────
+
+  getRecentBadges(limit = 30): Observable<MemberBadge[]> {
+    return this.http.get<ApiResponse<MemberBadge[]>>(`${this.base}/recent?limit=${limit}`)
+      .pipe(map(r => r.data));
+  }
 }

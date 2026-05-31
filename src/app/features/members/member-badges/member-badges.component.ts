@@ -79,13 +79,6 @@ export class MemberBadgesComponent implements OnInit {
     });
   }
 
-  canAward(): boolean {
-    return this.auth.isSystemAdmin() ||
-           this.auth.hasRole(...[]) || // GroupLeader check below
-           this.auth.canEditMembers();
-  }
-
-  canRemove(): boolean {
-    return this.auth.isSystemAdmin() || this.auth.canEditMembers();
-  }
+  canAward(): boolean  { return this.auth.canAwardBadge(); }
+  canRemove(): boolean { return this.auth.canRemoveBadge(); }
 }

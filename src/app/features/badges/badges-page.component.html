@@ -1,0 +1,282 @@
+<div class="page-container">
+
+  <div class="page-header">
+    <h1><mat-icon>military_tech</mat-icon> Badges</h1>
+    @if (auth.isSystemAdmin()) {
+      <a mat-stroked-button routerLink="/admin/badges">
+        <mat-icon>settings</mat-icon> Manage Catalog
+      </a>
+    }
+  </div>
+
+  <div class="badges-layout">
+
+    <!-- ── LEFT: Member search + award panel ─────────────────────── -->
+    <div class="left-panel">
+
+      <!-- Member search -->
+      <mat-card class="search-card">
+        <mat-card-header>
+          <mat-card-title><mat-icon>person_search</mat-icon> Find Member</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="search-wrap">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Search by name or ID</mat-label>
+              <mat-icon matPrefix>search</mat-icon>
+              <input matInput [value]="memberSearchQuery"
+                (input)="onSearch($any($event.target).value)"
+                placeholder="Type member name or 6-digit ID...">
+              @if (memberSearchQuery) {
+                <button matSuffix mat-icon-button (click)="clearMember()">
+                  <mat-icon>close</mat-icon>
+                </button>
+              }
+            </mat-form-field>
+
+            <!-- Dropdown results -->
+            @if (memberSearchResults.length > 0) {
+              <div class="search-dropdown">
+                @for (m of memberSearchResults; track m.id) {
+                  <div class="search-result" (click)="selectMember(m)">
+                    <app-member-avatar [name]="m.fullName" [imageUrl]="m.profileImageUrl" [size]="36"></app-member-avatar>
+                    <div class="result-info">
+                      <div class="result-name">{{ m.fullName }}</div>
+                      <div class="result-meta">
+                        <span class="id-chip">{{ m.customId }}</span>
+                        @if (m.troopName) { <span>· {{ m.troopName }}</span> }
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
+            } @else if (searchingMembers) {
+              <div class="search-dropdown" style="padding:12px;text-align:center">
+                <mat-progress-spinner mode="indeterminate" diameter="24" style="margin:auto"></mat-progress-spinner>
+              </div>
+            }
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Award panel — shown when a member is selected -->
+      @if (selectedMember) {
+        <mat-card class="award-card">
+          <mat-card-header>
+            <div class="selected-member-row">
+              <app-member-avatar [name]="selectedMember.fullName"
+                                 [imageUrl]="selectedMember.profileImageUrl"
+                                 [size]="48"></app-member-avatar>
+              <div>
+                <div class="member-name-lg">{{ selectedMember.fullName }}</div>
+                <div class="member-meta">
+                  <span class="id-chip">{{ selectedMember.customId }}</span>
+                  @if (selectedMember.troopName) {
+                    <span class="troop-chip">{{ selectedMember.troopName }}</span>
+                  }
+                </div>
+              </div>
+            </div>
+          </mat-card-header>
+
+          <mat-card-content>
+
+            <!-- Current badges -->
+            <div class="section-label">Current Badges</div>
+            @if (loadingMemberBadges) {
+              <div style="text-align:center;padding:16px">
+                <mat-progress-spinner mode="indeterminate" diameter="28" style="margin:auto"></mat-progress-spinner>
+              </div>
+            } @else if (memberBadges.length === 0) {
+              <p class="no-badges-msg">No badges yet.</p>
+            } @else {
+              <div class="member-badge-chips">
+                @for (mb of memberBadges; track mb.id) {
+                  <div class="mbadge-chip" [style.border-color]="badgeColor(mb.badgeCategory)">
+                    <mat-icon [style.color]="badgeColor(mb.badgeCategory)" style="font-size:16px;width:16px;height:16px">military_tech</mat-icon>
+                    <div class="mbadge-info">
+                      <span class="mbadge-name">{{ mb.badgeName }}</span>
+                      <span class="mbadge-date">{{ mb.awardedDate | date:'shortDate' }}</span>
+                      @if (mb.troopName) {
+                        <span class="mbadge-troop">{{ mb.troopName }}</span>
+                      }
+                    </div>
+                    @if (auth.canRemoveBadge()) {
+                      <button mat-icon-button color="warn" style="transform:scale(0.7)"
+                        (click)="removeMemberBadge(mb)" matTooltip="Remove">
+                        <mat-icon>close</mat-icon>
+                      </button>
+                    }
+                  </div>
+                }
+              </div>
+            }
+
+            <mat-divider style="margin:16px 0"></mat-divider>
+
+            <!-- Award form -->
+            <div class="section-label">Award New Badge</div>
+            <form [formGroup]="awardForm" class="award-form">
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Badge</mat-label>
+                <mat-select formControlName="badgeId" required>
+                  @for (cat of categories; track cat) {
+                    <mat-optgroup [label]="cat">
+                      @for (b of badgesByCategory(cat); track b.id) {
+                        <mat-option [value]="b.id">{{ b.name }}</mat-option>
+                      }
+                    </mat-optgroup>
+                  }
+                </mat-select>
+                <mat-icon matPrefix style="color:#7b1fa2">military_tech</mat-icon>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Award Date</mat-label>
+                <input matInput type="date" formControlName="awardedDate">
+                <mat-icon matPrefix>calendar_today</mat-icon>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Notes (optional)</mat-label>
+                <textarea matInput formControlName="notes" rows="2"></textarea>
+              </mat-form-field>
+            </form>
+          </mat-card-content>
+
+          <mat-card-actions align="end">
+            <button mat-raised-button color="primary"
+              [disabled]="!awardForm.value.badgeId || savingAward"
+              (click)="awardBadge()">
+              @if (savingAward) {
+                <mat-progress-spinner mode="indeterminate" diameter="20"
+                  style="display:inline-block;margin-right:4px"></mat-progress-spinner>
+              } @else {
+                <mat-icon>military_tech</mat-icon>
+              }
+              Award Badge
+            </button>
+          </mat-card-actions>
+        </mat-card>
+      }
+
+    </div><!-- /left-panel -->
+
+    <!-- ── RIGHT: Activity feed ───────────────────────────────────── -->
+    <div class="right-panel">
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title><mat-icon>history</mat-icon> Recent Awards</mat-card-title>
+
+          <!-- Filters row -->
+          <div class="filters-row">
+            @if (troops.length > 0) {
+              <mat-form-field appearance="outline" class="filter-field">
+                <mat-label>Troop</mat-label>
+                <mat-select [(ngModel)]="filterTroopId">
+                  <mat-option value="">All Troops</mat-option>
+                  @for (t of troops; track t.id) {
+                    <mat-option [value]="t.id">{{ t.name }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+            }
+
+            <mat-form-field appearance="outline" class="filter-field">
+              <mat-label>Category</mat-label>
+              <mat-select [(ngModel)]="filterCategory">
+                <mat-option value="">All Categories</mat-option>
+                @for (cat of categories; track cat) {
+                  <mat-option [value]="cat">{{ cat }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="filter-field">
+              <mat-label>From</mat-label>
+              <input matInput type="date" [(ngModel)]="filterDateFrom">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="filter-field">
+              <mat-label>To</mat-label>
+              <input matInput type="date" [(ngModel)]="filterDateTo">
+            </mat-form-field>
+
+            @if (filterTroopId || filterCategory || filterDateFrom || filterDateTo) {
+              <button mat-icon-button (click)="clearFilters()" matTooltip="Clear filters">
+                <mat-icon>filter_alt_off</mat-icon>
+              </button>
+            }
+          </div>
+        </mat-card-header>
+
+        <mat-card-content style="padding-top:8px">
+          @if (loadingRecent) {
+            <div style="text-align:center;padding:32px">
+              <mat-progress-spinner mode="indeterminate" diameter="40" style="margin:auto"></mat-progress-spinner>
+            </div>
+          } @else if (filteredFeed.length === 0) {
+            <div class="empty-state">
+              <mat-icon style="font-size:48px;width:48px;height:48px;color:#ccc">military_tech</mat-icon>
+              <p>No badge awards yet.</p>
+            </div>
+          } @else {
+            <div class="feed-list">
+              @for (mb of filteredFeed; track mb.id) {
+                <div class="feed-item">
+                  <div class="feed-icon" [style.background]="badgeColor(mb.badgeCategory) + '1a'">
+                    <mat-icon [style.color]="badgeColor(mb.badgeCategory)">military_tech</mat-icon>
+                  </div>
+                  <div class="feed-body">
+                    <div class="feed-title">
+                      <strong>{{ mb.memberName }}</strong>
+                      <span class="feed-verb">earned</span>
+                      <span class="feed-badge-name" [style.color]="badgeColor(mb.badgeCategory)">
+                        {{ mb.badgeName }}
+                      </span>
+                    </div>
+                    <div class="feed-meta">
+                      <mat-icon style="font-size:13px;width:13px;height:13px">calendar_today</mat-icon>
+                      {{ mb.awardedDate | date:'mediumDate' }}
+                      @if (mb.troopName) {
+                        <span class="feed-dot">·</span>
+                        <mat-icon style="font-size:13px;width:13px;height:13px">groups</mat-icon>
+                        {{ mb.troopName }}
+                      }
+                      <span class="feed-dot">·</span>
+                      <mat-icon style="font-size:13px;width:13px;height:13px">person</mat-icon>
+                      {{ mb.awardedBy }}
+                    </div>
+                    @if (mb.notes) {
+                      <div class="feed-notes">"{{ mb.notes }}"</div>
+                    }
+                    @if (mb.badgeCategory) {
+                      <span class="cat-tag" [style.background]="badgeColor(mb.badgeCategory) + '22'"
+                        [style.color]="badgeColor(mb.badgeCategory)">
+                        {{ mb.badgeCategory }}
+                      </span>
+                    }
+                  </div>
+                  <div class="feed-actions">
+                    <button mat-icon-button style="font-size:13px"
+                      [routerLink]="['/members', mb.memberId]"
+                      matTooltip="View member">
+                      <mat-icon>open_in_new</mat-icon>
+                    </button>
+                    @if (auth.canRemoveBadge()) {
+                      <button mat-icon-button color="warn" style="transform:scale(0.8)"
+                        (click)="removeFeedBadge(mb)" matTooltip="Remove award">
+                        <mat-icon>delete</mat-icon>
+                      </button>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </mat-card-content>
+      </mat-card>
+    </div><!-- /right-panel -->
+
+  </div><!-- /badges-layout -->
+</div>

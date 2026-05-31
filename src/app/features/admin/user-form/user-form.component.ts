@@ -56,6 +56,7 @@ export class UserFormComponent implements OnInit {
       canEditMembers:   [false],
       canCreateEvents:  [false],
       canAccessTrips:   [false],
+      canAccessBadges:  [false],
       // Page-access permissions (all true by default)
       canAccessDashboard:   [true],
       canAccessTroops:      [true],
@@ -99,6 +100,7 @@ export class UserFormComponent implements OnInit {
           canEditMembers:    u.canEditMembers,
           canCreateEvents:   u.canCreateEvents,
           canAccessTrips:    u.canAccessTrips,
+          canAccessBadges:   u.canAccessBadges,
           // Page-access permissions
           canAccessDashboard:   u.canAccessDashboard,
           canAccessTroops:      u.canAccessTroops,
@@ -159,6 +161,7 @@ export class UserFormComponent implements OnInit {
         canEditMembers:    val.canEditMembers,
         canCreateEvents:   val.canCreateEvents,
         canAccessTrips:    val.canAccessTrips,
+        canAccessBadges:   val.canAccessBadges,
         // Page-access permissions
         canAccessDashboard:   val.canAccessDashboard,
         canAccessTroops:      val.canAccessTroops,
@@ -194,6 +197,7 @@ export class UserFormComponent implements OnInit {
         canEditMembers:    val.canEditMembers,
         canCreateEvents:   val.canCreateEvents,
         canAccessTrips:    val.canAccessTrips,
+        canAccessBadges:   val.canAccessBadges,
         // Page-access permissions
         canAccessDashboard:   val.canAccessDashboard,
         canAccessTroops:      val.canAccessTroops,

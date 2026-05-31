@@ -107,6 +107,12 @@ const routes: Routes = [
         path: 'trips',
         canActivate: [canAccessTripsGuard],
         loadChildren: () => import('./features/trips/trips.module').then(m => m.TripsModule)
+      },
+      {
+        path: 'badges',
+        canActivate: [permissionGuard],
+        data: { permission: 'canAccessBadges' },
+        loadChildren: () => import('./features/badges/badges.module').then(m => m.BadgesModule)
       }
     ]
   },
