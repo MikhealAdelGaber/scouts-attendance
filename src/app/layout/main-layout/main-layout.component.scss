@@ -16,7 +16,7 @@
     border-bottom: 1px solid rgba(255,255,255,0.1);
     margin-bottom: 8px;
 
-    .sidenav-logo { width: 44px; height: 44px; flex-shrink: 0; border-radius: 50%; background: white; padding: 3px; object-fit: contain; }
+    .sidenav-logo { width: 44px; height: 44px; flex-shrink: 0; object-fit: contain; filter: invert(1) drop-shadow(0 0 1px rgba(255,255,255,0.3)); }
     .logo-text {
       .title { display: block; font-size: 1.05rem; font-weight: 700; color: white; letter-spacing: 0.3px; }
       .subtitle { display: block; font-size: 0.68rem; color: rgba(255,255,255,0.6); margin-top: 2px; letter-spacing: 0.5px; text-transform: uppercase; }
@@ -120,7 +120,7 @@
   transition: background 0.3s ease !important;
 
   .toolbar-spacer { flex: 1; }
-  .toolbar-logo   { width: 32px; height: 32px; margin-left: 8px; border-radius: 50%; background: white; padding: 2px; object-fit: contain; }
+  .toolbar-logo   { width: 32px; height: 32px; margin-left: 8px; object-fit: contain; filter: invert(1) drop-shadow(0 0 1px rgba(255,255,255,0.3)); }
   .toolbar-title  { font-weight: 700; margin-left: 8px; font-size: 1rem; letter-spacing: 0.3px; }
 
   .theme-toggle-btn {
