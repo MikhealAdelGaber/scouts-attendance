@@ -510,16 +510,17 @@
             </mat-card>
           </mat-tab>
 
-          <!-- ── TAB 4: Badges ───────────────────────────────── -->
+          <!-- ── TAB 4: Badges (lazy — only loads when tab is clicked) ── -->
           <mat-tab>
             <ng-template mat-tab-label>
               <mat-icon class="tab-icon">military_tech</mat-icon> Badges
             </ng-template>
-
-            <app-member-badges
-              [memberId]="member.id"
-              [memberName]="member.fullName">
-            </app-member-badges>
+            <ng-template matTabContent>
+              <app-member-badges
+                [memberId]="member.id"
+                [memberName]="member.fullName">
+              </app-member-badges>
+            </ng-template>
           </mat-tab>
 
           <!-- ── TAB 5: Notes ─────────────────────────────────── -->

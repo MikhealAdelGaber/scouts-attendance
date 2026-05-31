@@ -48,16 +48,17 @@ export class RequestTransferDialogComponent implements OnInit {
       notes:     ['']
     });
 
-    // Suppress the global error snack — we display the error state inline.
-    this.http.get<ApiResponse<Group[]>>(`${environment.apiUrl}/groups`, {
+    // Use the dedicated endpoint that bypasses per-user group scoping.
+    // The backend already excludes the caller's own group, but we also filter
+    // client-side on currentGroupId as a safety net.
+    this.http.get<ApiResponse<Group[]>>(`${environment.apiUrl}/groups/all-for-transfer`, {
       context: new HttpContext().set(SUPPRESS_ERROR_SNACK, true)
     }).pipe(
       map(r => r.data ?? []),
       catchError(() => of([] as Group[]))
     ).subscribe(groups => {
-      this.groups    = groups.filter(g => g.id !== this.data.currentGroupId);
-      this.loadError = groups.length === 0 && !this.noGroupsAvailable ? false : false;
-      this.loading   = false;
+      this.groups  = groups.filter(g => g.id !== this.data.currentGroupId);
+      this.loading = false;
     });
   }
 

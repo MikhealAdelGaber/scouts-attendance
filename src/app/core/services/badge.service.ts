@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpContext } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Badge, MemberBadge, CreateBadge, UpdateBadge, AwardBadge } from '../models/badge.model';
+import { SUPPRESS_ERROR_SNACK } from '../interceptors/http-context-tokens';
 
 interface ApiResponse<T> { success: boolean; message?: string; data: T; }
 
@@ -42,7 +43,8 @@ export class BadgeService {
   // ─── Member badges ────────────────────────────────────────────────────────
 
   getMemberBadges(memberId: string): Observable<MemberBadge[]> {
-    return this.http.get<ApiResponse<MemberBadge[]>>(`${this.base}/member/${memberId}`)
+    const ctx = new HttpContext().set(SUPPRESS_ERROR_SNACK, true);
+    return this.http.get<ApiResponse<MemberBadge[]>>(`${this.base}/member/${memberId}`, { context: ctx })
       .pipe(map(r => r.data));
   }
 
