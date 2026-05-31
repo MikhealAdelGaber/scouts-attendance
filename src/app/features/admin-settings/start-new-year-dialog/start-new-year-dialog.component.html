@@ -1,0 +1,163 @@
+<!-- ── STEP 1: Warning ──────────────────────────────────────────────────── -->
+@if (step === 1) {
+  <h2 mat-dialog-title class="warning-title">
+    <mat-icon class="warn-icon">warning</mat-icon>
+    Start New Scout Year
+  </h2>
+
+  <mat-dialog-content>
+    <div class="warning-banner">
+      <mat-icon>warning_amber</mat-icon>
+      <div>
+        <strong>This action cannot be undone.</strong>
+        <p>Starting a new year will permanently reset ALL members' points and excuses
+           across ALL groups. Their data will be archived first, but the records will
+           be deleted.</p>
+      </div>
+    </div>
+
+    <div class="what-happens">
+      <p class="section-label">What will happen:</p>
+      <div class="action-row deleted">
+        <mat-icon>delete_forever</mat-icon>
+        <span>All points history deleted (archived first)</span>
+      </div>
+      <div class="action-row deleted">
+        <mat-icon>delete_forever</mat-icon>
+        <span>All excuse records deleted (archived first)</span>
+      </div>
+      <div class="action-row deleted">
+        <mat-icon>delete_forever</mat-icon>
+        <span>All pending excuse requests deleted</span>
+      </div>
+      <div class="action-row kept">
+        <mat-icon>check_circle</mat-icon>
+        <span>Member personal data kept</span>
+      </div>
+      <div class="action-row kept">
+        <mat-icon>check_circle</mat-icon>
+        <span>Badge records kept</span>
+      </div>
+      <div class="action-row kept">
+        <mat-icon>check_circle</mat-icon>
+        <span>Exam scores kept</span>
+      </div>
+      <div class="action-row kept">
+        <mat-icon>check_circle</mat-icon>
+        <span>Attendance history kept</span>
+      </div>
+      <div class="action-row archive">
+        <mat-icon>inventory_2</mat-icon>
+        <span>All stats archived in Year Archives before deletion</span>
+      </div>
+    </div>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button (click)="cancel()">Cancel</button>
+    <button mat-raised-button color="warn" (click)="goToStep2()">
+      <mat-icon>arrow_forward</mat-icon> Continue
+    </button>
+  </mat-dialog-actions>
+}
+
+<!-- ── STEP 2: Password verification ──────────────────────────────────────── -->
+@if (step === 2) {
+  <h2 mat-dialog-title>
+    <mat-icon>lock</mat-icon> Verify Your Identity
+  </h2>
+
+  <mat-dialog-content>
+    <p class="verify-prompt">
+      Enter your administrator password to confirm you have authority to perform this action.
+    </p>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Your Password</mat-label>
+      <mat-icon matPrefix>lock</mat-icon>
+      <input matInput
+        [type]="passwordHide ? 'password' : 'text'"
+        [(ngModel)]="password"
+        (keyup.enter)="verifyPassword()"
+        autocomplete="current-password">
+      <button mat-icon-button matSuffix type="button"
+        (click)="passwordHide = !passwordHide">
+        <mat-icon>{{ passwordHide ? 'visibility_off' : 'visibility' }}</mat-icon>
+      </button>
+    </mat-form-field>
+
+    @if (passwordError) {
+      <div class="error-banner">
+        <mat-icon>error</mat-icon>
+        {{ passwordError }}
+      </div>
+    }
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button (click)="cancel()">Cancel</button>
+    <button mat-raised-button color="primary"
+      (click)="verifyPassword()"
+      [disabled]="verifying || !password.trim()">
+      @if (verifying) {
+        <mat-progress-spinner mode="indeterminate" diameter="18"
+          style="display:inline-block;margin-right:6px"></mat-progress-spinner>
+      }
+      {{ verifying ? 'Verifying…' : 'Verify Password' }}
+      <mat-icon>arrow_forward</mat-icon>
+    </button>
+  </mat-dialog-actions>
+}
+
+<!-- ── STEP 3: Final confirmation ─────────────────────────────────────────── -->
+@if (step === 3) {
+  <h2 mat-dialog-title class="danger-title">
+    <mat-icon class="danger-icon">new_releases</mat-icon>
+    Final Confirmation
+  </h2>
+
+  <mat-dialog-content>
+    <div class="final-warning">
+      <p>You are about to start a new scout year. This will:</p>
+      <ul>
+        <li><mat-icon class="list-icon archive">inventory_2</mat-icon> Archive all members' points and excuses</li>
+        <li><mat-icon class="list-icon delete">delete_forever</mat-icon> Reset all points to 0</li>
+        <li><mat-icon class="list-icon delete">delete_forever</mat-icon> Delete all excuse records</li>
+        <li><mat-icon class="list-icon delete">delete_forever</mat-icon> Delete all pending excuse requests</li>
+      </ul>
+      <p class="last-chance">
+        <strong>This cannot be undone.</strong> Type <code>CONFIRM</code> below to proceed.
+      </p>
+    </div>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Type CONFIRM to proceed</mat-label>
+      <mat-icon matPrefix>keyboard</mat-icon>
+      <input matInput [(ngModel)]="confirmText" placeholder="CONFIRM" autocomplete="off">
+    </mat-form-field>
+
+    @if (submitError) {
+      <div class="error-banner">
+        <mat-icon>error</mat-icon>
+        {{ submitError }}
+      </div>
+    }
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button (click)="backToStep2()">
+      <mat-icon>arrow_back</mat-icon> Back
+    </button>
+    <button mat-raised-button color="warn"
+      (click)="submit()"
+      [disabled]="!canSubmit">
+      @if (submitting) {
+        <mat-progress-spinner mode="indeterminate" diameter="18"
+          style="display:inline-block;margin-right:6px"></mat-progress-spinner>
+      } @else {
+        <mat-icon>play_circle</mat-icon>
+      }
+      {{ submitting ? 'Processing…' : 'Start New Year' }}
+    </button>
+  </mat-dialog-actions>
+}

@@ -1,0 +1,188 @@
+<div class="page-container">
+  <div class="page-header">
+    <h1><mat-icon>admin_panel_settings</mat-icon> Admin Settings</h1>
+  </div>
+
+  <!-- ── Start New Year ──────────────────────────────────────────────────── -->
+  <mat-card class="section-card danger-section">
+    <mat-card-header>
+      <mat-icon mat-card-avatar class="section-icon danger-icon">new_releases</mat-icon>
+      <mat-card-title>Start New Scout Year</mat-card-title>
+      <mat-card-subtitle>Reset all points and excuses across all groups</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <p class="section-desc">
+        Starting a new year archives all members' current stats (points, attendance,
+        excuses), then resets their points to zero and deletes all excuse records.
+        Personal data, badges, exam scores and attendance history are preserved.
+      </p>
+      <div class="badge-row">
+        <span class="action-chip deleted"><mat-icon>delete_forever</mat-icon> Resets: Points</span>
+        <span class="action-chip deleted"><mat-icon>delete_forever</mat-icon> Resets: Excuses</span>
+        <span class="action-chip kept"><mat-icon>check_circle</mat-icon> Keeps: Badges</span>
+        <span class="action-chip kept"><mat-icon>check_circle</mat-icon> Keeps: Exam Scores</span>
+        <span class="action-chip archive"><mat-icon>inventory_2</mat-icon> Archives: Stats Snapshot</span>
+      </div>
+    </mat-card-content>
+    <mat-card-actions>
+      <button mat-raised-button color="warn" (click)="openNewYearDialog()">
+        <mat-icon>play_circle</mat-icon>
+        Start New Year
+      </button>
+    </mat-card-actions>
+  </mat-card>
+
+  <!-- ── Year Archives ───────────────────────────────────────────────────── -->
+  <mat-card class="section-card">
+    <mat-card-header>
+      <mat-icon mat-card-avatar class="section-icon">inventory_2</mat-icon>
+      <mat-card-title>Year Archives</mat-card-title>
+      <mat-card-subtitle>Historical snapshots from previous year resets</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+
+      @if (archivesLoading) {
+        <div style="display:flex;justify-content:center;padding:32px">
+          <mat-progress-spinner mode="indeterminate" diameter="36"></mat-progress-spinner>
+        </div>
+      } @else if (archives.length === 0) {
+        <div class="empty-state">
+          <mat-icon>inventory_2</mat-icon>
+          <p>No year archives yet.</p>
+          <p style="font-size:0.8rem;color:#9e9e9e">Archives appear here after the first "Start New Year" reset.</p>
+        </div>
+      } @else {
+        <div class="table-scroll">
+          <table mat-table [dataSource]="archives" class="archives-table">
+
+            <ng-container matColumnDef="archiveYear">
+              <th mat-header-cell *matHeaderCellDef>Academic Year</th>
+              <td mat-cell *matCellDef="let a">
+                <strong>{{ a.archiveYear }}</strong>
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="archivedAt">
+              <th mat-header-cell *matHeaderCellDef>Archived Date</th>
+              <td mat-cell *matCellDef="let a">{{ a.archivedAt | date:'mediumDate' }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="archivedBy">
+              <th mat-header-cell *matHeaderCellDef>Archived By</th>
+              <td mat-cell *matCellDef="let a">{{ a.archivedBy }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="totalMembers">
+              <th mat-header-cell *matHeaderCellDef>Members</th>
+              <td mat-cell *matCellDef="let a">
+                <span class="count-badge">{{ a.totalMembers }}</span>
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="totalGroups">
+              <th mat-header-cell *matHeaderCellDef>Groups</th>
+              <td mat-cell *matCellDef="let a">
+                <span class="count-badge">{{ a.totalGroups }}</span>
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef></th>
+              <td mat-cell *matCellDef="let a">
+                <button mat-icon-button (click)="toggleDetail(a.id)"
+                  [matTooltip]="expandedArchiveId === a.id ? 'Collapse' : 'View Details'">
+                  <mat-icon>{{ expandedArchiveId === a.id ? 'expand_less' : 'expand_more' }}</mat-icon>
+                </button>
+                <button mat-icon-button color="primary" (click)="exportArchive(a.id)" matTooltip="Export Excel">
+                  <mat-icon>download</mat-icon>
+                </button>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="archiveColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: archiveColumns;"></tr>
+          </table>
+        </div>
+
+        <!-- Expanded detail panel -->
+        @if (expandedArchiveId) {
+          <div class="detail-panel">
+            @if (detailLoading) {
+              <div style="display:flex;justify-content:center;padding:24px">
+                <mat-progress-spinner mode="indeterminate" diameter="28"></mat-progress-spinner>
+              </div>
+            } @else if (archiveDetail) {
+              <h3 class="detail-title">
+                <mat-icon>people</mat-icon>
+                Members — {{ archiveDetail.archiveYear }}
+                <span class="detail-count">({{ archiveDetail.members.length }})</span>
+              </h3>
+              <div class="table-scroll">
+                <table mat-table [dataSource]="archiveDetail.members" class="members-table">
+
+                  <ng-container matColumnDef="memberName">
+                    <th mat-header-cell *matHeaderCellDef>Name</th>
+                    <td mat-cell *matCellDef="let m"><strong>{{ m.memberName }}</strong></td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="groupName">
+                    <th mat-header-cell *matHeaderCellDef>Group</th>
+                    <td mat-cell *matCellDef="let m">{{ m.groupName }}</td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="troopName">
+                    <th mat-header-cell *matHeaderCellDef>Troop</th>
+                    <td mat-cell *matCellDef="let m">{{ m.troopName || '—' }}</td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="grade">
+                    <th mat-header-cell *matHeaderCellDef>Grade</th>
+                    <td mat-cell *matCellDef="let m">
+                      @if (m.academicGrade) {
+                        <span class="grade-chip">{{ m.academicGrade }}</span>
+                      } @else { — }
+                    </td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="points">
+                    <th mat-header-cell *matHeaderCellDef>Points</th>
+                    <td mat-cell *matCellDef="let m">
+                      <span class="stat-badge points">
+                        <mat-icon>star</mat-icon>{{ m.totalPointsAtYearEnd | number:'1.0-1' }}
+                      </span>
+                    </td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="attendance">
+                    <th mat-header-cell *matHeaderCellDef>Records</th>
+                    <td mat-cell *matCellDef="let m">
+                      <span class="stat-badge att">{{ m.totalAttendanceCount }}</span>
+                    </td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="attended">
+                    <th mat-header-cell *matHeaderCellDef>Attended</th>
+                    <td mat-cell *matCellDef="let m">
+                      <span class="stat-badge present">{{ m.totalEventsAttended }}</span>
+                    </td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="excuses">
+                    <th mat-header-cell *matHeaderCellDef>Excuses</th>
+                    <td mat-cell *matCellDef="let m">
+                      <span class="stat-badge excuse">{{ m.totalExcusesCount }}</span>
+                    </td>
+                  </ng-container>
+
+                  <tr mat-header-row *matHeaderRowDef="memberColumns; sticky: true"></tr>
+                  <tr mat-row *matRowDef="let row; columns: memberColumns;"></tr>
+                </table>
+              </div>
+            }
+          </div>
+        }
+      }
+    </mat-card-content>
+  </mat-card>
+
+</div>

@@ -49,6 +49,7 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
     { label: 'Trips & Camps', icon: 'luggage',   route: '/trips',                                                                                             permissionKey: 'canAccessTrips' },
     { label: 'Badges',        icon: 'military_tech', route: '/badges',                                                                                          permissionKey: 'canAccessBadges' },
     { label: 'Transfers',     icon: 'swap_horiz',    route: '/transfers',   roles: [UserRole.SystemAdmin, UserRole.GroupLeader] },
+    { label: 'Settings',      icon: 'admin_panel_settings', route: '/admin/settings', roles: [UserRole.SystemAdmin] },
   ];
 
   constructor(
