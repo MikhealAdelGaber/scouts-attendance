@@ -18,7 +18,13 @@ export interface YearlyMemberArchive {
   totalAttendanceCount: number;
   totalEventsAttended:  number;
   totalExcusesCount:    number;
+  latestExamScore:      number | null;
+  totalProjects:        number;
+  projectsCompleted:    number;
   academicGrade:        string | null;
+  // computed by backend
+  attendanceRate:       number | null;
+  projectRate:          number | null;
 }
 
 export interface YearlyArchiveDetail extends YearlyArchiveSummary {
@@ -34,4 +40,9 @@ export interface NewYearResult {
   pointsDeleted:         number;
   excusesDeleted:        number;
   pendingExcusesDeleted: number;
+  attendanceDeleted:     number;
+  eventsDeleted:         number;
+  tripsDeleted:          number;
+  projectsDeleted:       number;
+  troopsDeleted:         number;
 }

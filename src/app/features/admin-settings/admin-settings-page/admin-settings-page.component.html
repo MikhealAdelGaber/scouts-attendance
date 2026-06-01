@@ -8,20 +8,24 @@
     <mat-card-header>
       <mat-icon mat-card-avatar class="section-icon danger-icon">new_releases</mat-icon>
       <mat-card-title>Start New Scout Year</mat-card-title>
-      <mat-card-subtitle>Reset all points and excuses across all groups</mat-card-subtitle>
+      <mat-card-subtitle>Full year-end reset across all groups</mat-card-subtitle>
     </mat-card-header>
     <mat-card-content>
       <p class="section-desc">
-        Starting a new year archives all members' current stats (points, attendance,
-        excuses), then resets their points to zero and deletes all excuse records.
-        Personal data, badges, exam scores and attendance history are preserved.
+        Starting a new year <strong>archives</strong> all members' current stats
+        (points, attendance, exam scores, projects), then resets data for the new season.
+        Personal data and badges are always preserved.
       </p>
       <div class="badge-row">
-        <span class="action-chip deleted"><mat-icon>delete_forever</mat-icon> Resets: Points</span>
-        <span class="action-chip deleted"><mat-icon>delete_forever</mat-icon> Resets: Excuses</span>
+        <span class="action-chip deleted"><mat-icon>delete_forever</mat-icon> Removes: Troops</span>
+        <span class="action-chip deleted"><mat-icon>delete_forever</mat-icon> Removes: Events</span>
+        <span class="action-chip deleted"><mat-icon>delete_forever</mat-icon> Removes: Trips</span>
+        <span class="action-chip deleted"><mat-icon>delete_forever</mat-icon> Removes: Projects</span>
+        <span class="action-chip deleted"><mat-icon>delete_forever</mat-icon> Resets: Points &amp; Excuses</span>
+        <span class="action-chip kept"><mat-icon>check_circle</mat-icon> Keeps: Members</span>
         <span class="action-chip kept"><mat-icon>check_circle</mat-icon> Keeps: Badges</span>
         <span class="action-chip kept"><mat-icon>check_circle</mat-icon> Keeps: Exam Scores</span>
-        <span class="action-chip archive"><mat-icon>inventory_2</mat-icon> Archives: Stats Snapshot</span>
+        <span class="action-chip archive"><mat-icon>inventory_2</mat-icon> Archives: Full Stats Snapshot</span>
       </div>
     </mat-card-content>
     <mat-card-actions>
@@ -57,9 +61,7 @@
 
             <ng-container matColumnDef="archiveYear">
               <th mat-header-cell *matHeaderCellDef>Academic Year</th>
-              <td mat-cell *matCellDef="let a">
-                <strong>{{ a.archiveYear }}</strong>
-              </td>
+              <td mat-cell *matCellDef="let a"><strong>{{ a.archiveYear }}</strong></td>
             </ng-container>
 
             <ng-container matColumnDef="archivedAt">
@@ -96,7 +98,7 @@
                 <button mat-icon-button color="primary"
                   (click)="exportArchive(a)"
                   [disabled]="exportingId === a.id"
-                  matTooltip="Export Excel">
+                  matTooltip="Download per-group Excel report">
                   @if (exportingId === a.id) {
                     <mat-progress-spinner mode="indeterminate" diameter="18"></mat-progress-spinner>
                   } @else {
@@ -160,17 +162,47 @@
                     </td>
                   </ng-container>
 
-                  <ng-container matColumnDef="attendance">
-                    <th mat-header-cell *matHeaderCellDef>Records</th>
+                  <ng-container matColumnDef="attendanceRate">
+                    <th mat-header-cell *matHeaderCellDef>Attendance %</th>
                     <td mat-cell *matCellDef="let m">
-                      <span class="stat-badge att">{{ m.totalAttendanceCount }}</span>
+                      @if (m.attendanceRate != null) {
+                        <span class="rate-badge"
+                          [class.rate-green]="m.attendanceRate >= 80"
+                          [class.rate-orange]="m.attendanceRate >= 60 && m.attendanceRate < 80"
+                          [class.rate-red]="m.attendanceRate < 60">
+                          {{ m.attendanceRate | number:'1.0-1' }}%
+                        </span>
+                        <span class="rate-hint">{{ m.totalEventsAttended }}/{{ m.totalAttendanceCount }}</span>
+                      } @else { — }
                     </td>
                   </ng-container>
 
-                  <ng-container matColumnDef="attended">
-                    <th mat-header-cell *matHeaderCellDef>Attended</th>
+                  <ng-container matColumnDef="examScore">
+                    <th mat-header-cell *matHeaderCellDef>Exam Score</th>
                     <td mat-cell *matCellDef="let m">
-                      <span class="stat-badge present">{{ m.totalEventsAttended }}</span>
+                      @if (m.latestExamScore != null) {
+                        <span class="rate-badge"
+                          [class.rate-green]="m.latestExamScore >= 80"
+                          [class.rate-orange]="m.latestExamScore >= 60 && m.latestExamScore < 80"
+                          [class.rate-red]="m.latestExamScore < 60">
+                          {{ m.latestExamScore | number:'1.0-1' }}
+                        </span>
+                      } @else { — }
+                    </td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="projectRate">
+                    <th mat-header-cell *matHeaderCellDef>Projects %</th>
+                    <td mat-cell *matCellDef="let m">
+                      @if (m.projectRate != null) {
+                        <span class="rate-badge"
+                          [class.rate-green]="m.projectRate >= 80"
+                          [class.rate-orange]="m.projectRate >= 60 && m.projectRate < 80"
+                          [class.rate-red]="m.projectRate < 60">
+                          {{ m.projectRate | number:'1.0-1' }}%
+                        </span>
+                        <span class="rate-hint">{{ m.projectsCompleted }}/{{ m.totalProjects }}</span>
+                      } @else { — }
                     </td>
                   </ng-container>
 

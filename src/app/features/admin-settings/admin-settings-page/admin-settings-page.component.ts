@@ -20,7 +20,7 @@ export class AdminSettingsPageComponent implements OnInit {
   exportingId:    string | null = null;
 
   readonly archiveColumns = ['archiveYear', 'archivedAt', 'archivedBy', 'totalMembers', 'totalGroups', 'actions'];
-  readonly memberColumns   = ['memberName', 'groupName', 'troopName', 'grade', 'points', 'attendance', 'attended', 'excuses'];
+  readonly memberColumns  = ['memberName', 'groupName', 'troopName', 'grade', 'points', 'attendanceRate', 'examScore', 'projectRate', 'excuses'];
 
   constructor(
     private svc:    AdminSettingsService,
@@ -49,12 +49,14 @@ export class AdminSettingsPageComponent implements OnInit {
     ref.afterClosed().subscribe((result: NewYearResult | undefined) => {
       if (!result) return;
       this.snack.open(
-        `✅ New year ${result.archiveYear} started. ` +
-        `${result.totalMembers} members archived. ` +
-        `${result.pointsDeleted} point records deleted. ` +
-        `${result.excusesDeleted} excuse records deleted.`,
+        `✅ New year ${result.archiveYear} started! ` +
+        `${result.totalMembers} members archived · ` +
+        `${result.troopsDeleted} troops removed · ` +
+        `${result.eventsDeleted} events removed · ` +
+        `${result.tripsDeleted} trips removed · ` +
+        `${result.projectsDeleted} projects removed.`,
         'Close',
-        { duration: 8000, panelClass: ['success-snack'] }
+        { duration: 10000, panelClass: ['success-snack'] }
       );
       this.loadArchives();
     });
