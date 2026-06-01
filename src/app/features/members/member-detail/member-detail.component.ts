@@ -1,9 +1,9 @@
-import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
-import { forkJoin, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { forkJoin, of, interval, Subscription } from 'rxjs';
+import { catchError, switchMap } from 'rxjs/operators';
 import { MemberService }     from '../../../core/services/member.service';
 import { PointsService }     from '../../../core/services/points.service';
 import { AttendanceService } from '../../../core/services/attendance.service';
@@ -20,7 +20,7 @@ import { RequestTransferDialogComponent } from '../request-transfer-dialog/reque
   templateUrl: './member-detail.component.html',
   styleUrls: ['./member-detail.component.scss']
 })
-export class MemberDetailComponent implements OnInit {
+export class MemberDetailComponent implements OnInit, OnDestroy {
   member: Member | null = null;
   pointsSummary: MemberPointsSummary | null = null;
   attendanceHistory: AttendanceRecord[] = [];
@@ -28,6 +28,11 @@ export class MemberDetailComponent implements OnInit {
   loading = true;
   uploadingPhoto = false;
   qrImageUrl = '';
+  attendanceRefreshing = false;
+
+  private memberId = '';
+  private attendanceSub?: Subscription;
+  private readonly REFRESH_INTERVAL_MS = 30_000; // auto-refresh every 30 s
 
   pointsColumns     = ['date', 'category', 'points', 'note', 'type'];
   attendanceColumns = ['date', 'event', 'status', 'points'];
@@ -49,7 +54,8 @@ export class MemberDetailComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    const id = this.route.snapshot.params['id'];
+    this.memberId = this.route.snapshot.params['id'];
+    const id = this.memberId;
 
     const emptyPoints: MemberPointsSummary = { memberId: id, memberName: '', troopName: '', totalPoints: 0, byCategory: {}, history: [] };
 
@@ -69,9 +75,43 @@ export class MemberDetailComponent implements OnInit {
           if (blob) this.qrImageUrl = URL.createObjectURL(blob);
         });
         this.loading = false;
+        this.startAttendanceAutoRefresh();
       },
       error: () => { this.loading = false; }
     });
+  }
+
+  ngOnDestroy(): void {
+    this.attendanceSub?.unsubscribe();
+  }
+
+  // ── Auto-refresh attendance every 30 s ──────────────────────────
+  private startAttendanceAutoRefresh(): void {
+    // interval starts after the first tick (no startWith), so the
+    // initial load from forkJoin is never duplicated.
+    this.attendanceSub = interval(this.REFRESH_INTERVAL_MS)
+      .pipe(
+        switchMap(() => {
+          this.attendanceRefreshing = true;
+          return this.attendanceService.getMemberHistory(this.memberId)
+            .pipe(catchError(() => of(this.attendanceHistory)));
+        })
+      )
+      .subscribe(records => {
+        this.attendanceHistory    = records;
+        this.attendanceRefreshing = false;
+      });
+  }
+
+  // Manual refresh button
+  refreshAttendance(): void {
+    this.attendanceRefreshing = true;
+    this.attendanceService.getMemberHistory(this.memberId)
+      .pipe(catchError(() => of(this.attendanceHistory)))
+      .subscribe(records => {
+        this.attendanceHistory    = records;
+        this.attendanceRefreshing = false;
+      });
   }
 
   // ── Attendance colour helpers ────────────────────────────────────
@@ -79,6 +119,7 @@ export class MemberDetailComponent implements OnInit {
     const map: Record<number, string> = {
       [AttendanceStatus.Present]: '#4caf50',
       [AttendanceStatus.Late]:    '#ff9800',
+      [AttendanceStatus.TooLate]: '#f57c00',
       [AttendanceStatus.Absent]:  '#f44336',
       [AttendanceStatus.Excused]: '#2196f3'
     };
@@ -89,6 +130,7 @@ export class MemberDetailComponent implements OnInit {
     const map: Record<number, string> = {
       [AttendanceStatus.Present]: 'check_circle',
       [AttendanceStatus.Late]:    'schedule',
+      [AttendanceStatus.TooLate]: 'running_with_errors',
       [AttendanceStatus.Absent]:  'cancel',
       [AttendanceStatus.Excused]: 'info'
     };
@@ -96,14 +138,23 @@ export class MemberDetailComponent implements OnInit {
   }
 
   // ── Attendance counts ────────────────────────────────────────────
+  get totalCount():   number { return this.attendanceHistory.length; }
   get presentCount(): number { return this.attendanceHistory.filter(a => a.status === AttendanceStatus.Present).length; }
   get lateCount():    number { return this.attendanceHistory.filter(a => a.status === AttendanceStatus.Late).length; }
-  get absentCount():  number { return this.attendanceHistory.filter(a => a.status === AttendanceStatus.Absent).length; }
+  get tooLateCount(): number { return this.attendanceHistory.filter(a => a.status === AttendanceStatus.TooLate).length; }
   get excusedCount(): number { return this.attendanceHistory.filter(a => a.status === AttendanceStatus.Excused).length; }
+  get absentCount():  number { return this.attendanceHistory.filter(a => a.status === AttendanceStatus.Absent).length; }
+
   get attendanceRate(): number {
-    if (!this.attendanceHistory.length) return 0;
-    const attended = this.presentCount + this.lateCount;
-    return Math.round((attended / this.attendanceHistory.length) * 100);
+    if (!this.totalCount) return 0;
+    const attended = this.presentCount + this.lateCount + this.tooLateCount;
+    return Math.round((attended / this.totalCount) * 100);
+  }
+
+  get rateColor(): string {
+    if (this.attendanceRate >= 80) return '#4caf50';
+    if (this.attendanceRate >= 60) return '#ff9800';
+    return '#f44336';
   }
 
   // ── Photo upload / remove ────────────────────────────────────────────

@@ -359,40 +359,86 @@
               <mat-icon class="tab-icon">fact_check</mat-icon> Attendance
             </ng-template>
 
-            <!-- Attendance summary chips -->
-            <mat-card class="tab-card">
+            <!-- Attendance summary card -->
+            <mat-card class="tab-card att-summary-card">
               <mat-card-header>
-                <mat-card-title>Attendance Summary</mat-card-title>
-                <mat-card-subtitle>{{ attendanceHistory.length }} events recorded</mat-card-subtitle>
+                <mat-card-title class="att-summary-title">
+                  <span>Attendance Summary</span>
+                  <div class="att-header-actions">
+                    <span class="live-badge">
+                      <span class="live-dot"></span> Live
+                    </span>
+                    <button mat-icon-button
+                            [disabled]="attendanceRefreshing"
+                            (click)="refreshAttendance()"
+                            matTooltip="Refresh now">
+                      <mat-icon [class.spinning]="attendanceRefreshing">refresh</mat-icon>
+                    </button>
+                  </div>
+                </mat-card-title>
+                <mat-card-subtitle>
+                  <strong>{{ totalCount }}</strong> total events recorded
+                </mat-card-subtitle>
               </mat-card-header>
+
               <mat-card-content>
+
+                <!-- Stat chips row -->
                 <div class="attendance-summary-row">
+
                   <div class="att-stat present">
                     <mat-icon>check_circle</mat-icon>
                     <span class="att-val">{{ presentCount }}</span>
                     <span class="att-lbl">Present</span>
                   </div>
+
                   <div class="att-stat late">
                     <mat-icon>schedule</mat-icon>
                     <span class="att-val">{{ lateCount }}</span>
                     <span class="att-lbl">Late</span>
                   </div>
+
+                  <div class="att-stat toolate">
+                    <mat-icon>running_with_errors</mat-icon>
+                    <span class="att-val">{{ tooLateCount }}</span>
+                    <span class="att-lbl">Too Late</span>
+                  </div>
+
+                  <div class="att-stat excused">
+                    <mat-icon>verified</mat-icon>
+                    <span class="att-val">{{ excusedCount }}</span>
+                    <span class="att-lbl">Excused</span>
+                  </div>
+
                   <div class="att-stat absent">
                     <mat-icon>cancel</mat-icon>
                     <span class="att-val">{{ absentCount }}</span>
                     <span class="att-lbl">Absent</span>
                   </div>
-                  <div class="att-stat excused">
-                    <mat-icon>info</mat-icon>
-                    <span class="att-val">{{ excusedCount }}</span>
-                    <span class="att-lbl">Excused</span>
-                  </div>
-                  <div class="att-stat rate">
-                    <mat-icon>trending_up</mat-icon>
-                    <span class="att-val">{{ attendanceRate }}%</span>
-                    <span class="att-lbl">Rate</span>
-                  </div>
+
                 </div>
+
+                <!-- Attendance rate bar -->
+                @if (totalCount > 0) {
+                  <div class="att-rate-wrap">
+                    <div class="att-rate-row">
+                      <span class="att-rate-label">Attendance Rate</span>
+                      <span class="att-rate-pct" [style.color]="rateColor">
+                        {{ attendanceRate }}%
+                      </span>
+                    </div>
+                    <div class="att-progress-track">
+                      <div class="att-progress-fill"
+                           [style.width.%]="attendanceRate"
+                           [style.background]="rateColor">
+                      </div>
+                    </div>
+                    <div class="att-rate-hint">
+                      {{ presentCount + lateCount + tooLateCount }} attended out of {{ totalCount }} events
+                    </div>
+                  </div>
+                }
+
               </mat-card-content>
             </mat-card>
 
