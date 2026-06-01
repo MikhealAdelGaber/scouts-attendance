@@ -116,6 +116,10 @@ export class MarkAttendanceComponent implements OnInit, OnDestroy {
       next: statuses => {
         this.buildRows(statuses);
         this.loading = false;
+        // Auto-save every unsaved member with their default status (Absent / Excused).
+        // This ensures attendance records + points exist for ALL members immediately —
+        // even those not explicitly clicked.
+        this.autoSaveUnsaved();
       },
       error: () => { this.loading = false; }
     });
@@ -142,6 +146,40 @@ export class MarkAttendanceComponent implements OnInit, OnDestroy {
       saved:           s.hasExistingRecord,
       saving:          false
     }));
+  }
+
+  /**
+   * Silently bulk-save every member that has no existing attendance record.
+   * The backend already assigns the correct default status (Absent / Excused)
+   * and awards/deducts points accordingly.
+   * Runs automatically after the event members are loaded.
+   */
+  private autoSaveUnsaved(): void {
+    const unsaved = this.rows.filter(r => !r.saved);
+    if (unsaved.length === 0) return;
+
+    // Mark them as saving so the spinner shows
+    unsaved.forEach(r => r.saving = true);
+
+    const bulk: BulkAttendance = {
+      eventId: this.selectedEventId,
+      records: unsaved.map(r => ({ memberId: r.memberId, status: r.status, notes: r.notes }))
+    };
+
+    this.attendanceService.bulkMark(bulk).subscribe({
+      next: () => {
+        unsaved.forEach(r => { r.saved = true; r.saving = false; });
+        this.snack.open(
+          `✅ ${unsaved.length} unsaved member${unsaved.length > 1 ? 's' : ''} auto-saved as Absent / Excused`,
+          'Close',
+          { duration: 3000 }
+        );
+      },
+      error: () => {
+        unsaved.forEach(r => r.saving = false);
+        // Fail silently — user can still mark manually
+      }
+    });
   }
 
   get filteredRows(): MemberRow[] {
