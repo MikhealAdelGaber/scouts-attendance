@@ -307,23 +307,48 @@
 
         <div *ngIf="attendanceMembers().length > 0">
 
-          <!-- Attendance summary row -->
-          <div class="att-summary">
-            <span class="att-sum-chip present">
-              <mat-icon>check_circle</mat-icon>
-              Present <strong>{{ attendanceSummary.present }}</strong>
+          <!-- Attendance summary + Save All -->
+          <div class="att-header">
+            <div class="att-summary">
+              <span class="att-sum-chip present">
+                <mat-icon>check_circle</mat-icon>
+                Present <strong>{{ attendanceSummary.present }}</strong>
+              </span>
+              <span class="att-sum-chip late">
+                <mat-icon>schedule</mat-icon>
+                Late <strong>{{ attendanceSummary.late }}</strong>
+              </span>
+              <span class="att-sum-chip absent">
+                <mat-icon>cancel</mat-icon>
+                Absent <strong>{{ attendanceSummary.absent }}</strong>
+              </span>
+              <span class="att-sum-chip excused">
+                <mat-icon>verified</mat-icon>
+                Excused <strong>{{ attendanceSummary.excused }}</strong>
+              </span>
+            </div>
+
+            <!-- Save All button -->
+            <button mat-raised-button color="primary"
+                    [disabled]="savingAll"
+                    (click)="saveAllAttendance()"
+                    style="min-width:140px">
+              <mat-spinner *ngIf="savingAll" diameter="18"
+                           style="display:inline-block;margin-right:6px"></mat-spinner>
+              <mat-icon *ngIf="!savingAll">save</mat-icon>
+              {{ savingAll ? 'Saving…' : 'Save All (' + attendanceMembers().length + ')' }}
+            </button>
+          </div>
+
+          <!-- Legend -->
+          <div class="att-legend">
+            <span *ngFor="let s of attendanceStatuses" class="att-legend-item">
+              <span class="att-legend-dot" [style.background]="s.color"></span>
+              {{ s.label }}
             </span>
-            <span class="att-sum-chip late">
-              <mat-icon>schedule</mat-icon>
-              Late <strong>{{ attendanceSummary.late }}</strong>
-            </span>
-            <span class="att-sum-chip absent">
-              <mat-icon>cancel</mat-icon>
-              Absent <strong>{{ attendanceSummary.absent }}</strong>
-            </span>
-            <span class="att-sum-chip excused">
-              <mat-icon>verified</mat-icon>
-              Excused <strong>{{ attendanceSummary.excused }}</strong>
+            <span style="flex:1"></span>
+            <span style="font-size:0.75rem;color:#9e9e9e">
+              Click a status button to change · Changes are saved automatically
             </span>
           </div>
 
@@ -334,20 +359,31 @@
                 <span class="att-name">{{ m.memberName }}</span>
                 <span class="att-troop">{{ m.troopName }}</span>
               </div>
+
+              <!-- Current status label -->
+              <span class="att-current-status"
+                    [style.color]="attendanceStatusInfo(attendanceEdits[m.memberId] ?? 1).color"
+                    [style.background]="attendanceStatusInfo(attendanceEdits[m.memberId] ?? 1).color + '22'">
+                <mat-icon style="font-size:14px;width:14px;height:14px;vertical-align:middle">
+                  {{ attendanceStatusInfo(attendanceEdits[m.memberId] ?? 1).icon }}
+                </mat-icon>
+                {{ attendanceStatusInfo(attendanceEdits[m.memberId] ?? 1).label }}
+              </span>
+
               <div class="att-buttons">
                 @for (s of attendanceStatuses; track s.value) {
                   <button mat-mini-fab
                           class="att-btn"
-                          [ngClass]="getAttendanceBtnClass(m.memberId, s.value)"
+                          [class.att-selected]="(attendanceEdits[m.memberId] ?? 1) === s.value"
+                          [style.--att-color]="s.color"
                           [matTooltip]="s.label"
-                          [disabled]="savingMember[m.memberId]"
+                          [disabled]="savingMember[m.memberId] || savingAll"
                           (click)="saveOneAttendance(m.memberId, s.value)">
                     <mat-icon>{{ s.icon }}</mat-icon>
                   </button>
                 }
                 <mat-spinner *ngIf="savingMember[m.memberId]"
-                             diameter="20"
-                             class="att-spinner">
+                             diameter="20" class="att-spinner">
                 </mat-spinner>
               </div>
             </div>

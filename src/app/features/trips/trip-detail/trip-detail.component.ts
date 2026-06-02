@@ -39,6 +39,8 @@ export class TripDetailComponent implements OnInit {
   attendanceEdits: Record<string, number> = {};
   // Per-member saving state
   savingMember: Record<string, boolean> = {};
+  // Global save-all state
+  savingAll = false;
 
   // Expanded booking rows (payment view)
   expandedBookingIds = new Set<string>();
@@ -100,6 +102,69 @@ export class TripDetailComponent implements OnInit {
         if (!(b.memberId in this.attendanceEdits))
           this.attendanceEdits[b.memberId] = 1; // default Absent
       });
+
+      // Auto-save all members who have no existing attendance record as Absent.
+      // This mirrors the event attendance behaviour — ensures every confirmed
+      // member gets a DB record immediately when the Attendance tab is opened.
+      this.autoSaveUnsavedAsAbsent();
+    });
+  }
+
+  /** Silently bulk-save every confirmed member that has no attendance record yet. */
+  private autoSaveUnsavedAsAbsent(): void {
+    const existingIds = new Set(this.attendance.map(r => r.memberId));
+    const unsaved = this.confirmedBookings.filter(b => !existingIds.has(b.memberId));
+    if (unsaved.length === 0) return;
+
+    const records = unsaved.map(b => ({
+      memberId: b.memberId,
+      status:   this.attendanceEdits[b.memberId] ?? 1,
+      notes:    ''
+    }));
+
+    this.tripService.saveAttendance(this.trip.id, { records }).subscribe({
+      next: () => {
+        // Reload attendance to get the saved records
+        this.tripService.getAttendance(this.trip.id).subscribe(a => {
+          this.attendance = a;
+        });
+        this.snack.open(
+          `✅ ${unsaved.length} member${unsaved.length > 1 ? 's' : ''} auto-saved as Absent`,
+          'Close', { duration: 3000 }
+        );
+      },
+      error: () => { /* silent — user can still save manually */ }
+    });
+  }
+
+  /** Save ALL member attendance statuses at once. */
+  saveAllAttendance(): void {
+    const members = this.attendanceMembers();
+    if (members.length === 0) return;
+
+    this.savingAll = true;
+    const records = members.map(m => ({
+      memberId: m.memberId,
+      status:   this.attendanceEdits[m.memberId] ?? 1,
+      notes:    ''
+    }));
+
+    this.tripService.saveAttendance(this.trip.id, { records }).subscribe({
+      next: () => {
+        this.savingAll = false;
+        this.snack.open(
+          `✅ Attendance saved for ${members.length} members`,
+          'Close', { duration: 3000 }
+        );
+        // Refresh attendance to sync
+        this.tripService.getAttendance(this.trip.id).subscribe(a => {
+          this.attendance = a;
+        });
+      },
+      error: () => {
+        this.savingAll = false;
+        this.snack.open('Failed to save attendance — please try again', 'Close', { duration: 4000 });
+      }
     });
   }
 
@@ -356,9 +421,7 @@ export class TripDetailComponent implements OnInit {
   }
 
   getAttendanceBtnClass(memberId: string, statusValue: number): string {
-    if (this.getAttendanceStatus(memberId) !== statusValue) return '';
-    const map: Record<number, string> = { 0: 'att-present', 1: 'att-absent', 2: 'att-late', 3: 'att-excused' };
-    return map[statusValue] ?? '';
+    return (this.attendanceEdits[memberId] ?? 1) === statusValue ? 'att-selected' : '';
   }
 
   // ─── Export ───────────────────────────────────────────────────────────────

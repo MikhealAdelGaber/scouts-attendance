@@ -377,12 +377,21 @@
 // ─── Attendance ───────────────────────────────────────────────────────────
 .attendance-container { padding: 4px 0; }
 
+// Header row: summary chips + Save All button
+.att-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
 // Summary chips row
 .att-summary {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  margin-bottom: 18px;
+  flex: 1;
 }
 
 .att-sum-chip {
@@ -404,6 +413,29 @@
   &.excused { background: #e3f2fd; color: #1565c0; }
 }
 
+.att-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+
+.att-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.att-legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
 .att-spinner { margin-left: 6px; }
 
 .attendance-list { display: flex; flex-direction: column; gap: 8px; }
@@ -411,11 +443,14 @@
 .att-row {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 10px 14px;
+  transition: border-color 0.15s;
+
+  &:hover { border-color: #5c6bc0; }
 }
 
 .att-member {
@@ -424,39 +459,59 @@
   .att-troop { display: block; font-size: 0.8rem; color: var(--text-secondary); }
 }
 
-.att-buttons { display: flex; gap: 8px; align-items: center; }
+// Current status badge shown next to member name
+.att-current-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+  min-width: 80px;
+  justify-content: center;
+}
 
+.att-buttons {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+// ── Attendance status buttons ──────────────────────────────────────────────
 .att-btn {
-  width: 36px;
-  height: 36px;
-  background-color: var(--border) !important;
-  color: var(--text-secondary) !important;
-  transition: background-color 0.15s, transform 0.12s, box-shadow 0.12s;
-  mat-icon { font-size: 18px; width: 18px; height: 18px; }
+  width: 40px;
+  height: 40px;
+  // Not-selected: subtle but clearly interactive
+  background-color: var(--surface-raised, #f0f0f0) !important;
+  color: #757575 !important;
+  border: 2px solid transparent !important;
+  cursor: pointer;
+  transition: background-color 0.15s, transform 0.1s, box-shadow 0.15s, border-color 0.15s;
 
-  &.att-present {
-    background-color: #4caf50 !important;
+  mat-icon { font-size: 20px; width: 20px; height: 20px; }
+
+  &:hover:not([disabled]) {
+    background-color: var(--att-color, #999) !important;
     color: white !important;
-    transform: scale(1.12);
-    box-shadow: 0 2px 8px rgba(76, 175, 80, 0.5) !important;
+    opacity: 0.85;
+    transform: scale(1.08);
   }
-  &.att-absent {
-    background-color: #f44336 !important;
+
+  // Selected state — uses --att-color CSS variable set inline
+  &.att-selected {
+    background-color: var(--att-color, #999) !important;
     color: white !important;
     transform: scale(1.12);
-    box-shadow: 0 2px 8px rgba(244, 67, 54, 0.5) !important;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.25) !important;
+    border-color: white !important;
   }
-  &.att-late {
-    background-color: #ff9800 !important;
-    color: white !important;
-    transform: scale(1.12);
-    box-shadow: 0 2px 8px rgba(255, 152, 0, 0.5) !important;
-  }
-  &.att-excused {
-    background-color: #2196f3 !important;
-    color: white !important;
-    transform: scale(1.12);
-    box-shadow: 0 2px 8px rgba(33, 150, 243, 0.5) !important;
+
+  &[disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
   }
 }
 
