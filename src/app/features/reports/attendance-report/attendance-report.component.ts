@@ -10,7 +10,8 @@ import { Troop } from '../../../core/models/troop.model';
 
 @Component({
   selector: 'app-attendance-report',
-  templateUrl: './attendance-report.component.html'
+  templateUrl: './attendance-report.component.html',
+  styleUrls: ['./attendance-report.component.scss']
 })
 export class AttendanceReportComponent implements OnInit {
   form: FormGroup;
@@ -20,7 +21,11 @@ export class AttendanceReportComponent implements OnInit {
   exporting = false;
   loaded    = false;
 
-  displayedColumns = ['rank', 'memberName', 'troopName', 'totalEvents', 'present', 'late', 'excused', 'absent', 'rate'];
+  displayedColumns = [
+    'rank', 'memberName', 'troopName', 'grade',
+    'totalEvents', 'present', 'late', 'tooLate', 'excused', 'absent',
+    'rate', 'examScore', 'projectRate', 'totalPoints'
+  ];
 
   constructor(
     private fb: FormBuilder,
