@@ -1,7 +1,30 @@
-.inactive-row td {
-  opacity: 0.55;
+// ── Filter bar ────────────────────────────────────────────────────────────────
+.filter-bar { margin-bottom: 16px; }
+
+.filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
 }
 
-.inactive-row:hover td {
-  opacity: 0.75;
+.search-field { flex: 2; min-width: 220px; }
+.group-field  { flex: 1; min-width: 180px; }
+
+.filter-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;
 }
+
+.result-count {
+  font-size: 0.82rem;
+  color: #666;
+}
+
+// ── Table rows ────────────────────────────────────────────────────────────────
+.inactive-row td { opacity: 0.55; }
+.inactive-row:hover td { opacity: 0.75; }
+
+.mb-16 { margin-bottom: 16px; }

@@ -3,7 +3,9 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
 import { UserService } from '../../../core/services/user.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { GroupService } from '../../../core/services/group.service';
 import { UserDto, UserRole } from '../../../core/models/user.model';
+import { Group } from '../../../core/models/group.model';
 import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog/confirm-dialog.component';
 import { ChangePasswordDialogComponent } from '../change-password-dialog/change-password-dialog.component';
 
@@ -13,9 +15,32 @@ import { ChangePasswordDialogComponent } from '../change-password-dialog/change-
   styleUrls: ['./user-list.component.scss']
 })
 export class UserListComponent implements OnInit {
-  users: UserDto[] = [];
+  users:   UserDto[] = [];
+  groups:  Group[]   = [];
   loading = false;
   displayedColumns = ['username', 'email', 'role', 'access', 'permissions', 'status', 'actions'];
+
+  // ── Search / Filter ──────────────────────────────────────────────────────
+  searchQuery     = '';
+  selectedGroupId = '';
+
+  get filteredUsers(): UserDto[] {
+    let list = this.users;
+
+    const q = this.searchQuery.trim().toLowerCase();
+    if (q) {
+      list = list.filter(u =>
+        u.username.toLowerCase().includes(q) ||
+        (u.email ?? '').toLowerCase().includes(q)
+      );
+    }
+
+    if (this.selectedGroupId) {
+      list = list.filter(u => u.groupId === this.selectedGroupId);
+    }
+
+    return list;
+  }
 
   readonly UserRole = UserRole;
 
@@ -23,12 +48,16 @@ export class UserListComponent implements OnInit {
 
   constructor(
     private userService: UserService,
+    private groupService: GroupService,
     private auth: AuthService,
     private snack: MatSnackBar,
     private dialog: MatDialog
   ) {}
 
-  ngOnInit(): void { this.load(); }
+  ngOnInit(): void {
+    this.load();
+    this.groupService.getAll().subscribe(g => this.groups = g);
+  }
 
   load(): void {
     this.loading = true;
@@ -36,6 +65,11 @@ export class UserListComponent implements OnInit {
       next: u => { this.users = u; this.loading = false; },
       error: () => this.loading = false
     });
+  }
+
+  clearFilters(): void {
+    this.searchQuery     = '';
+    this.selectedGroupId = '';
   }
 
   openChangePassword(u: UserDto): void {

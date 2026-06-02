@@ -6,12 +6,57 @@
     </button>
   </div>
 
+  <!-- ── Search + Filter bar ──────────────────────────────────────────── -->
+  <mat-card class="filter-bar mb-16">
+    <mat-card-content style="padding:12px 16px">
+      <div class="filter-row">
+
+        <!-- Search by username -->
+        <mat-form-field appearance="outline" class="search-field">
+          <mat-label>Search username or email</mat-label>
+          <mat-icon matPrefix>search</mat-icon>
+          <input matInput [(ngModel)]="searchQuery" placeholder="Type to filter…">
+          @if (searchQuery) {
+            <button matSuffix mat-icon-button (click)="searchQuery = ''" matTooltip="Clear">
+              <mat-icon>close</mat-icon>
+            </button>
+          }
+        </mat-form-field>
+
+        <!-- Filter by Group -->
+        <mat-form-field appearance="outline" class="group-field">
+          <mat-label>Filter by Group</mat-label>
+          <mat-icon matPrefix>group_work</mat-icon>
+          <mat-select [(ngModel)]="selectedGroupId">
+            <mat-option value="">All Groups</mat-option>
+            @for (g of groups; track g.id) {
+              <mat-option [value]="g.id">{{ g.name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <!-- Results count + clear -->
+        <div class="filter-meta">
+          <span class="result-count">
+            <strong>{{ filteredUsers.length }}</strong> of {{ users.length }} users
+          </span>
+          @if (searchQuery || selectedGroupId) {
+            <button mat-stroked-button (click)="clearFilters()" style="height:36px">
+              <mat-icon>filter_alt_off</mat-icon> Clear
+            </button>
+          }
+        </div>
+
+      </div>
+    </mat-card-content>
+  </mat-card>
+
   @if (loading) {
     <app-loading-spinner></app-loading-spinner>
   } @else {
     <mat-card>
       <mat-card-content style="padding:0">
-        <table mat-table [dataSource]="users" class="full-width">
+        <table mat-table [dataSource]="filteredUsers" class="full-width">
 
           <!-- Username -->
           <ng-container matColumnDef="username">
@@ -130,8 +175,13 @@
           <tr mat-row *matRowDef="let row; columns: displayedColumns;"
               [class.inactive-row]="!row.isActive"></tr>
           <tr class="mat-row" *matNoDataRow>
-            <td class="mat-cell text-center" [attr.colspan]="displayedColumns.length" style="padding:32px">
-              No users found.
+            <td class="mat-cell text-center" [attr.colspan]="displayedColumns.length" style="padding:32px;color:#9e9e9e">
+              @if (searchQuery || selectedGroupId) {
+                No users match the current filters.
+                <button mat-button color="primary" (click)="clearFilters()">Clear filters</button>
+              } @else {
+                No users found.
+              }
             </td>
           </tr>
         </table>
