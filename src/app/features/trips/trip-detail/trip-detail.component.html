@@ -307,85 +307,88 @@
 
         <div *ngIf="attendanceMembers().length > 0">
 
-          <!-- Attendance summary + Save All -->
-          <div class="att-header">
-            <div class="att-summary">
-              <span class="att-sum-chip present">
-                <mat-icon>check_circle</mat-icon>
-                Present <strong>{{ attendanceSummary.present }}</strong>
-              </span>
-              <span class="att-sum-chip late">
-                <mat-icon>schedule</mat-icon>
-                Late <strong>{{ attendanceSummary.late }}</strong>
-              </span>
-              <span class="att-sum-chip absent">
-                <mat-icon>cancel</mat-icon>
-                Absent <strong>{{ attendanceSummary.absent }}</strong>
-              </span>
-              <span class="att-sum-chip excused">
-                <mat-icon>verified</mat-icon>
-                Excused <strong>{{ attendanceSummary.excused }}</strong>
-              </span>
-            </div>
+          <!-- Summary chips -->
+          <div class="att-summary">
+            <span class="att-sum-chip present">
+              <mat-icon>check_circle</mat-icon>
+              Present <strong>{{ attendanceSummary.present }}</strong>
+            </span>
+            <span class="att-sum-chip absent">
+              <mat-icon>cancel</mat-icon>
+              Absent <strong>{{ attendanceSummary.absent }}</strong>
+            </span>
+            <span class="att-sum-chip excused">
+              <mat-icon>verified</mat-icon>
+              Excused <strong>{{ attendanceSummary.excused }}</strong>
+            </span>
+          </div>
 
-            <!-- Save All button -->
-            <button mat-raised-button color="primary"
+          <!-- Search + Save All -->
+          <div class="att-toolbar">
+            <div class="att-search-wrap">
+              <mat-icon class="att-search-icon">search</mat-icon>
+              <input class="att-search-input"
+                     [(ngModel)]="attendanceSearch"
+                     placeholder="Search by name or troop…">
+              <button *ngIf="attendanceSearch" class="att-search-clear"
+                      (click)="attendanceSearch = ''">
+                <mat-icon>close</mat-icon>
+              </button>
+            </div>
+            <button class="att-save-all-btn"
                     [disabled]="savingAll"
-                    (click)="saveAllAttendance()"
-                    style="min-width:140px">
-              <mat-spinner *ngIf="savingAll" diameter="18"
-                           style="display:inline-block;margin-right:6px"></mat-spinner>
-              <mat-icon *ngIf="!savingAll">save</mat-icon>
+                    (click)="saveAllAttendance()">
+              <mat-icon>save</mat-icon>
               {{ savingAll ? 'Saving…' : 'Save All (' + attendanceMembers().length + ')' }}
             </button>
           </div>
 
-          <!-- Legend -->
-          <div class="att-legend">
-            <span *ngFor="let s of attendanceStatuses" class="att-legend-item">
-              <span class="att-legend-dot" [style.background]="s.color"></span>
-              {{ s.label }}
-            </span>
-            <span style="flex:1"></span>
-            <span style="font-size:0.75rem;color:#9e9e9e">
-              Click a status button to change · Changes are saved automatically
-            </span>
-          </div>
-
           <!-- Member list -->
           <div class="attendance-list">
-            <div class="att-row" *ngFor="let m of attendanceMembers()">
+            <div class="att-row" *ngFor="let m of filteredAttendanceMembers">
+
+              <!-- Member info -->
               <div class="att-member">
                 <span class="att-name">{{ m.memberName }}</span>
-                <span class="att-troop">{{ m.troopName }}</span>
+                <span class="att-troop" *ngIf="m.troopName">{{ m.troopName }}</span>
               </div>
 
-              <!-- Current status label -->
-              <span class="att-current-status"
-                    [style.color]="attendanceStatusInfo(attendanceEdits[m.memberId] ?? 1).color"
-                    [style.background]="attendanceStatusInfo(attendanceEdits[m.memberId] ?? 1).color + '22'">
-                <mat-icon style="font-size:14px;width:14px;height:14px;vertical-align:middle">
-                  {{ attendanceStatusInfo(attendanceEdits[m.memberId] ?? 1).icon }}
-                </mat-icon>
-                {{ attendanceStatusInfo(attendanceEdits[m.memberId] ?? 1).label }}
-              </span>
+              <!-- Status buttons — plain HTML buttons, no Angular Material -->
+              <div class="att-status-group">
+                <button class="att-status-btn att-btn-present"
+                        [class.is-active]="(attendanceEdits[m.memberId] ?? 1) === 0"
+                        type="button"
+                        (click)="saveOneAttendance(m.memberId, 0)">
+                  <mat-icon>check_circle</mat-icon>
+                  <span>Present</span>
+                </button>
 
-              <div class="att-buttons">
-                @for (s of attendanceStatuses; track s.value) {
-                  <button mat-mini-fab
-                          class="att-btn"
-                          [class.att-selected]="(attendanceEdits[m.memberId] ?? 1) === s.value"
-                          [style.--att-color]="s.color"
-                          [matTooltip]="s.label"
-                          [disabled]="savingMember[m.memberId] || savingAll"
-                          (click)="saveOneAttendance(m.memberId, s.value)">
-                    <mat-icon>{{ s.icon }}</mat-icon>
-                  </button>
-                }
+                <button class="att-status-btn att-btn-absent"
+                        [class.is-active]="(attendanceEdits[m.memberId] ?? 1) === 1"
+                        type="button"
+                        (click)="saveOneAttendance(m.memberId, 1)">
+                  <mat-icon>cancel</mat-icon>
+                  <span>Absent</span>
+                </button>
+
+                <button class="att-status-btn att-btn-excused"
+                        [class.is-active]="(attendanceEdits[m.memberId] ?? 1) === 3"
+                        type="button"
+                        (click)="saveOneAttendance(m.memberId, 3)">
+                  <mat-icon>verified</mat-icon>
+                  <span>Excuse</span>
+                </button>
+
                 <mat-spinner *ngIf="savingMember[m.memberId]"
                              diameter="20" class="att-spinner">
                 </mat-spinner>
               </div>
+
+            </div>
+
+            <div *ngIf="filteredAttendanceMembers.length === 0 && attendanceSearch"
+                 style="text-align:center;padding:24px;color:#9e9e9e">
+              No members match "{{ attendanceSearch }}"
             </div>
           </div>
 
