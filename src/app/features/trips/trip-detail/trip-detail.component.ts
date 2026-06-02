@@ -56,11 +56,10 @@ export class TripDetailComponent implements OnInit {
   BookingStatus = BookingStatus;
   TripStatus    = TripStatus;
 
-  // Trip attendance only uses 3 statuses: Present / Absent / Excused
+  // Trip attendance uses 2 statuses only: Present / Absent
   readonly attendanceStatuses = [
     { value: 0, label: 'Present', icon: 'check_circle', color: '#4caf50' },
-    { value: 1, label: 'Absent',  icon: 'cancel',       color: '#f44336' },
-    { value: 3, label: 'Excused', icon: 'verified',     color: '#2196f3' }
+    { value: 1, label: 'Absent',  icon: 'cancel',       color: '#f44336' }
   ];
 
   attendanceSearch = '';

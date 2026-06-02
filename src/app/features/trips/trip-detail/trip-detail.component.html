@@ -317,10 +317,6 @@
               <mat-icon>cancel</mat-icon>
               Absent <strong>{{ attendanceSummary.absent }}</strong>
             </span>
-            <span class="att-sum-chip excused">
-              <mat-icon>verified</mat-icon>
-              Excused <strong>{{ attendanceSummary.excused }}</strong>
-            </span>
           </div>
 
           <!-- Search + Save All -->
@@ -371,13 +367,6 @@
                   <span>Absent</span>
                 </button>
 
-                <button class="att-status-btn att-btn-excused"
-                        [class.is-active]="(attendanceEdits[m.memberId] ?? 1) === 3"
-                        type="button"
-                        (click)="saveOneAttendance(m.memberId, 3)">
-                  <mat-icon>verified</mat-icon>
-                  <span>Excuse</span>
-                </button>
 
                 <mat-spinner *ngIf="savingMember[m.memberId]"
                              diameter="20" class="att-spinner">

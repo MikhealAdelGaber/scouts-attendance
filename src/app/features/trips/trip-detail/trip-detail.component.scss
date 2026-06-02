@@ -399,7 +399,6 @@
 
   &.present { background: #e8f5e9; color: #388e3c; }
   &.absent  { background: #fce4ec; color: #c62828; }
-  &.excused { background: #e3f2fd; color: #1565c0; }
 }
 
 // Toolbar: search + save-all
@@ -554,14 +553,6 @@
     }
   }
 
-  // Excused
-  &.att-btn-excused {
-    &:hover    { background: #e3f2fd; border-color: #2196f3; color: #0d47a1; }
-    &.is-active {
-      background: #2196f3; border-color: #2196f3; color: white;
-      box-shadow: 0 2px 8px rgba(33,150,243,0.4);
-    }
-  }
 }
 
 .att-spinner { flex-shrink: 0; }
