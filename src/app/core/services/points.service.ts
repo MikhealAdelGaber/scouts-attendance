@@ -19,6 +19,9 @@ export class PointsService {
   createMemberCategory(dto: CreateMemberPointCategory): Observable<MemberPointCategory> {
     return this.api.post<MemberPointCategory>('member-point-categories', dto);
   }
+  deleteMemberCategory(id: string): Observable<void> {
+    return this.api.delete<void>(`member-point-categories/${id}`);
+  }
 
   // ── Attendance Settings ──────────────────────────────────────────────────────
   getAttendanceSettings(): Observable<MemberPointCategory> {
