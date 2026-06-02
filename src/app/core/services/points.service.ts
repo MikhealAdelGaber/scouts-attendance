@@ -38,6 +38,9 @@ export class PointsService {
   createTroopCategory(dto: CreateTroopPointCategory): Observable<TroopPointCategory> {
     return this.api.post<TroopPointCategory>('troop-point-categories', dto);
   }
+  deleteTroopCategory(id: string): Observable<void> {
+    return this.api.delete<void>(`troop-point-categories/${id}`);
+  }
 
   // ── Member Points ────────────────────────────────────────────────────────────
   getMemberPoints(memberId: string): Observable<MemberPointsSummary> {
