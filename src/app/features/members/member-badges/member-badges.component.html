@@ -42,10 +42,16 @@
                 <mat-icon style="font-size:12px;width:12px;height:12px">person</mat-icon>
                 {{ mb.awardedBy }}
               </div>
+              @if (mb.groupName) {
+                <div class="badge-meta badge-group">
+                  <mat-icon style="font-size:12px;width:12px;height:12px">group_work</mat-icon>
+                  Group: <strong>{{ mb.groupName }}</strong>
+                </div>
+              }
               @if (mb.troopName) {
                 <div class="badge-meta badge-troop">
                   <mat-icon style="font-size:12px;width:12px;height:12px">groups</mat-icon>
-                  Awarded in: <strong>{{ mb.troopName }}</strong>
+                  Troop: <strong>{{ mb.troopName }}</strong>
                 </div>
               }
               @if (mb.notes) {

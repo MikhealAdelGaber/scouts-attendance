@@ -94,8 +94,13 @@
   margin-bottom: 2px;
 }
 
+.badge-group {
+  color: #00695c !important;   // teal — group context
+  strong { font-weight: 600; }
+}
+
 .badge-troop {
-  color: #5c6bc0 !important;   // indigo accent — marks it as a "group" field
+  color: #5c6bc0 !important;   // indigo — troop context
   strong { font-weight: 600; }
 }
 

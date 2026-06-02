@@ -17,6 +17,7 @@ export interface MemberBadge {
   awardedDate: string;
   troopId?: string;
   troopName?: string;
+  groupName?: string;
   awardedBy: string;
   notes?: string;
 }
