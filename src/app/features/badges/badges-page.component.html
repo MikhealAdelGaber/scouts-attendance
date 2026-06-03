@@ -123,7 +123,14 @@
                   @for (cat of categories; track cat) {
                     <mat-optgroup [label]="cat">
                       @for (b of badgesByCategory(cat); track b.id) {
-                        <mat-option [value]="b.id">{{ b.name }}</mat-option>
+                        <mat-option [value]="b.id"
+                          [disabled]="isBadgeAlreadyAwarded(b.id)"
+                          [matTooltip]="isBadgeAlreadyAwarded(b.id) ? 'Already awarded to this member' : ''">
+                          {{ b.name }}
+                          @if (isBadgeAlreadyAwarded(b.id)) {
+                            <span style="color:#9e9e9e;font-size:0.75rem;margin-left:6px">✓ Already awarded</span>
+                          }
+                        </mat-option>
                       }
                     </mat-optgroup>
                   }

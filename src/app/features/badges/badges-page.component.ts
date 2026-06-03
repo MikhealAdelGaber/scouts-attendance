@@ -66,6 +66,11 @@ export class BadgesPageComponent implements OnInit {
     return this.categoryColors[category ?? ''] ?? '#37474f';
   }
 
+  /** Returns true if the selected member already has this badge awarded. */
+  isBadgeAlreadyAwarded(badgeId: string): boolean {
+    return this.memberBadges.some(mb => mb.badgeId === badgeId);
+  }
+
   get filteredFeed(): MemberBadge[] {
     return this.recentBadges.filter(mb => {
       if (this.filterTroopId  && mb.troopId !== this.filterTroopId) return false;
