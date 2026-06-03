@@ -70,7 +70,7 @@
     }
 
     <!-- Add Score Form -->
-    @if (auth.canEditMembers() && unscoredMembers.length > 0) {
+    @if (auth.canAccessExamScores() && unscoredMembers.length > 0) {
       <mat-card class="mb-16">
         <mat-card-header><mat-card-title>Add Score</mat-card-title></mat-card-header>
         <mat-card-content>
@@ -170,7 +170,7 @@
                       <mat-icon>close</mat-icon>
                     </button>
                   } @else {
-                    @if (auth.canEditMembers()) {
+                    @if (auth.canAccessExamScores()) {
                       <button mat-icon-button (click)="startEdit(s)" matTooltip="Edit">
                         <mat-icon>edit</mat-icon>
                       </button>

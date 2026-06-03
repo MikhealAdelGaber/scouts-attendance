@@ -100,7 +100,7 @@ const routes: Routes = [
       {
         path: 'exam-scores',
         canActivate: [RoleGuard, permissionGuard],
-        data: { roles: [UserRole.SystemAdmin, UserRole.GroupLeader], permission: 'canAccessExamScores' },
+        data: { roles: [UserRole.SystemAdmin, UserRole.GroupLeader, UserRole.AttendanceOnly], permission: 'canAccessExamScores' },
         loadChildren: () => import('./features/exam-scores/exam-scores.module').then(m => m.ExamScoresModule)
       },
       {
