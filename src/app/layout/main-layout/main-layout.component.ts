@@ -44,7 +44,7 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
     { label: 'Attendance',  icon: 'fact_check',  route: '/attendance',                                                                                        permissionKey: 'canAccessAttendance' },
     { label: 'Points',      icon: 'star',        route: '/points',      roles: [UserRole.SystemAdmin, UserRole.GroupLeader, UserRole.AttendanceOnly],          permissionKey: 'canAccessPoints' },
     { label: 'Leaderboard', icon: 'leaderboard', route: '/leaderboard', roles: [UserRole.SystemAdmin, UserRole.GroupLeader],                                  permissionKey: 'canAccessLeaderboard' },
-    { label: 'Exam Scores', icon: 'school',      route: '/exam-scores', roles: [UserRole.SystemAdmin, UserRole.GroupLeader],                                  permissionKey: 'canAccessExamScores' },
+    { label: 'Exam Scores', icon: 'school',      route: '/exam-scores', roles: [UserRole.SystemAdmin, UserRole.GroupLeader, UserRole.AttendanceOnly],     permissionKey: 'canAccessExamScores' },
     { label: 'Reports',     icon: 'analytics',   route: '/reports',     roles: [UserRole.SystemAdmin, UserRole.GroupLeader, UserRole.AttendanceOnly],          permissionKey: 'canAccessReports' },
     { label: 'Trips & Camps', icon: 'luggage',   route: '/trips',                                                                                             permissionKey: 'canAccessTrips' },
     { label: 'Badges',        icon: 'military_tech', route: '/badges',                                                                                          permissionKey: 'canAccessBadges' },
