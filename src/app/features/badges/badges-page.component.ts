@@ -45,6 +45,7 @@ export class BadgesPageComponent implements OnInit {
   filterCategory  = '';
   filterDateFrom  = '';
   filterDateTo    = '';
+  exportingExcel  = false;
 
   readonly categoryColors: Record<string, string> = {
     'Skills':    '#1565c0',
@@ -202,5 +203,21 @@ export class BadgesPageComponent implements OnInit {
     this.filterCategory = '';
     this.filterDateFrom = '';
     this.filterDateTo   = '';
+  }
+
+  exportExcel(): void {
+    this.exportingExcel = true;
+    this.badgeService.exportExcel({
+      troopId:  this.filterTroopId  || undefined,
+      category: this.filterCategory || undefined,
+      from:     this.filterDateFrom || undefined,
+      to:       this.filterDateTo   || undefined
+    }).subscribe({
+      next:  () => { this.exportingExcel = false; },
+      error: () => {
+        this.snack.open('Export failed. Please try again.', 'Close', { duration: 4000 });
+        this.exportingExcel = false;
+      }
+    });
   }
 }

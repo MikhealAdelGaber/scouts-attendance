@@ -207,6 +207,20 @@
                 <mat-icon>filter_alt_off</mat-icon>
               </button>
             }
+
+            <!-- Export Excel -->
+            <button mat-raised-button color="accent"
+                    [disabled]="exportingExcel"
+                    (click)="exportExcel()"
+                    matTooltip="Export filtered data to Excel">
+              @if (exportingExcel) {
+                <mat-progress-spinner mode="indeterminate" diameter="18"
+                  style="display:inline-block;margin-right:6px"></mat-progress-spinner>
+              } @else {
+                <mat-icon>download</mat-icon>
+              }
+              {{ exportingExcel ? 'Exporting…' : 'Export Excel' }}
+            </button>
           </div>
         </mat-card-header>
 

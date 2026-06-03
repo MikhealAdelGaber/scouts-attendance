@@ -64,4 +64,32 @@ export class BadgeService {
     return this.http.get<ApiResponse<MemberBadge[]>>(`${this.base}/recent?limit=${limit}`)
       .pipe(map(r => r.data));
   }
+
+  // ─── Excel export ─────────────────────────────────────────────────────────
+
+  exportExcel(params: {
+    troopId?:  string;
+    category?: string;
+    from?:     string;
+    to?:       string;
+  }): Observable<void> {
+    const q = new URLSearchParams();
+    if (params.troopId)  q.set('troopId',  params.troopId);
+    if (params.category) q.set('category', params.category);
+    if (params.from)     q.set('from',     params.from);
+    if (params.to)       q.set('to',       params.to);
+
+    const url = `${this.base}/export?${q.toString()}`;
+    return this.http.get(url, { responseType: 'blob' }).pipe(
+      map(blob => {
+        const link  = document.createElement('a');
+        link.href   = URL.createObjectURL(blob);
+        link.download = `Badges-Report-${new Date().toISOString().slice(0,10)}.xlsx`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(link.href);
+      })
+    );
+  }
 }
