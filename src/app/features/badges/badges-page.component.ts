@@ -66,9 +66,17 @@ export class BadgesPageComponent implements OnInit {
     return this.categoryColors[category ?? ''] ?? '#37474f';
   }
 
-  /** Returns true if the selected member already has this badge awarded. */
+  /**
+   * Returns true if the selected member already has this badge in their CURRENT group.
+   * Members who transferred to a new group can earn the same badge there again.
+   */
   isBadgeAlreadyAwarded(badgeId: string): boolean {
-    return this.memberBadges.some(mb => mb.badgeId === badgeId);
+    const currentGroupId = this.selectedMember?.groupId;
+    return this.memberBadges.some(mb =>
+      mb.badgeId === badgeId &&
+      // If groupId is stored, use it; otherwise fall back to member-level check
+      (mb.groupId ? mb.groupId === currentGroupId : true)
+    );
   }
 
   get filteredFeed(): MemberBadge[] {
