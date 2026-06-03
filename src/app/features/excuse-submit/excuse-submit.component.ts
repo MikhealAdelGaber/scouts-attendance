@@ -12,6 +12,7 @@ import { PublicTroopInfo, PublicMember } from '../../core/models/pending-excuse.
   styleUrls: ['./excuse-submit.component.scss']
 })
 export class ExcuseSubmitComponent implements OnInit {
+  today = new Date();
   token = '';
   troop: PublicTroopInfo | null = null;
   troopError = false;
