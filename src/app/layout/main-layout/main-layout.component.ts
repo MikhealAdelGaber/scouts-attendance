@@ -37,7 +37,7 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
     { label: 'Users',       icon: 'manage_accounts', route: '/admin/users',  roles: [UserRole.SystemAdmin] },
     { label: 'Groups',      icon: 'group_work',      route: '/groups',       roles: [UserRole.SystemAdmin] },
     // Pages with both role and page-permission checks
-    { label: 'Troops',      icon: 'groups',      route: '/troops',      roles: [UserRole.SystemAdmin, UserRole.GroupLeader],                                  permissionKey: 'canAccessTroops' },
+    { label: 'Troops',      icon: 'groups',      route: '/troops',      roles: [UserRole.SystemAdmin, UserRole.GroupLeader, UserRole.AttendanceOnly],     permissionKey: 'canAccessTroops' },
     { label: 'Members',     icon: 'people',      route: '/members',     roles: [UserRole.SystemAdmin, UserRole.GroupLeader, UserRole.AttendanceOnly],          permissionKey: 'canAccessMembers' },
     { label: 'Excuses',     icon: 'event_busy',  route: '/excuses',     roles: [UserRole.SystemAdmin, UserRole.GroupLeader, UserRole.AttendanceOnly],          permissionKey: 'canAccessExcuses' },
     { label: 'Events',      icon: 'event',       route: '/events',      roles: [UserRole.SystemAdmin, UserRole.GroupLeader],                                  permissionKey: 'canAccessEvents' },
