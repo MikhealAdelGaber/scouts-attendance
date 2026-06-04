@@ -18,6 +18,15 @@ export class TransferRequestService {
 
   constructor(private http: HttpClient) {}
 
+  /** Create transfer requests for multiple members to the same target group. */
+  bulkCreate(dto: { memberIds: string[]; toGroupId: string; notes?: string }):
+      Observable<{ created: number; skipped: number; groupName: string }> {
+    return this.http
+      .post<ApiResponse<{ created: number; skipped: number; groupName: string }>>(
+        `${this.base}/bulk`, dto)
+      .pipe(map(r => r.data));
+  }
+
   /** Create a new pending transfer request. */
   create(dto: CreateTransferRequest): Observable<TransferRequest> {
     return this.http.post<ApiResponse<TransferRequest>>(this.base, dto)

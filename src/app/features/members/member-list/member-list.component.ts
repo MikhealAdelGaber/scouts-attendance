@@ -5,10 +5,13 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { debounceTime, distinctUntilChanged, Subject } from 'rxjs';
 import { MemberService } from '../../../core/services/member.service';
 import { TroopService } from '../../../core/services/troop.service';
+import { GroupService } from '../../../core/services/group.service';
+import { TransferRequestService } from '../../../core/services/transfer-request.service';
 import { ExportService } from '../../../core/services/export.service';
 import { AuthService } from '../../../core/services/auth.service';
-import { Member, BulkTransferResult } from '../../../core/models/member.model';
+import { Member } from '../../../core/models/member.model';
 import { Troop } from '../../../core/models/troop.model';
+import { Group } from '../../../core/models/group.model';
 import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog/confirm-dialog.component';
 import { ImportResultDialogComponent } from '../../../shared/components/import-result-dialog/import-result-dialog.component';
 import { ACADEMIC_GRADES } from '../../../core/constants/academic-grades';
@@ -53,9 +56,10 @@ export class MemberListComponent implements OnInit {
   }
 
   // ── Bulk selection state ────────────────────────────────────────────────────
-  selectedIds = new Set<string>();
-  bulkTroopId  = '';
-  bulkTransferring = false;
+  selectedIds   = new Set<string>();
+  bulkGroupId   = '';
+  bulkRequesting = false;
+  groups: Group[] = [];
 
   get selectedCount(): number { return this.selectedIds.size; }
   get allSelected(): boolean  { return this.members.length > 0 && this.members.every(m => this.selectedIds.has(m.id)); }
@@ -70,16 +74,27 @@ export class MemberListComponent implements OnInit {
   }
 
   constructor(
-    private memberService: MemberService,
-    private troopService: TroopService,
-    private exportService: ExportService,
-    public auth: AuthService,
-    private dialog: MatDialog,
-    private snack: MatSnackBar
+    private memberService:         MemberService,
+    private troopService:          TroopService,
+    private groupService:          GroupService,
+    private transferRequestService: TransferRequestService,
+    private exportService:         ExportService,
+    public  auth:                  AuthService,
+    private dialog:                MatDialog,
+    private snack:                 MatSnackBar
   ) {}
 
   ngOnInit(): void {
     this.troopService.getAll().subscribe(t => this.troops = t);
+    if (this.auth.canEditMembers()) {
+      this.groupService.getAll().subscribe(g => {
+        // Exclude the current user's own group from the bulk-transfer target list
+        const myGroupId = this.auth.currentUser?.groupId;
+        this.groups = myGroupId
+          ? g.filter(gr => gr.id !== myGroupId)
+          : g;
+      });
+    }
     this.load();
 
     this.searchSubject.pipe(debounceTime(400), distinctUntilChanged())
@@ -253,42 +268,43 @@ export class MemberListComponent implements OnInit {
 
   clearSelection(): void {
     this.selectedIds.clear();
-    this.bulkTroopId = '';
+    this.bulkGroupId = '';
   }
 
-  // ── Bulk transfer ───────────────────────────────────────────────────────────
+  // ── Bulk transfer request (to another group) ────────────────────────────────
 
-  confirmBulkTransfer(): void {
-    if (!this.bulkTroopId || this.selectedIds.size === 0) return;
-    const troop = this.troops.find(t => t.id === this.bulkTroopId);
-    if (!troop) return;
+  confirmBulkGroupTransfer(): void {
+    if (!this.bulkGroupId || this.selectedIds.size === 0) return;
+    const group = this.groups.find(g => g.id === this.bulkGroupId);
+    if (!group) return;
     const count = this.selectedIds.size;
 
     this.dialog.open(ConfirmDialogComponent, {
       data: {
-        title:       'Move Members to Troop',
-        message:     `Move ${count} member${count > 1 ? 's' : ''} to "${troop.name}"?`,
-        confirmText: 'Move'
+        title:       'Request Group Transfer',
+        message:     `Submit a transfer request for ${count} member${count > 1 ? 's' : ''} to "${group.name}"?\n\nThe request will be pending until a SystemAdmin approves it.`,
+        confirmText: 'Request Transfer'
       }
     }).afterClosed().subscribe(ok => {
       if (!ok) return;
-      this.bulkTransferring = true;
-      this.memberService.bulkTransferTroop({
+      this.bulkRequesting = true;
+      this.transferRequestService.bulkCreate({
         memberIds: Array.from(this.selectedIds),
-        troopId:   this.bulkTroopId
+        toGroupId: this.bulkGroupId
       }).subscribe({
-        next: (res: BulkTransferResult) => {
-          this.bulkTransferring = false;
-          this.snack.open(
-            `${res.count} member${res.count > 1 ? 's' : ''} moved to ${res.troopName} successfully`,
-            'Close', { duration: 4000, panelClass: ['success-snack'] }
-          );
+        next: (res: any) => {
+          this.bulkRequesting = false;
+          const msg = res.created === 0
+            ? `No requests created — ${res.skipped} member(s) already have a pending request.`
+            : `${res.created} transfer request${res.created > 1 ? 's' : ''} submitted to "${res.groupName}"` +
+              (res.skipped > 0 ? ` (${res.skipped} skipped — already pending)` : '');
+          this.snack.open(msg, 'Close', { duration: 5000, panelClass: ['success-snack'] });
           this.clearSelection();
           this.load();
         },
         error: (err: any) => {
-          this.bulkTransferring = false;
-          this.snack.open(err?.error?.message || 'Bulk transfer failed', 'Close', { duration: 5000 });
+          this.bulkRequesting = false;
+          this.snack.open(err?.error?.message || 'Bulk transfer request failed', 'Close', { duration: 5000 });
         }
       });
     });

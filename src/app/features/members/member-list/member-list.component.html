@@ -156,26 +156,26 @@
       </span>
 
       <mat-form-field appearance="outline" class="bulk-troop-select">
-        <mat-label>Move to Troop</mat-label>
-        <mat-icon matPrefix>groups</mat-icon>
-        <mat-select [(ngModel)]="bulkTroopId">
-          <mat-option value="">— Select target troop —</mat-option>
-          @for (t of troops; track t.id) {
-            <mat-option [value]="t.id">{{ t.name }}</mat-option>
+        <mat-label>Transfer to Group</mat-label>
+        <mat-icon matPrefix>swap_horiz</mat-icon>
+        <mat-select [(ngModel)]="bulkGroupId">
+          <mat-option value="">— Select target group —</mat-option>
+          @for (g of groups; track g.id) {
+            <mat-option [value]="g.id">{{ g.name }}</mat-option>
           }
         </mat-select>
       </mat-form-field>
 
       <button mat-raised-button color="primary"
-        [disabled]="!bulkTroopId || bulkTransferring"
-        (click)="confirmBulkTransfer()">
-        @if (bulkTransferring) {
+        [disabled]="!bulkGroupId || bulkRequesting"
+        (click)="confirmBulkGroupTransfer()">
+        @if (bulkRequesting) {
           <mat-progress-spinner mode="indeterminate" diameter="18"
             style="display:inline-block;margin-right:6px"></mat-progress-spinner>
         } @else {
-          <mat-icon>swap_horiz</mat-icon>
+          <mat-icon>send</mat-icon>
         }
-        {{ bulkTransferring ? 'Moving…' : 'Move' }}
+        {{ bulkRequesting ? 'Submitting…' : 'Request Transfer' }}
       </button>
 
       <button mat-stroked-button color="warn" (click)="clearSelection()">
