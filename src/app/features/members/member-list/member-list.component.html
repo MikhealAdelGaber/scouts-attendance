@@ -147,6 +147,43 @@
     </mat-card-content>
   </mat-card>
 
+  <!-- ── Bulk action toolbar ─────────────────────────────────────────────── -->
+  @if (auth.canEditMembers() && selectedCount > 0) {
+    <div class="bulk-toolbar">
+      <span class="bulk-count">
+        <mat-icon>check_box</mat-icon>
+        {{ selectedCount }} member{{ selectedCount > 1 ? 's' : '' }} selected
+      </span>
+
+      <mat-form-field appearance="outline" class="bulk-troop-select">
+        <mat-label>Move to Troop</mat-label>
+        <mat-icon matPrefix>groups</mat-icon>
+        <mat-select [(ngModel)]="bulkTroopId">
+          <mat-option value="">— Select target troop —</mat-option>
+          @for (t of troops; track t.id) {
+            <mat-option [value]="t.id">{{ t.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <button mat-raised-button color="primary"
+        [disabled]="!bulkTroopId || bulkTransferring"
+        (click)="confirmBulkTransfer()">
+        @if (bulkTransferring) {
+          <mat-progress-spinner mode="indeterminate" diameter="18"
+            style="display:inline-block;margin-right:6px"></mat-progress-spinner>
+        } @else {
+          <mat-icon>swap_horiz</mat-icon>
+        }
+        {{ bulkTransferring ? 'Moving…' : 'Move' }}
+      </button>
+
+      <button mat-stroked-button color="warn" (click)="clearSelection()">
+        <mat-icon>clear</mat-icon> Clear
+      </button>
+    </div>
+  }
+
   <!-- Table -->
   <mat-card>
     <mat-card-content>
@@ -155,6 +192,27 @@
       } @else {
         <div class="table-scroll-wrapper">
           <table mat-table [dataSource]="members" class="full-width members-table">
+
+            <!-- Checkbox (bulk select) — only rendered for admin/leader -->
+            @if (auth.canEditMembers()) {
+              <ng-container matColumnDef="select">
+                <th mat-header-cell *matHeaderCellDef style="width:48px;padding-right:0">
+                  <mat-checkbox
+                    [checked]="allSelected"
+                    [indeterminate]="someSelected"
+                    (change)="toggleSelectAll()"
+                    matTooltip="Select all on this page">
+                  </mat-checkbox>
+                </th>
+                <td mat-cell *matCellDef="let m" style="width:48px;padding-right:0">
+                  <mat-checkbox
+                    [checked]="selectedIds.has(m.id)"
+                    (change)="toggleSelect(m.id)"
+                    (click)="$event.stopPropagation()">
+                  </mat-checkbox>
+                </td>
+              </ng-container>
+            }
 
             <!-- Photo -->
             <ng-container matColumnDef="photo">

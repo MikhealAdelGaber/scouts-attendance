@@ -4,6 +4,10 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { AdminSettingsService } from '../admin-settings.service';
 import { YearlyArchiveSummary, YearlyArchiveDetail, NewYearResult } from '../admin-settings.model';
 import { StartNewYearDialogComponent } from '../start-new-year-dialog/start-new-year-dialog.component';
+import { MemberService } from '../../../core/services/member.service';
+import { GradeCount, AutoPromoteGradesResult } from '../../../core/models/member.model';
+import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog/confirm-dialog.component';
+import { PromotionSummaryDialogComponent } from '../promotion-summary-dialog/promotion-summary-dialog.component';
 
 @Component({
   selector: 'app-admin-settings-page',
@@ -22,13 +26,70 @@ export class AdminSettingsPageComponent implements OnInit {
   readonly archiveColumns = ['archiveYear', 'archivedAt', 'archivedBy', 'totalMembers', 'totalGroups', 'actions'];
   readonly memberColumns  = ['memberName', 'groupName', 'troopName', 'grade', 'points', 'attendanceRate', 'examScore', 'projectRate', 'excuses'];
 
+  // ── Grade Management ────────────────────────────────────────────────────────
+  gradeDistribution: GradeCount[] = [];
+  gradeDistLoading  = false;
+  autoPromoting     = false;
+
   constructor(
-    private svc:    AdminSettingsService,
-    private dialog: MatDialog,
-    private snack:  MatSnackBar
+    private svc:           AdminSettingsService,
+    private memberService: MemberService,
+    private dialog:        MatDialog,
+    private snack:         MatSnackBar
   ) {}
 
-  ngOnInit(): void { this.loadArchives(); }
+  ngOnInit(): void {
+    this.loadArchives();
+    this.loadGradeDistribution();
+  }
+
+  loadGradeDistribution(): void {
+    this.gradeDistLoading = true;
+    this.memberService.getGradeDistribution().subscribe({
+      next:  list => { this.gradeDistribution = list; this.gradeDistLoading = false; },
+      error: ()   => { this.gradeDistLoading = false; }
+    });
+  }
+
+  openAutoPromoteDialog(): void {
+    const total = this.gradeDistribution.reduce((s, g) => s + g.count, 0);
+    this.dialog.open(ConfirmDialogComponent, {
+      data: {
+        title:       'Auto Promote All Grades',
+        message:
+          `This will automatically promote all ${total} members to the next academic grade.\n\n` +
+          `Example: 3 ابتدائي → 4 ابتدائي, 6 ابتدائي → 1 اعدادي, 3 اعدادي → 1 ثانوي\n\n` +
+          `Members with "خريج" grade will stay unchanged.\n\nAre you sure?`,
+        confirmText: 'Promote'
+      }
+    }).afterClosed().subscribe(ok => {
+      if (!ok) return;
+      this.autoPromoting = true;
+      this.memberService.autoPromoteGrades({}).subscribe({
+        next: (res: AutoPromoteGradesResult) => {
+          this.autoPromoting = false;
+          this.loadGradeDistribution();
+          this.showPromotionSummary(res);
+        },
+        error: (err: any) => {
+          this.autoPromoting = false;
+          this.snack.open(err?.error?.message || 'Promotion failed', 'Close', { duration: 5000 });
+        }
+      });
+    });
+  }
+
+  private showPromotionSummary(res: AutoPromoteGradesResult): void {
+    if (res.totalPromoted === 0) {
+      this.snack.open('No members were promoted (no eligible grades found).', 'Close', { duration: 5000 });
+      return;
+    }
+
+    this.dialog.open(PromotionSummaryDialogComponent, {
+      data: { totalPromoted: res.totalPromoted, changes: res.changes },
+      width: '480px'
+    });
+  }
 
   loadArchives(): void {
     this.archivesLoading = true;

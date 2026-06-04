@@ -121,3 +121,36 @@ export interface CreateTransfer {
   reason?: string;
   transferDate: string;
 }
+
+// ── Bulk Transfer ──────────────────────────────────────────────────────────────
+export interface BulkTransferTroopDto {
+  memberIds: string[];
+  troopId:   string;
+}
+
+export interface BulkTransferResult {
+  count:     number;
+  troopName: string;
+}
+
+// ── Auto Promote Grades ────────────────────────────────────────────────────────
+export interface AutoPromoteGradesDto {
+  groupId?: string;
+}
+
+export interface PromotionChangeItem {
+  oldGrade: string;
+  newGrade: string;
+  count:    number;
+}
+
+export interface AutoPromoteGradesResult {
+  totalPromoted: number;
+  changes:       PromotionChangeItem[];
+}
+
+// ── Grade Distribution ─────────────────────────────────────────────────────────
+export interface GradeCount {
+  grade: string;
+  count: number;
+}

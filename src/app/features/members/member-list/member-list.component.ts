@@ -7,7 +7,7 @@ import { MemberService } from '../../../core/services/member.service';
 import { TroopService } from '../../../core/services/troop.service';
 import { ExportService } from '../../../core/services/export.service';
 import { AuthService } from '../../../core/services/auth.service';
-import { Member } from '../../../core/models/member.model';
+import { Member, BulkTransferResult } from '../../../core/models/member.model';
 import { Troop } from '../../../core/models/troop.model';
 import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog/confirm-dialog.component';
 import { ImportResultDialogComponent } from '../../../shared/components/import-result-dialog/import-result-dialog.component';
@@ -47,7 +47,19 @@ export class MemberListComponent implements OnInit {
 
   readonly academicYears = ACADEMIC_GRADES;
 
-  displayedColumns = ['photo', 'customId', 'fullName', 'troop', 'region', 'academicYear', 'neckerchief', 'phone', 'totalPoints', 'actions'];
+  private readonly BASE_COLUMNS = ['photo', 'customId', 'fullName', 'troop', 'region', 'academicYear', 'neckerchief', 'phone', 'totalPoints', 'actions'];
+  get displayedColumns(): string[] {
+    return this.auth.canEditMembers() ? ['select', ...this.BASE_COLUMNS] : this.BASE_COLUMNS;
+  }
+
+  // ── Bulk selection state ────────────────────────────────────────────────────
+  selectedIds = new Set<string>();
+  bulkTroopId  = '';
+  bulkTransferring = false;
+
+  get selectedCount(): number { return this.selectedIds.size; }
+  get allSelected(): boolean  { return this.members.length > 0 && this.members.every(m => this.selectedIds.has(m.id)); }
+  get someSelected(): boolean { return this.selectedIds.size > 0 && !this.allSelected; }
 
   private searchSubject = new Subject<string>();
   private filterSubject = new Subject<void>();
@@ -220,6 +232,64 @@ export class MemberListComponent implements OnInit {
       this.memberService.delete(member.id).subscribe(() => {
         this.snack.open('Member deleted', 'Close', { duration: 3000 });
         this.load();
+      });
+    });
+  }
+
+  // ── Bulk selection ──────────────────────────────────────────────────────────
+
+  toggleSelectAll(): void {
+    if (this.allSelected) {
+      this.members.forEach(m => this.selectedIds.delete(m.id));
+    } else {
+      this.members.forEach(m => this.selectedIds.add(m.id));
+    }
+  }
+
+  toggleSelect(id: string): void {
+    if (this.selectedIds.has(id)) this.selectedIds.delete(id);
+    else                           this.selectedIds.add(id);
+  }
+
+  clearSelection(): void {
+    this.selectedIds.clear();
+    this.bulkTroopId = '';
+  }
+
+  // ── Bulk transfer ───────────────────────────────────────────────────────────
+
+  confirmBulkTransfer(): void {
+    if (!this.bulkTroopId || this.selectedIds.size === 0) return;
+    const troop = this.troops.find(t => t.id === this.bulkTroopId);
+    if (!troop) return;
+    const count = this.selectedIds.size;
+
+    this.dialog.open(ConfirmDialogComponent, {
+      data: {
+        title:       'Move Members to Troop',
+        message:     `Move ${count} member${count > 1 ? 's' : ''} to "${troop.name}"?`,
+        confirmText: 'Move'
+      }
+    }).afterClosed().subscribe(ok => {
+      if (!ok) return;
+      this.bulkTransferring = true;
+      this.memberService.bulkTransferTroop({
+        memberIds: Array.from(this.selectedIds),
+        troopId:   this.bulkTroopId
+      }).subscribe({
+        next: (res: BulkTransferResult) => {
+          this.bulkTransferring = false;
+          this.snack.open(
+            `${res.count} member${res.count > 1 ? 's' : ''} moved to ${res.troopName} successfully`,
+            'Close', { duration: 4000, panelClass: ['success-snack'] }
+          );
+          this.clearSelection();
+          this.load();
+        },
+        error: (err: any) => {
+          this.bulkTransferring = false;
+          this.snack.open(err?.error?.message || 'Bulk transfer failed', 'Close', { duration: 5000 });
+        }
       });
     });
   }

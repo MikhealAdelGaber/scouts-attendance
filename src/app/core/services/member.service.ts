@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { ApiService, ApiResponse } from './api.service';
-import { Member, MemberSearchResult, CreateMember, UpdateMember, PagedResult, Transfer, CreateTransfer, BulkYearUpdateDto, ImportMembersResult } from '../models/member.model';
+import { Member, MemberSearchResult, CreateMember, UpdateMember, PagedResult, Transfer, CreateTransfer, BulkYearUpdateDto, ImportMembersResult, BulkTransferTroopDto, BulkTransferResult, AutoPromoteGradesDto, AutoPromoteGradesResult, GradeCount } from '../models/member.model';
 import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
@@ -67,6 +67,18 @@ export class MemberService {
 
   bulkYearUpdate(dto: BulkYearUpdateDto): Observable<number> {
     return this.api.post<number>('members/bulk-year-update', dto);
+  }
+
+  bulkTransferTroop(dto: BulkTransferTroopDto): Observable<BulkTransferResult> {
+    return this.api.post<BulkTransferResult>('members/bulk-transfer-troop', dto);
+  }
+
+  autoPromoteGrades(dto: AutoPromoteGradesDto): Observable<AutoPromoteGradesResult> {
+    return this.api.post<AutoPromoteGradesResult>('members/auto-promote-grades', dto);
+  }
+
+  getGradeDistribution(): Observable<GradeCount[]> {
+    return this.api.get<GradeCount[]>('members/grade-distribution');
   }
 
   /**
