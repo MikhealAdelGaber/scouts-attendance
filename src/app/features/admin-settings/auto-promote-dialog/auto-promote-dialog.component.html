@@ -1,0 +1,98 @@
+<!-- ── Step 1: Review & Confirm ──────────────────────────────────────────── -->
+@if (step === 1) {
+  <h2 mat-dialog-title>
+    <mat-icon style="color:#388e3c;vertical-align:middle;margin-right:8px">upgrade</mat-icon>
+    Auto Promote All Grades
+  </h2>
+
+  <mat-dialog-content>
+    <div class="info-banner">
+      <mat-icon>info</mat-icon>
+      <div>
+        <strong>{{ totalMembers }} members</strong> will be advanced to the next academic grade.
+        Members at <strong>خريج</strong> will not be changed.
+      </div>
+    </div>
+
+    <!-- Current grade distribution -->
+    @if (data.gradeDistribution.length > 0) {
+      <p class="section-label">Current grade distribution:</p>
+      <div class="grade-dist-grid">
+        @for (g of data.gradeDistribution; track g.grade) {
+          <div class="grade-chip-item">
+            <span class="grade-lbl">{{ g.grade }}</span>
+            <span class="grade-cnt">{{ g.count }}</span>
+          </div>
+        }
+      </div>
+    }
+
+    <div class="example-row">
+      <mat-icon>arrow_forward</mat-icon>
+      <span>Example: <strong>3 ابتدائي → 4 ابتدائي</strong>, <strong>6 ابتدائي → 1 اعدادي</strong>, <strong>3 اعدادي → 1 ثانوي</strong></span>
+    </div>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button (click)="cancel()">Cancel</button>
+    <button mat-raised-button style="background:#388e3c;color:white" (click)="goToStep2()">
+      <mat-icon>arrow_forward</mat-icon> Continue
+    </button>
+  </mat-dialog-actions>
+}
+
+<!-- ── Step 2: Password Verification ────────────────────────────────────── -->
+@if (step === 2) {
+  <h2 mat-dialog-title>
+    <mat-icon>lock</mat-icon> Verify Your Identity
+  </h2>
+
+  <mat-dialog-content>
+    <p class="verify-prompt">
+      Enter your administrator password to confirm you have authority to promote all member grades.
+    </p>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Your Password</mat-label>
+      <mat-icon matPrefix>lock</mat-icon>
+      <input matInput
+        [type]="passwordHide ? 'password' : 'text'"
+        [(ngModel)]="password"
+        (keyup.enter)="verifyAndPromote()"
+        autocomplete="current-password">
+      <button mat-icon-button matSuffix type="button"
+        (click)="passwordHide = !passwordHide">
+        <mat-icon>{{ passwordHide ? 'visibility_off' : 'visibility' }}</mat-icon>
+      </button>
+    </mat-form-field>
+
+    @if (passwordError) {
+      <div class="error-banner">
+        <mat-icon>error</mat-icon>
+        {{ passwordError }}
+      </div>
+    }
+
+    @if (promoteError) {
+      <div class="error-banner">
+        <mat-icon>error</mat-icon>
+        {{ promoteError }}
+      </div>
+    }
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button (click)="cancel()" [disabled]="verifying || promoting">Cancel</button>
+    <button mat-raised-button style="background:#388e3c;color:white"
+      (click)="verifyAndPromote()"
+      [disabled]="verifying || promoting || !password.trim()">
+      @if (verifying || promoting) {
+        <mat-progress-spinner mode="indeterminate" diameter="18"
+          style="display:inline-block;margin-right:6px"></mat-progress-spinner>
+      } @else {
+        <mat-icon>upgrade</mat-icon>
+      }
+      {{ verifying ? 'Verifying…' : promoting ? 'Promoting…' : 'Promote All Grades' }}
+    </button>
+  </mat-dialog-actions>
+}

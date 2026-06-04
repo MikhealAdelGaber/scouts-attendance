@@ -4,6 +4,7 @@ import { SharedModule } from '../../shared/shared.module';
 import { AdminSettingsPageComponent } from './admin-settings-page/admin-settings-page.component';
 import { StartNewYearDialogComponent } from './start-new-year-dialog/start-new-year-dialog.component';
 import { PromotionSummaryDialogComponent } from './promotion-summary-dialog/promotion-summary-dialog.component';
+import { AutoPromoteDialogComponent } from './auto-promote-dialog/auto-promote-dialog.component';
 
 const routes: Routes = [
   { path: '', component: AdminSettingsPageComponent }
@@ -13,7 +14,8 @@ const routes: Routes = [
   declarations: [
     AdminSettingsPageComponent,
     StartNewYearDialogComponent,
-    PromotionSummaryDialogComponent
+    PromotionSummaryDialogComponent,
+    AutoPromoteDialogComponent
   ],
   imports: [
     SharedModule,

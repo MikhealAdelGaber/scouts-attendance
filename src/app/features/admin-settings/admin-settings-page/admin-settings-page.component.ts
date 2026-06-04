@@ -6,8 +6,8 @@ import { YearlyArchiveSummary, YearlyArchiveDetail, NewYearResult } from '../adm
 import { StartNewYearDialogComponent } from '../start-new-year-dialog/start-new-year-dialog.component';
 import { MemberService } from '../../../core/services/member.service';
 import { GradeCount, AutoPromoteGradesResult } from '../../../core/models/member.model';
-import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog/confirm-dialog.component';
 import { PromotionSummaryDialogComponent } from '../promotion-summary-dialog/promotion-summary-dialog.component';
+import { AutoPromoteDialogComponent } from '../auto-promote-dialog/auto-promote-dialog.component';
 
 @Component({
   selector: 'app-admin-settings-page',
@@ -52,30 +52,14 @@ export class AdminSettingsPageComponent implements OnInit {
   }
 
   openAutoPromoteDialog(): void {
-    const total = this.gradeDistribution.reduce((s, g) => s + g.count, 0);
-    this.dialog.open(ConfirmDialogComponent, {
-      data: {
-        title:       'Auto Promote All Grades',
-        message:
-          `This will automatically promote all ${total} members to the next academic grade.\n\n` +
-          `Example: 3 ابتدائي → 4 ابتدائي, 6 ابتدائي → 1 اعدادي, 3 اعدادي → 1 ثانوي\n\n` +
-          `Members with "خريج" grade will stay unchanged.\n\nAre you sure?`,
-        confirmText: 'Promote'
-      }
-    }).afterClosed().subscribe(ok => {
-      if (!ok) return;
-      this.autoPromoting = true;
-      this.memberService.autoPromoteGrades({}).subscribe({
-        next: (res: AutoPromoteGradesResult) => {
-          this.autoPromoting = false;
-          this.loadGradeDistribution();
-          this.showPromotionSummary(res);
-        },
-        error: (err: any) => {
-          this.autoPromoting = false;
-          this.snack.open(err?.error?.message || 'Promotion failed', 'Close', { duration: 5000 });
-        }
-      });
+    this.dialog.open(AutoPromoteDialogComponent, {
+      data: { gradeDistribution: this.gradeDistribution },
+      width: '480px',
+      disableClose: true
+    }).afterClosed().subscribe((result: AutoPromoteGradesResult | undefined) => {
+      if (!result) return;
+      this.loadGradeDistribution();
+      this.showPromotionSummary(result);
     });
   }
 

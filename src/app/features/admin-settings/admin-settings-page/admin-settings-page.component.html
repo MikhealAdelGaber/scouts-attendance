@@ -71,14 +71,9 @@
     </mat-card-content>
     <mat-card-actions>
       <button mat-raised-button style="background:#388e3c;color:white"
-        [disabled]="autoPromoting" (click)="openAutoPromoteDialog()">
-        @if (autoPromoting) {
-          <mat-progress-spinner mode="indeterminate" diameter="18"
-            style="display:inline-block;margin-right:6px"></mat-progress-spinner>
-        } @else {
-          <mat-icon>upgrade</mat-icon>
-        }
-        {{ autoPromoting ? 'Promoting…' : 'Auto Promote All Grades' }}
+        (click)="openAutoPromoteDialog()">
+        <mat-icon>upgrade</mat-icon>
+        Auto Promote All Grades
       </button>
       <button mat-stroked-button (click)="loadGradeDistribution()" matTooltip="Refresh distribution">
         <mat-icon>refresh</mat-icon>
