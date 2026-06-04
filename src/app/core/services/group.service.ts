@@ -8,6 +8,8 @@ export class GroupService {
   constructor(private api: ApiService) {}
 
   getAll(): Observable<Group[]> { return this.api.get<Group[]>('groups'); }
+  /** Returns all groups except the current user's own group — used for transfer targets. */
+  getAllForTransfer(): Observable<Group[]> { return this.api.get<Group[]>('groups/all-for-transfer'); }
   getById(id: string): Observable<Group> { return this.api.get<Group>(`groups/${id}`); }
   create(dto: CreateGroup): Observable<Group> { return this.api.post<Group>('groups', dto); }
   update(id: string, dto: UpdateGroup): Observable<Group> { return this.api.put<Group>(`groups/${id}`, dto); }

@@ -87,13 +87,8 @@ export class MemberListComponent implements OnInit {
   ngOnInit(): void {
     this.troopService.getAll().subscribe(t => this.troops = t);
     if (this.auth.canEditMembers()) {
-      this.groupService.getAll().subscribe(g => {
-        // Exclude the current user's own group from the bulk-transfer target list
-        const myGroupId = this.auth.currentUser?.groupId;
-        this.groups = myGroupId
-          ? g.filter(gr => gr.id !== myGroupId)
-          : g;
-      });
+      // getAllForTransfer() returns all groups except the caller's own group
+      this.groupService.getAllForTransfer().subscribe(g => { this.groups = g; });
     }
     this.load();
 
