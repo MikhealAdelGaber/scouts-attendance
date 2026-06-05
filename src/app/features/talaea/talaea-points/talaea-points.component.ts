@@ -7,7 +7,7 @@ import { TalaeaService } from '../../../core/services/talaea.service';
 import { PointsService } from '../../../core/services/points.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { Talaea, TalaeaPoints } from '../../../core/models/talaea.model';
-import { PointCategory } from '../../../core/models/points.model';
+import { MemberPointCategory } from '../../../core/models/points.model';
 
 @Component({
   selector: 'app-talaea-points',
@@ -16,7 +16,7 @@ import { PointCategory } from '../../../core/models/points.model';
 export class TalaeaPointsComponent implements OnInit {
   talaea: Talaea | null = null;
   points: TalaeaPoints[] = [];
-  categories: PointCategory[] = [];
+  categories: MemberPointCategory[] = [];
   form!: FormGroup;
   loading = false;
   saving = false;
@@ -45,7 +45,7 @@ export class TalaeaPointsComponent implements OnInit {
     forkJoin({
       talaea: this.talaeaService.getById(this.talaeaId),
       points: this.talaeaService.getPoints(this.talaeaId),
-      cats:   this.pointsService.getCategories()
+      cats:   this.pointsService.getMemberCategories()
     }).subscribe({
       next: ({ talaea, points, cats }) => {
         this.talaea = talaea;
