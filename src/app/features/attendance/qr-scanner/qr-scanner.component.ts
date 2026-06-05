@@ -76,15 +76,23 @@ export class QrScannerComponent implements OnInit, OnDestroy {
         this.lastScanned = record;
         this.recentScans.unshift(record);
         if (this.recentScans.length > 10) this.recentScans.pop();
-        this.playBeep();
+        this.playSuccessBeep();
         this.snack.open(`✓ ${record.memberName} marked as ${record.statusName}`, 'Close', { duration: 2500 });
       },
-      error: () => this.snack.open('Member not found or already marked', 'Close', { duration: 3000 })
+      error: (err) => {
+        // Show the exact rejection message from the backend (e.g. wrong group)
+        const msg: string = err?.error?.message || 'Member not found or QR code invalid.';
+        this.playErrorBeep();
+        this.snack.open(`❌ ${msg}`, 'Dismiss', {
+          duration: 5000,
+          panelClass: ['snack-error']
+        });
+      }
     });
   }
 
-  /** Play a short beep using Web Audio API */
-  private playBeep(): void {
+  /** Success beep — high pitch, short */
+  private playSuccessBeep(): void {
     try {
       const ctx = new AudioContext();
       const osc = ctx.createOscillator();
@@ -96,6 +104,23 @@ export class QrScannerComponent implements OnInit, OnDestroy {
       gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
       osc.start(ctx.currentTime);
       osc.stop(ctx.currentTime + 0.3);
+    } catch { /* audio not supported */ }
+  }
+
+  /** Error beep — low pitch, longer */
+  private playErrorBeep(): void {
+    try {
+      const ctx  = new AudioContext();
+      const osc  = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type           = 'sawtooth';
+      osc.frequency.value = 220;
+      gain.gain.setValueAtTime(0.4, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.6);
     } catch { /* audio not supported */ }
   }
 
