@@ -26,17 +26,39 @@ export class TroopListComponent implements OnInit {
     this.troopService.getAll().subscribe({ next: t => { this.troops = t; this.loading = false; }, error: () => this.loading = false });
   }
 
+  private copyToClipboard(url: string, successMsg: string, fallbackMsg: string): void {
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(url).then(() => {
+        this.snack.open(successMsg, 'Close', { duration: 3000 });
+      }).catch(() => {
+        this.snack.open(`${fallbackMsg} ${url}`, 'Close', { duration: 10000 });
+      });
+    } else {
+      // Fallback for HTTP (non-secure) contexts
+      try {
+        const ta = document.createElement('textarea');
+        ta.value = url;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        this.snack.open(successMsg, 'Close', { duration: 3000 });
+      } catch {
+        this.snack.open(`${fallbackMsg} ${url}`, 'Close', { duration: 10000 });
+      }
+    }
+  }
+
   copyLink(t: Troop): void {
     if (!t.shareToken) {
       this.snack.open('Share link not available — please refresh.', 'Close', { duration: 3000 });
       return;
     }
     const url = `${environment.baseUrl}/excuse/${t.shareToken}`;
-    navigator.clipboard.writeText(url).then(() => {
-      this.snack.open('Excuse submission link copied!', 'Close', { duration: 3000 });
-    }).catch(() => {
-      this.snack.open(`Link: ${url}`, 'Close', { duration: 8000 });
-    });
+    this.copyToClipboard(url, 'Excuse submission link copied!', 'Link:');
   }
 
   resetLink(t: Troop): void {
@@ -52,11 +74,7 @@ export class TroopListComponent implements OnInit {
         next: (newToken) => {
           t.shareToken = newToken;
           const url = `${environment.baseUrl}/excuse/${newToken}`;
-          navigator.clipboard.writeText(url).then(() => {
-            this.snack.open('Link has been reset. New link copied — share it with your troop.', 'Close', { duration: 5000 });
-          }).catch(() => {
-            this.snack.open(`Link reset! New link: ${url}`, 'Close', { duration: 10000 });
-          });
+          this.copyToClipboard(url, 'Link has been reset. New link copied — share it with your troop.', 'Link reset! New link:');
         },
         error: () => this.snack.open('Failed to reset link.', 'Close', { duration: 3000 })
       });
