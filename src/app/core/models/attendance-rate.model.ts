@@ -3,6 +3,7 @@ export interface AttendanceRate {
   memberName:        string;
   troopName:         string;
   academicGrade:     string | null;
+  hasNeckerchief:    boolean;
   // Attendance counts
   totalEvents:       number;
   present:           number;

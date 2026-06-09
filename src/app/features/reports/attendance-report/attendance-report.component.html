@@ -103,6 +103,22 @@
               </td>
             </ng-container>
 
+            <!-- Foulard -->
+            <ng-container matColumnDef="foulard">
+              <th mat-header-cell *matHeaderCellDef class="col-sm">Foulard</th>
+              <td mat-cell *matCellDef="let r" class="col-sm">
+                @if (r.hasNeckerchief) {
+                  <span style="color:#2e7d32;font-weight:600;display:flex;align-items:center;gap:2px">
+                    <mat-icon style="font-size:14px;width:14px;height:14px">check_circle</mat-icon> Yes
+                  </span>
+                } @else {
+                  <span style="color:#c62828;display:flex;align-items:center;gap:2px">
+                    <mat-icon style="font-size:14px;width:14px;height:14px">cancel</mat-icon> No
+                  </span>
+                }
+              </td>
+            </ng-container>
+
             <!-- Total Events -->
             <ng-container matColumnDef="totalEvents">
               <th mat-header-cell *matHeaderCellDef class="col-num">Total</th>

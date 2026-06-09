@@ -22,7 +22,7 @@ export class AttendanceReportComponent implements OnInit {
   loaded    = false;
 
   displayedColumns = [
-    'rank', 'memberName', 'troopName', 'grade',
+    'rank', 'memberName', 'troopName', 'grade', 'foulard',
     'totalEvents', 'present', 'late', 'tooLate', 'excused', 'absent',
     'rate', 'examScore', 'projectRate', 'totalPoints'
   ];
