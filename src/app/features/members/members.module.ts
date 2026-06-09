@@ -13,22 +13,20 @@ import { MemberProjectsComponent } from './member-projects/member-projects.compo
 import { RoleGuard } from '../../core/guards/role.guard';
 import { UserRole } from '../../core/models/user.model';
 
-const ADMIN_ROLES = [UserRole.SystemAdmin, UserRole.GroupLeader, UserRole.GroupLeaderAdmin];
-
 const routes: Routes = [
   { path: '',       component: MemberListComponent },
   {
     path: 'new',
     component: MemberFormComponent,
     canActivate: [RoleGuard],
-    data: { roles: ADMIN_ROLES }
+    data: { roles: [UserRole.SystemAdmin, UserRole.GroupLeader, UserRole.GroupLeaderAdmin] }
   },
   { path: ':id',    component: MemberDetailComponent },
   {
     path: ':id/edit',
     component: MemberFormComponent,
     canActivate: [RoleGuard],
-    data: { roles: ADMIN_ROLES }
+    data: { roles: [UserRole.SystemAdmin, UserRole.GroupLeader, UserRole.GroupLeaderAdmin] }
   }
 ];
 
