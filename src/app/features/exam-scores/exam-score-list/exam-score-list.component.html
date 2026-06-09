@@ -2,10 +2,38 @@
   <div class="page-header">
     <h1><mat-icon>school</mat-icon> End-of-Year Exam Scores</h1>
     <div class="flex-gap">
+      <!-- Export Excel -->
       <button mat-stroked-button (click)="exportExcel()" [disabled]="exporting || !selectedTroopId"
-        matTooltip="Export to Excel">
+        matTooltip="Export scores to Excel">
         <mat-icon>download</mat-icon> Excel
       </button>
+
+      <!-- Export Template -->
+      <button mat-stroked-button color="accent" (click)="exportTemplate()"
+        [disabled]="exportingTemplate || !selectedTroopId" matTooltip="Download blank entry template">
+        <mat-spinner *ngIf="exportingTemplate" diameter="16" style="display:inline-block;margin-right:4px"></mat-spinner>
+        <mat-icon *ngIf="!exportingTemplate">table_view</mat-icon>
+        Score Sheet
+      </button>
+
+      <!-- Import -->
+      @if (auth.canAccessExamScores()) {
+        <button mat-stroked-button color="primary" (click)="importInput.click()"
+          [disabled]="importing || !selectedTroopId" matTooltip="Import scores from .xlsx file">
+          <mat-spinner *ngIf="importing" diameter="16" style="display:inline-block;margin-right:4px"></mat-spinner>
+          <mat-icon *ngIf="!importing">upload</mat-icon>
+          Import
+        </button>
+        <input #importInput type="file" accept=".xlsx" hidden (change)="onImportFileSelected($event)">
+      }
+
+      <!-- Config -->
+      @if (auth.canAccessExamScores()) {
+        <button mat-icon-button (click)="toggleConfigPanel()" matTooltip="Set max scores for this year"
+          [color]="showConfigPanel ? 'primary' : ''">
+          <mat-icon>settings</mat-icon>
+        </button>
+      }
     </div>
   </div>
 
@@ -30,12 +58,58 @@
             }
           </mat-select>
         </mat-form-field>
+
+        <!-- Config summary chip -->
+        @if (config) {
+          <div class="config-chip">
+            <mat-icon>rule</mat-icon>
+            Theory: <strong>{{ config.theoreticalMaxScore }}</strong> &nbsp;|&nbsp;
+            Practical: <strong>{{ config.practicalMaxScore }}</strong> &nbsp;|&nbsp;
+            Total: <strong>{{ config.totalMaxScore }}</strong>
+          </div>
+        } @else if (selectedTroopId) {
+          <div class="config-chip config-chip--warn">
+            <mat-icon>warning</mat-icon> No max scores set for {{ selectedYear }}
+          </div>
+        }
       </div>
     </mat-card-content>
   </mat-card>
 
+  <!-- Config Panel (inline) -->
+  @if (showConfigPanel && selectedTroopId) {
+    <mat-card class="mb-16">
+      <mat-card-header>
+        <mat-card-title>Set Max Scores — {{ selectedYear }}</mat-card-title>
+        <mat-card-subtitle>Define the maximum marks for Theoretical and Practical exams.
+          Percentages are calculated automatically.</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <form [formGroup]="configForm" (ngSubmit)="saveConfig()"
+          class="flex-gap" style="flex-wrap:wrap;align-items:flex-start;padding-top:8px">
+          <mat-form-field appearance="outline" style="width:200px">
+            <mat-label>Theoretical Max</mat-label>
+            <input matInput type="number" formControlName="theoreticalMaxScore" min="1">
+          </mat-form-field>
+          <mat-form-field appearance="outline" style="width:200px">
+            <mat-label>Practical Max</mat-label>
+            <input matInput type="number" formControlName="practicalMaxScore" min="1">
+          </mat-form-field>
+          <div style="height:56px;display:flex;align-items:center;gap:8px">
+            <button mat-raised-button color="primary" type="submit"
+              [disabled]="configForm.invalid || savingConfig">
+              <mat-spinner *ngIf="savingConfig" diameter="18" style="display:inline-block;margin-right:6px"></mat-spinner>
+              Save Max Scores
+            </button>
+            <button mat-button type="button" (click)="toggleConfigPanel()">Cancel</button>
+          </div>
+        </form>
+      </mat-card-content>
+    </mat-card>
+  }
+
   @if (selectedTroopId) {
-    <!-- Summary bar -->
+    <!-- Summary cards -->
     @if (scores.length > 0) {
       <div class="summary-cards mb-16">
         <mat-card class="summary-card">
@@ -48,15 +122,15 @@
         <mat-card class="summary-card">
           <mat-card-content>
             <mat-icon style="color:#3f51b5">bar_chart</mat-icon>
-            <div class="val">{{ averageScore | number:'1.1-1' }}</div>
-            <div class="lbl">Average</div>
+            <div class="val">{{ averagePercentage | number:'1.1-1' }}%</div>
+            <div class="lbl">Avg %</div>
           </mat-card-content>
         </mat-card>
         <mat-card class="summary-card present">
           <mat-card-content>
             <mat-icon>check_circle</mat-icon>
             <div class="val">{{ scores | passCount }}</div>
-            <div class="lbl">Passed (≥50)</div>
+            <div class="lbl">Passed (≥50%)</div>
           </mat-card-content>
         </mat-card>
         <mat-card class="summary-card absent">
@@ -74,6 +148,13 @@
       <mat-card class="mb-16">
         <mat-card-header><mat-card-title>Add Score</mat-card-title></mat-card-header>
         <mat-card-content>
+          @if (!config) {
+            <mat-hint style="color:#e65100;display:block;margin-bottom:8px">
+              <mat-icon style="vertical-align:middle;font-size:16px">warning</mat-icon>
+              No max scores configured — scores will be saved but percentages won't be shown.
+              Use the ⚙ button to set max scores.
+            </mat-hint>
+          }
           <form [formGroup]="form" (ngSubmit)="addScore()"
             class="flex-gap" style="flex-wrap:wrap;align-items:flex-start">
             <mat-form-field appearance="outline" style="flex:1;min-width:200px">
@@ -84,9 +165,15 @@
                 }
               </mat-select>
             </mat-form-field>
-            <mat-form-field appearance="outline" style="width:140px">
-              <mat-label>Score (0–100)</mat-label>
-              <input matInput type="number" formControlName="score" min="0" max="100">
+            <mat-form-field appearance="outline" style="width:170px">
+              <mat-label>Theory (max {{ theoreticalMax }})</mat-label>
+              <input matInput type="number" formControlName="theoreticalScore" min="0"
+                [max]="theoreticalMax">
+            </mat-form-field>
+            <mat-form-field appearance="outline" style="width:170px">
+              <mat-label>Practical (max {{ practicalMax }})</mat-label>
+              <input matInput type="number" formControlName="practicalScore" min="0"
+                [max]="practicalMax">
             </mat-form-field>
             <mat-form-field appearance="outline" style="flex:1;min-width:150px">
               <mat-label>Notes (optional)</mat-label>
@@ -115,23 +202,53 @@
 
               <ng-container matColumnDef="member">
                 <th mat-header-cell *matHeaderCellDef>Member</th>
-                <td mat-cell *matCellDef="let s">
-                  <strong>{{ s.memberName }}</strong>
-                </td>
+                <td mat-cell *matCellDef="let s"><strong>{{ s.memberName }}</strong></td>
               </ng-container>
 
-              <ng-container matColumnDef="score">
-                <th mat-header-cell *matHeaderCellDef>Score /100</th>
+              <ng-container matColumnDef="theoretical">
+                <th mat-header-cell *matHeaderCellDef>Theory /{{ theoreticalMax }}</th>
                 <td mat-cell *matCellDef="let s">
                   @if (editingId === s.id) {
                     <mat-form-field appearance="outline" style="width:100px" [formGroup]="editForm">
-                      <input matInput type="number" formControlName="score" min="0" max="100">
+                      <input matInput type="number" formControlName="theoreticalScore" min="0" [max]="theoreticalMax">
                     </mat-form-field>
                   } @else {
-                    <span class="score-badge" [style.background]="getGrade(s.score).color + '22'"
-                      [style.color]="getGrade(s.score).color">
-                      {{ s.score }}
+                    {{ s.theoreticalScore }}
+                  }
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="practical">
+                <th mat-header-cell *matHeaderCellDef>Practical /{{ practicalMax }}</th>
+                <td mat-cell *matCellDef="let s">
+                  @if (editingId === s.id) {
+                    <mat-form-field appearance="outline" style="width:100px" [formGroup]="editForm">
+                      <input matInput type="number" formControlName="practicalScore" min="0" [max]="practicalMax">
+                    </mat-form-field>
+                  } @else {
+                    {{ s.practicalScore }}
+                  }
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="total">
+                <th mat-header-cell *matHeaderCellDef>Total /{{ totalMax }}</th>
+                <td mat-cell *matCellDef="let s">
+                  <strong>{{ s.totalScore }}</strong>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="percentage">
+                <th mat-header-cell *matHeaderCellDef>%</th>
+                <td mat-cell *matCellDef="let s">
+                  @if (s.percentage != null) {
+                    <span class="score-badge"
+                      [style.background]="getGrade(s.percentage).color + '22'"
+                      [style.color]="getGrade(s.percentage).color">
+                      {{ s.percentage | number:'1.1-1' }}%
                     </span>
+                  } @else {
+                    <span style="color:#999">—</span>
                   }
                 </td>
               </ng-container>
@@ -139,10 +256,14 @@
               <ng-container matColumnDef="grade">
                 <th mat-header-cell *matHeaderCellDef>Grade</th>
                 <td mat-cell *matCellDef="let s">
-                  <mat-chip [style.background]="getGrade(s.score).color + '33'"
-                    [style.color]="getGrade(s.score).color">
-                    {{ getGrade(s.score).label }}
-                  </mat-chip>
+                  @if (s.percentage != null) {
+                    <mat-chip [style.background]="getGrade(s.percentage).color + '33'"
+                      [style.color]="getGrade(s.percentage).color">
+                      {{ getGrade(s.percentage).label }}
+                    </mat-chip>
+                  } @else {
+                    <span style="color:#999">—</span>
+                  }
                 </td>
               </ng-container>
 
@@ -185,8 +306,12 @@
               <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
               <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
               <tr class="mat-row" *matNoDataRow>
-                <td colspan="5" style="padding:32px;text-align:center;color:#999">
-                  No scores recorded for {{ selectedYear }}. Use the form above to add them.
+                <td [attr.colspan]="displayedColumns.length"
+                  style="padding:32px;text-align:center;color:#999">
+                  No scores recorded for {{ selectedYear }}.
+                  @if (auth.canAccessExamScores()) {
+                    Use the form above or import an Excel file.
+                  }
                 </td>
               </tr>
             </table>
@@ -194,6 +319,7 @@
         }
       </mat-card-content>
     </mat-card>
+
   } @else {
     <mat-card>
       <mat-card-content style="padding:48px;text-align:center">
@@ -211,5 +337,26 @@
   border-radius: 12px;
   font-weight: 700;
   font-size: 1rem;
+}
+.config-chip {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border-radius: 16px;
+  background: #e8eaf6;
+  color: #3949ab;
+  font-size: 0.85rem;
+  border: 1px solid #c5cae9;
+}
+.config-chip--warn {
+  background: #fff3e0;
+  color: #e65100;
+  border-color: #ffcc80;
+}
+.config-chip mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
 }
 </style>

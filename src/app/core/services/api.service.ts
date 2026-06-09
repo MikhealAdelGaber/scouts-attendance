@@ -40,7 +40,18 @@ export class ApiService {
       .pipe(map(r => r.data));
   }
 
-  getBlob(endpoint: string): Observable<Blob> {
-    return this.http.get(`${this.baseUrl}/${endpoint}`, { responseType: 'blob' });
+  getBlob(endpoint: string, params?: Record<string, any>): Observable<Blob> {
+    let httpParams = new HttpParams();
+    if (params) {
+      Object.entries(params).forEach(([k, v]) => {
+        if (v !== null && v !== undefined) httpParams = httpParams.set(k, v);
+      });
+    }
+    return this.http.get(`${this.baseUrl}/${endpoint}`, { responseType: 'blob', params: httpParams });
+  }
+
+  postFormData<T>(endpoint: string, formData: FormData): Observable<T> {
+    return this.http.post<ApiResponse<T>>(`${this.baseUrl}/${endpoint}`, formData)
+      .pipe(map(r => r.data));
   }
 }
