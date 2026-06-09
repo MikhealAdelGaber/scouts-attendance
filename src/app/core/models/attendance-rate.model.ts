@@ -13,7 +13,12 @@ export interface AttendanceRate {
   absent:            number;
   rate:              number;
   // Exam
-  latestExamScore:   number | null;
+  latestExamScore:          number | null;
+  latestExamTheoretical:    number | null;
+  latestExamTheoreticalMax: number | null;
+  latestExamPractical:      number | null;
+  latestExamPracticalMax:   number | null;
+  latestExamPercentage:     number | null;
   // Projects
   totalProjects:     number;
   projectsCompleted: number;

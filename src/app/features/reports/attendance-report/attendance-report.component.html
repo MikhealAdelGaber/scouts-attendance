@@ -179,15 +179,49 @@
               </td>
             </ng-container>
 
-            <!-- Exam Score -->
-            <ng-container matColumnDef="examScore">
-              <th mat-header-cell *matHeaderCellDef class="col-pct">Exam</th>
+            <!-- Exam Theory -->
+            <ng-container matColumnDef="examTheory">
+              <th mat-header-cell *matHeaderCellDef class="col-pct">Theory</th>
               <td mat-cell *matCellDef="let r" class="col-pct">
-                @if (r.latestExamScore != null) {
+                @if (r.latestExamTheoretical != null) {
+                  <span style="font-size:0.82rem">
+                    {{ r.latestExamTheoretical | number:'1.0-1' }}
+                    @if (r.latestExamTheoreticalMax != null) {
+                      <span style="color:#9e9e9e"> / {{ r.latestExamTheoreticalMax | number:'1.0-1' }}</span>
+                    }
+                  </span>
+                } @else {
+                  <span style="color:#bbb">—</span>
+                }
+              </td>
+            </ng-container>
+
+            <!-- Exam Practical -->
+            <ng-container matColumnDef="examPractical">
+              <th mat-header-cell *matHeaderCellDef class="col-pct">Practical</th>
+              <td mat-cell *matCellDef="let r" class="col-pct">
+                @if (r.latestExamPractical != null) {
+                  <span style="font-size:0.82rem">
+                    {{ r.latestExamPractical | number:'1.0-1' }}
+                    @if (r.latestExamPracticalMax != null) {
+                      <span style="color:#9e9e9e"> / {{ r.latestExamPracticalMax | number:'1.0-1' }}</span>
+                    }
+                  </span>
+                } @else {
+                  <span style="color:#bbb">—</span>
+                }
+              </td>
+            </ng-container>
+
+            <!-- Exam Total % -->
+            <ng-container matColumnDef="examTotal">
+              <th mat-header-cell *matHeaderCellDef class="col-pct">Exam %</th>
+              <td mat-cell *matCellDef="let r" class="col-pct">
+                @if (r.latestExamPercentage != null) {
                   <span class="rate-badge"
-                    [style.color]="rateColor(r.latestExamScore)"
-                    [style.background]="rateBg(r.latestExamScore)">
-                    {{ r.latestExamScore | number:'1.0-1' }}
+                    [style.color]="rateColor(r.latestExamPercentage)"
+                    [style.background]="rateBg(r.latestExamPercentage)">
+                    {{ r.latestExamPercentage | number:'1.0-1' }}%
                   </span>
                 } @else {
                   <span style="color:#bbb">—</span>

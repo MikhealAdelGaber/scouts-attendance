@@ -24,7 +24,7 @@ export class AttendanceReportComponent implements OnInit {
   displayedColumns = [
     'rank', 'memberName', 'troopName', 'grade', 'foulard',
     'totalEvents', 'present', 'late', 'tooLate', 'excused', 'absent',
-    'rate', 'examScore', 'projectRate', 'totalPoints'
+    'rate', 'examTheory', 'examPractical', 'examTotal', 'projectRate', 'totalPoints'
   ];
 
   constructor(
