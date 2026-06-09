@@ -7,7 +7,7 @@
       Troops
     </h1>
     <a mat-raised-button color="primary" routerLink="new"
-       *ngIf="auth.isGroupLeader() || auth.isSystemAdmin()">
+       *ngIf="auth.isGroupLeader() || auth.isSystemAdmin() || auth.isGroupLeaderAdmin() || auth.isGroupLeaderAdmin()">
       <mat-icon>add</mat-icon> Create Troop
     </a>
   </div>
@@ -64,7 +64,7 @@
           </a>
 
           <a mat-icon-button [routerLink]="[t.id, 'edit']"
-             *ngIf="auth.isGroupLeader() || auth.isSystemAdmin()"
+             *ngIf="auth.isGroupLeader() || auth.isSystemAdmin() || auth.isGroupLeaderAdmin() || auth.isGroupLeaderAdmin()"
              matTooltip="Edit" matTooltipPosition="above">
             <mat-icon>edit</mat-icon>
           </a>
@@ -75,13 +75,13 @@
           </button>
 
           <button mat-icon-button class="btn-reset" (click)="resetLink(t)"
-                  *ngIf="auth.isGroupLeader() || auth.isSystemAdmin()"
+                  *ngIf="auth.isGroupLeader() || auth.isSystemAdmin() || auth.isGroupLeaderAdmin() || auth.isGroupLeaderAdmin()"
                   matTooltip="Reset Link" matTooltipPosition="above">
             <mat-icon>refresh</mat-icon>
           </button>
 
           <button mat-icon-button color="warn" (click)="delete(t)"
-                  *ngIf="auth.isGroupLeader() || auth.isSystemAdmin()"
+                  *ngIf="auth.isGroupLeader() || auth.isSystemAdmin() || auth.isGroupLeaderAdmin() || auth.isGroupLeaderAdmin()"
                   matTooltip="Delete" matTooltipPosition="above">
             <mat-icon>delete</mat-icon>
           </button>
@@ -97,7 +97,7 @@
           <mat-icon>groups</mat-icon>
           <p>No troops yet.</p>
           <a mat-stroked-button color="primary" routerLink="new"
-             *ngIf="auth.isGroupLeader() || auth.isSystemAdmin()">
+             *ngIf="auth.isGroupLeader() || auth.isSystemAdmin() || auth.isGroupLeaderAdmin() || auth.isGroupLeaderAdmin()">
             <mat-icon>add</mat-icon> Create your first troop
           </a>
         </div>

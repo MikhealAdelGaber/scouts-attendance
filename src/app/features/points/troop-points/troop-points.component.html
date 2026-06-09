@@ -9,7 +9,7 @@
       <a mat-raised-button color="primary" routerLink="/points">
         <mat-icon>person</mat-icon> Member Points →
       </a>
-      <a mat-stroked-button routerLink="/points/troop-categories" *ngIf="auth.isGroupLeader() || auth.isSystemAdmin()">
+      <a mat-stroked-button routerLink="/points/troop-categories" *ngIf="auth.isGroupLeader() || auth.isSystemAdmin() || auth.isGroupLeaderAdmin()">
         <mat-icon>category</mat-icon> Troop Categories
       </a>
     </div>

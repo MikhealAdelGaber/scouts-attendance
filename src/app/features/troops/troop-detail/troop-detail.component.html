@@ -5,7 +5,7 @@
       <h1><mat-icon>groups</mat-icon> {{ troop.name }}</h1>
       <div class="flex-gap">
         <button mat-button routerLink="/troops"><mat-icon>arrow_back</mat-icon> Back</button>
-        <a mat-raised-button color="primary" [routerLink]="['..', troop.id, 'edit']" *ngIf="auth.isGroupLeader() || auth.isSystemAdmin()">
+        <a mat-raised-button color="primary" [routerLink]="['..', troop.id, 'edit']" *ngIf="auth.isGroupLeader() || auth.isSystemAdmin() || auth.isGroupLeaderAdmin() || auth.isGroupLeaderAdmin()">
           <mat-icon>edit</mat-icon> Edit
         </a>
       </div>
@@ -52,7 +52,7 @@
             <mat-icon>content_copy</mat-icon> Copy Link
           </button>
           <button mat-stroked-button (click)="resetLink()"
-            *ngIf="auth.isGroupLeader() || auth.isSystemAdmin()"
+            *ngIf="auth.isGroupLeader() || auth.isSystemAdmin() || auth.isGroupLeaderAdmin() || auth.isGroupLeaderAdmin()"
             matTooltip="Generate a new link — old link will stop working"
             style="color:#ff9800;border-color:#ff9800">
             <mat-icon>refresh</mat-icon> Reset Link
