@@ -1,7 +1,55 @@
 export enum UserRole {
-  SystemAdmin    = 'SystemAdmin',
-  GroupLeader    = 'GroupLeader',
-  AttendanceOnly = 'AttendanceOnly'
+  SystemAdmin      = 'SystemAdmin',
+  GroupLeader      = 'GroupLeader',
+  AttendanceOnly   = 'AttendanceOnly',
+  GroupLeaderAdmin = 'GroupLeaderAdmin'
+}
+
+// ─── GroupLeaderAdmin DTOs ────────────────────────────────────────────────────
+
+export interface GroupUserDto {
+  id: string;
+  username: string;
+  email: string;
+  role: UserRole;
+  roleName: string;
+  isActive: boolean;
+  canTakeAttendance: boolean;
+  canEditMembers: boolean;
+  canCreateEvents: boolean;
+  canAccessTrips: boolean;
+  canAccessDashboard: boolean;
+  canAccessTroops: boolean;
+  canAccessMembers: boolean;
+  canAccessExcuses: boolean;
+  canAccessEvents: boolean;
+  canAccessAttendance: boolean;
+  canAccessPoints: boolean;
+  canAccessLeaderboard: boolean;
+  canAccessExamScores: boolean;
+  canAccessReports: boolean;
+  canAccessBadges: boolean;
+  canAccessProjects: boolean;
+}
+
+export interface UpdateRolePermissionsDto {
+  role: number;
+  canTakeAttendance: boolean;
+  canEditMembers: boolean;
+  canCreateEvents: boolean;
+  canAccessTrips: boolean;
+  canAccessDashboard: boolean;
+  canAccessTroops: boolean;
+  canAccessMembers: boolean;
+  canAccessExcuses: boolean;
+  canAccessEvents: boolean;
+  canAccessAttendance: boolean;
+  canAccessPoints: boolean;
+  canAccessLeaderboard: boolean;
+  canAccessExamScores: boolean;
+  canAccessReports: boolean;
+  canAccessBadges: boolean;
+  canAccessProjects: boolean;
 }
 
 export interface AuthUser {

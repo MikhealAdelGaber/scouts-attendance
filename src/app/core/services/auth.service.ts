@@ -39,16 +39,22 @@ export class AuthService {
     return !!this.currentUser && roles.includes(this.currentUser.role as UserRole);
   }
 
-  isSystemAdmin():    boolean { return this.hasRole(UserRole.SystemAdmin); }
-  isGroupLeader():    boolean { return this.hasRole(UserRole.GroupLeader); }
-  isAttendanceOnly(): boolean { return this.hasRole(UserRole.AttendanceOnly); }
+  isSystemAdmin():      boolean { return this.hasRole(UserRole.SystemAdmin); }
+  isGroupLeader():      boolean { return this.hasRole(UserRole.GroupLeader); }
+  isGroupLeaderAdmin(): boolean { return this.hasRole(UserRole.GroupLeaderAdmin); }
+  isAttendanceOnly():   boolean { return this.hasRole(UserRole.AttendanceOnly); }
 
-  /** True for SystemAdmin OR GroupLeader — can manage the whole group. */
-  isAdmin(): boolean { return this.hasRole(UserRole.SystemAdmin, UserRole.GroupLeader); }
+  /** True for SystemAdmin, GroupLeader, OR GroupLeaderAdmin — can manage their group. */
+  isAdmin(): boolean { return this.hasRole(UserRole.SystemAdmin, UserRole.GroupLeader, UserRole.GroupLeaderAdmin); }
 
-  /** True for SystemAdmin, GroupLeader, OR AttendanceOnly — can review pending excuses. */
+  /** True for SystemAdmin, GroupLeader, GroupLeaderAdmin, OR AttendanceOnly — can review pending excuses. */
   canReviewPendingExcuses(): boolean {
-    return this.hasRole(UserRole.SystemAdmin, UserRole.GroupLeader, UserRole.AttendanceOnly);
+    return this.hasRole(UserRole.SystemAdmin, UserRole.GroupLeader, UserRole.GroupLeaderAdmin, UserRole.AttendanceOnly);
+  }
+
+  /** True for GroupLeaderAdmin or SystemAdmin — can access group user management. */
+  canManageGroupUsers(): boolean {
+    return this.hasRole(UserRole.GroupLeaderAdmin, UserRole.SystemAdmin);
   }
 
   // ─── Permission helpers (role defaults + flag overrides) ────────────────────
@@ -121,18 +127,18 @@ export class AuthService {
   canAccessBadges(): boolean {
     const u = this.currentUser;
     if (!u) return false;
-    if (this.isSystemAdmin() || this.isGroupLeader()) return true;
+    if (this.isSystemAdmin() || this.isGroupLeader() || this.isGroupLeaderAdmin()) return true;
     return u.canAccessBadges === true;
   }
 
   /**
-   * True for SystemAdmin, GroupLeader, or any user with canAccessProjects = true in their JWT.
+   * True for SystemAdmin, GroupLeader, GroupLeaderAdmin, or any user with canAccessProjects = true.
    * Defaults to FALSE when the claim is absent (opt-in like badges).
    */
   canAccessProjects(): boolean {
     const u = this.currentUser;
     if (!u) return false;
-    if (this.isSystemAdmin() || this.isGroupLeader()) return true;
+    if (this.isSystemAdmin() || this.isGroupLeader() || this.isGroupLeaderAdmin()) return true;
     return u.canAccessProjects === true;
   }
 

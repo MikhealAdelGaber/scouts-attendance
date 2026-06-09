@@ -5,6 +5,7 @@ import { Group, CreateGroup, UpdateGroup } from '../models/group.model';
 
 @Injectable({ providedIn: 'root' })
 export class GroupService {
+  readonly version = 2;
   constructor(private api: ApiService) {}
 
   getAll(): Observable<Group[]> { return this.api.get<Group[]>('groups'); }

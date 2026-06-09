@@ -1,0 +1,80 @@
+<div class="page-container">
+  <div class="page-header">
+    <h1 class="page-title">
+      <mat-icon>manage_accounts</mat-icon>
+      Group Users
+    </h1>
+    <p class="page-subtitle">Manage roles and permissions for users in your group</p>
+  </div>
+
+  <mat-card>
+    <mat-card-content>
+      <div *ngIf="loading" class="loading-container">
+        <mat-spinner diameter="48"></mat-spinner>
+      </div>
+
+      <ng-container *ngIf="!loading">
+        <div *ngIf="users.length === 0" class="empty-state">
+          <mat-icon>person_off</mat-icon>
+          <p>No users found in your group.</p>
+        </div>
+
+        <mat-table [dataSource]="users" *ngIf="users.length > 0">
+
+          <!-- Username -->
+          <ng-container matColumnDef="username">
+            <mat-header-cell *matHeaderCellDef>Username</mat-header-cell>
+            <mat-cell *matCellDef="let u">
+              <div class="user-info">
+                <mat-icon class="user-icon">person</mat-icon>
+                <strong>{{ u.username }}</strong>
+              </div>
+            </mat-cell>
+          </ng-container>
+
+          <!-- Email -->
+          <ng-container matColumnDef="email">
+            <mat-header-cell *matHeaderCellDef>Email</mat-header-cell>
+            <mat-cell *matCellDef="let u">{{ u.email }}</mat-cell>
+          </ng-container>
+
+          <!-- Role -->
+          <ng-container matColumnDef="role">
+            <mat-header-cell *matHeaderCellDef>Role</mat-header-cell>
+            <mat-cell *matCellDef="let u">
+              <mat-chip [class]="'role-chip role-' + u.roleName.toLowerCase()">
+                {{ getRoleLabel(u.roleName) }}
+              </mat-chip>
+            </mat-cell>
+          </ng-container>
+
+          <!-- Status -->
+          <ng-container matColumnDef="status">
+            <mat-header-cell *matHeaderCellDef>Status</mat-header-cell>
+            <mat-cell *matCellDef="let u">
+              <mat-chip [color]="u.isActive ? 'primary' : 'warn'" selected>
+                {{ u.isActive ? 'Active' : 'Inactive' }}
+              </mat-chip>
+            </mat-cell>
+          </ng-container>
+
+          <!-- Actions -->
+          <ng-container matColumnDef="actions">
+            <mat-header-cell *matHeaderCellDef>Actions</mat-header-cell>
+            <mat-cell *matCellDef="let u">
+              <button mat-stroked-button color="primary"
+                      (click)="openEditDialog(u)"
+                      [disabled]="u.id === auth.currentUser?.userId">
+                <mat-icon>edit</mat-icon>
+                Edit Permissions
+              </button>
+            </mat-cell>
+          </ng-container>
+
+          <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+          <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+        </mat-table>
+      </ng-container>
+    </mat-card-content>
+  </mat-card>
+</div>

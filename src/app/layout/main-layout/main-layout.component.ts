@@ -15,6 +15,8 @@ interface NavItem {
   roles?: UserRole[];
   /** Extra runtime permission check — evaluated at render time via isVisible(). */
   permissionKey?: string;
+  /** If true, item is shown only when canManageGroupUsers() returns true. */
+  groupUserManagement?: boolean;
 }
 
 @Component({
@@ -50,6 +52,7 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
     { label: 'Badges',        icon: 'military_tech', route: '/badges',                                                                                          permissionKey: 'canAccessBadges' },
     { label: 'Transfers',     icon: 'swap_horiz',    route: '/transfers',   roles: [UserRole.SystemAdmin, UserRole.GroupLeader] },
     { label: 'Projects',      icon: 'assignment',            route: '/projects',       permissionKey: 'canAccessProjects' },
+    { label: 'Group Users',   icon: 'supervised_user_circle', route: '/group-users', groupUserManagement: true },
     { label: 'Settings',      icon: 'admin_panel_settings', route: '/admin/settings', roles: [UserRole.SystemAdmin] },
   ];
 
@@ -91,11 +94,20 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void { this.bpSub?.unsubscribe(); }
 
   isVisible(item: NavItem): boolean {
+    // Group User Management: visible to GroupLeaderAdmin and SystemAdmin only
+    if (item.groupUserManagement) return this.auth.canManageGroupUsers();
+
     // SystemAdmin always sees every item — permission checks do not apply
     if (this.auth.isSystemAdmin()) return true;
 
+    // GroupLeaderAdmin: treat same as GroupLeader for all other nav items
+    const effectiveRoles = item.roles?.map(r => r) ?? [];
+    if (item.roles?.includes(UserRole.GroupLeader) && !effectiveRoles.includes(UserRole.GroupLeaderAdmin)) {
+      effectiveRoles.push(UserRole.GroupLeaderAdmin);
+    }
+
     // Role check: if a role list is defined the user must have one of those roles
-    if (item.roles && !this.auth.hasRole(...item.roles)) return false;
+    if (effectiveRoles.length && !this.auth.hasRole(...effectiveRoles)) return false;
 
     // Page-permission check: if a permission key is defined the user must have it
     if (item.permissionKey) return this.auth.checkPermission(item.permissionKey);

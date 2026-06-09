@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiService } from './api.service';
-import { UserDto, CreateUserDto, UpdateUserDto, UserLeaderDto, AdminChangePasswordDto } from '../models/user.model';
+import { UserDto, CreateUserDto, UpdateUserDto, UserLeaderDto, AdminChangePasswordDto, GroupUserDto, UpdateRolePermissionsDto } from '../models/user.model';
 
 @Injectable({ providedIn: 'root' })
 export class UserService {
@@ -40,5 +40,17 @@ export class UserService {
   /** Toggles IsActive for a user. Returns the updated UserDto. */
   toggleStatus(id: string): Observable<UserDto> {
     return this.api.post<UserDto>(`users/${id}/toggle-status`, {});
+  }
+
+  // ─── GroupLeaderAdmin endpoints ───────────────────────────────────────────
+
+  /** Returns users in the same group as the caller (GroupLeaderAdmin-scoped). */
+  getGroupUsers(): Observable<GroupUserDto[]> {
+    return this.api.get<GroupUserDto[]>('users/group-users');
+  }
+
+  /** Updates role + permissions for a user in the caller's group. */
+  updateRolePermissions(id: string, dto: UpdateRolePermissionsDto): Observable<GroupUserDto> {
+    return this.api.put<GroupUserDto>(`users/${id}/update-role-permissions`, dto);
   }
 }

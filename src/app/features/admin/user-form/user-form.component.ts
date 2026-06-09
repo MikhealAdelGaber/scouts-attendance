@@ -27,9 +27,10 @@ export class UserFormComponent implements OnInit {
   private isLoadingData = false;
 
   readonly roles = [
-    { value: 1, label: 'System Admin',    key: UserRole.SystemAdmin },
-    { value: 2, label: 'Group Leader',    key: UserRole.GroupLeader },
-    { value: 5, label: 'Attendance Only', key: UserRole.AttendanceOnly }
+    { value: 1, label: 'System Admin',       key: UserRole.SystemAdmin },
+    { value: 2, label: 'Group Leader',       key: UserRole.GroupLeader },
+    { value: 6, label: 'Group Leader Admin', key: UserRole.GroupLeaderAdmin },
+    { value: 5, label: 'Attendance Only',    key: UserRole.AttendanceOnly }
   ];
 
   constructor(
@@ -140,6 +141,8 @@ export class UserFormComponent implements OnInit {
       case 1: // SystemAdmin
         this.form.patchValue({ canTakeAttendance: false, canEditMembers: true,  canCreateEvents: true  }); break;
       case 2: // GroupLeader
+        this.form.patchValue({ canTakeAttendance: false, canEditMembers: true,  canCreateEvents: true  }); break;
+      case 6: // GroupLeaderAdmin
         this.form.patchValue({ canTakeAttendance: false, canEditMembers: true,  canCreateEvents: true  }); break;
       case 5: // AttendanceOnly
         this.form.patchValue({ canTakeAttendance: true,  canEditMembers: false, canCreateEvents: false }); break;

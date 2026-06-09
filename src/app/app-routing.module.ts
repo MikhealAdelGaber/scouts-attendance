@@ -60,7 +60,7 @@ const routes: Routes = [
       {
         path: 'members',
         canActivate: [RoleGuard, permissionGuard],
-        data: { roles: [UserRole.SystemAdmin, UserRole.GroupLeader, UserRole.AttendanceOnly], permission: 'canAccessMembers' },
+        data: { roles: [UserRole.SystemAdmin, UserRole.GroupLeader, UserRole.GroupLeaderAdmin, UserRole.AttendanceOnly], permission: 'canAccessMembers' },
         loadChildren: () => import('./features/members/members.module').then(m => m.MembersModule)
       },
       {
@@ -94,19 +94,19 @@ const routes: Routes = [
       {
         path: 'excuses',
         canActivate: [RoleGuard, permissionGuard],
-        data: { roles: [UserRole.SystemAdmin, UserRole.GroupLeader, UserRole.AttendanceOnly], permission: 'canAccessExcuses' },
+        data: { roles: [UserRole.SystemAdmin, UserRole.GroupLeader, UserRole.GroupLeaderAdmin, UserRole.AttendanceOnly], permission: 'canAccessExcuses' },
         loadChildren: () => import('./features/excuses/excuses.module').then(m => m.ExcusesModule)
       },
       {
         path: 'exam-scores',
         canActivate: [RoleGuard, permissionGuard],
-        data: { roles: [UserRole.SystemAdmin, UserRole.GroupLeader, UserRole.AttendanceOnly], permission: 'canAccessExamScores' },
+        data: { roles: [UserRole.SystemAdmin, UserRole.GroupLeader, UserRole.GroupLeaderAdmin, UserRole.AttendanceOnly], permission: 'canAccessExamScores' },
         loadChildren: () => import('./features/exam-scores/exam-scores.module').then(m => m.ExamScoresModule)
       },
       {
         path: 'reports',
         canActivate: [RoleGuard, permissionGuard],
-        data: { roles: [UserRole.SystemAdmin, UserRole.GroupLeader, UserRole.AttendanceOnly], permission: 'canAccessReports' },
+        data: { roles: [UserRole.SystemAdmin, UserRole.GroupLeader, UserRole.GroupLeaderAdmin, UserRole.AttendanceOnly], permission: 'canAccessReports' },
         loadChildren: () => import('./features/reports/reports.module').then(m => m.ReportsModule)
       },
       {
@@ -123,7 +123,7 @@ const routes: Routes = [
       {
         path: 'transfers',
         canActivate: [RoleGuard],
-        data: { roles: [UserRole.SystemAdmin, UserRole.GroupLeader] },
+        data: { roles: [UserRole.SystemAdmin, UserRole.GroupLeader, UserRole.GroupLeaderAdmin] },
         loadChildren: () => import('./features/transfers/transfers.module').then(m => m.TransfersModule)
       },
       {
@@ -131,6 +131,12 @@ const routes: Routes = [
         canActivate: [permissionGuard],
         data: { permission: 'canAccessProjects' },
         loadChildren: () => import('./features/projects/projects.module').then(m => m.ProjectsModule)
+      },
+      {
+        path: 'group-users',
+        canActivate: [RoleGuard],
+        data: { roles: [UserRole.GroupLeaderAdmin, UserRole.SystemAdmin] },
+        loadChildren: () => import('./features/group-users/group-users.module').then(m => m.GroupUsersModule)
       }
     ]
   },
