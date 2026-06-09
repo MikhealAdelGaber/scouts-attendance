@@ -63,36 +63,36 @@ export class AuthService {
   canTakeAttendance(): boolean {
     const u = this.currentUser;
     if (!u) return false;
-    if (this.hasRole(UserRole.SystemAdmin, UserRole.GroupLeader, UserRole.AttendanceOnly)) return true;
+    if (this.hasRole(UserRole.SystemAdmin, UserRole.GroupLeader, UserRole.GroupLeaderAdmin, UserRole.AttendanceOnly)) return true;
     return !!u.canTakeAttendance;
   }
 
-  /** Can create / edit member records. Admin or GroupLeader only. */
+  /** Can create / edit member records. Admin, GroupLeader, or GroupLeaderAdmin. */
   canEditMembers(): boolean {
     const u = this.currentUser;
     if (!u) return false;
-    if (this.hasRole(UserRole.SystemAdmin, UserRole.GroupLeader)) return true;
+    if (this.hasRole(UserRole.SystemAdmin, UserRole.GroupLeader, UserRole.GroupLeaderAdmin)) return true;
     return !!u.canEditMembers;
   }
 
-  /** Can create / edit events. Admin or GroupLeader only. */
+  /** Can create / edit events. Admin, GroupLeader, or GroupLeaderAdmin. */
   canCreateEvents(): boolean {
     const u = this.currentUser;
     if (!u) return false;
-    if (this.hasRole(UserRole.SystemAdmin, UserRole.GroupLeader)) return true;
+    if (this.hasRole(UserRole.SystemAdmin, UserRole.GroupLeader, UserRole.GroupLeaderAdmin)) return true;
     return !!u.canCreateEvents;
   }
 
   /** Can award / delete points for members and troops. */
   canManagePoints(): boolean {
-    return this.hasRole(UserRole.SystemAdmin, UserRole.GroupLeader, UserRole.AttendanceOnly);
+    return this.hasRole(UserRole.SystemAdmin, UserRole.GroupLeader, UserRole.GroupLeaderAdmin, UserRole.AttendanceOnly);
   }
 
-  /** Can access the Trips/Camps booking module. SystemAdmin always can; others need the flag. */
+  /** Can access the Trips/Camps booking module. SystemAdmin/GroupLeader/GroupLeaderAdmin always can; others need the flag. */
   canAccessTrips(): boolean {
     const u = this.currentUser;
     if (!u) return false;
-    if (this.hasRole(UserRole.SystemAdmin)) return true;
+    if (this.hasRole(UserRole.SystemAdmin, UserRole.GroupLeader, UserRole.GroupLeaderAdmin)) return true;
     return !!u.canAccessTrips;
   }
 
