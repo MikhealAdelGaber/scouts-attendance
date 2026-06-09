@@ -1,5 +1,5 @@
 import { NgModule } from '@angular/core';
-import { RouterModule, Routes } from '@angular/router';
+import { RouterModule } from '@angular/router';
 import { SharedModule } from '../../shared/shared.module';
 import { MemberListComponent } from './member-list/member-list.component';
 import { MemberDetailComponent } from './member-detail/member-detail.component';
@@ -13,7 +13,12 @@ import { MemberProjectsComponent } from './member-projects/member-projects.compo
 import { RoleGuard } from '../../core/guards/role.guard';
 import { UserRole } from '../../core/models/user.model';
 
-const routes: Routes = [
+@NgModule({
+  declarations: [MemberListComponent, MemberDetailComponent, MemberFormComponent,
+                 MemberBadgesComponent, AwardBadgeDialogComponent,
+                 RequestTransferDialogComponent, MemberTransferHistoryComponent,
+                 MemberTransferArchiveComponent, MemberProjectsComponent],
+  imports: [SharedModule, RouterModule.forChild([
   { path: '',       component: MemberListComponent },
   {
     path: 'new',
@@ -28,13 +33,6 @@ const routes: Routes = [
     canActivate: [RoleGuard],
     data: { roles: [UserRole.SystemAdmin, UserRole.GroupLeader, UserRole.GroupLeaderAdmin] }
   }
-];
-
-@NgModule({
-  declarations: [MemberListComponent, MemberDetailComponent, MemberFormComponent,
-                 MemberBadgesComponent, AwardBadgeDialogComponent,
-                 RequestTransferDialogComponent, MemberTransferHistoryComponent,
-                 MemberTransferArchiveComponent, MemberProjectsComponent],
-  imports: [SharedModule, RouterModule.forChild(routes)]
+])]
 })
 export class MembersModule {}

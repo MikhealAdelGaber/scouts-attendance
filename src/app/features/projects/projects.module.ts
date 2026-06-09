@@ -1,14 +1,9 @@
 import { NgModule } from '@angular/core';
-import { RouterModule, Routes } from '@angular/router';
+import { RouterModule } from '@angular/router';
 import { SharedModule } from '../../shared/shared.module';
 import { ProjectsListComponent } from './projects-list/projects-list.component';
 import { ProjectDetailComponent } from './project-detail/project-detail.component';
 import { ProjectFormDialogComponent } from './project-form-dialog/project-form-dialog.component';
-
-const routes: Routes = [
-  { path: '',    component: ProjectsListComponent },
-  { path: ':id', component: ProjectDetailComponent }
-];
 
 @NgModule({
   declarations: [
@@ -16,6 +11,9 @@ const routes: Routes = [
     ProjectDetailComponent,
     ProjectFormDialogComponent
   ],
-  imports: [SharedModule, RouterModule.forChild(routes)]
+  imports: [SharedModule, RouterModule.forChild([
+  { path: '',    component: ProjectsListComponent },
+  { path: ':id', component: ProjectDetailComponent }
+])]
 })
 export class ProjectsModule {}

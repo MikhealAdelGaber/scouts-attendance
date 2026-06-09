@@ -10,12 +10,6 @@ export interface EditPermissionsDialogData {
   currentUserId: string;
 }
 
-/** Roles that GroupLeaderAdmin can assign (excludes SystemAdmin and GroupLeaderAdmin). */
-const ASSIGNABLE_ROLES = [
-  { value: 2, label: 'Group Leader' },
-  { value: 5, label: 'Attendance Only' }
-];
-
 @Component({
   selector: 'app-edit-permissions-dialog',
   templateUrl: './edit-permissions-dialog.component.html'
@@ -23,7 +17,11 @@ const ASSIGNABLE_ROLES = [
 export class EditPermissionsDialogComponent implements OnInit {
   form!: FormGroup;
   saving = false;
-  readonly roles = ASSIGNABLE_ROLES;
+  /** Roles that GroupLeaderAdmin can assign (excludes SystemAdmin and GroupLeaderAdmin). */
+  readonly roles = [
+    { value: 2, label: 'Group Leader' },
+    { value: 5, label: 'Attendance Only' }
+  ];
 
   readonly pagePermissions = [
     { key: 'canAccessDashboard',   label: 'Dashboard' },

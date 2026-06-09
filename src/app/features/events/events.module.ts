@@ -1,12 +1,14 @@
 import { NgModule } from '@angular/core';
-import { RouterModule, Routes } from '@angular/router';
+import { RouterModule } from '@angular/router';
 import { SharedModule } from '../../shared/shared.module';
 import { EventListComponent } from './event-list/event-list.component';
 import { EventFormComponent } from './event-form/event-form.component';
 import { RoleGuard } from '../../core/guards/role.guard';
 import { UserRole } from '../../core/models/user.model';
 
-const routes: Routes = [
+@NgModule({
+  declarations: [EventListComponent, EventFormComponent],
+  imports: [SharedModule, RouterModule.forChild([
   { path: '', component: EventListComponent },
   {
     path: 'new',
@@ -20,10 +22,6 @@ const routes: Routes = [
     canActivate: [RoleGuard],
     data: { roles: [UserRole.SystemAdmin, UserRole.GroupLeader, UserRole.GroupLeaderAdmin] }
   }
-];
-
-@NgModule({
-  declarations: [EventListComponent, EventFormComponent],
-  imports: [SharedModule, RouterModule.forChild(routes)]
+])]
 })
 export class EventsModule {}

@@ -32,20 +32,28 @@ import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 
-const MATERIAL_MODULES = [
-  LayoutModule,
-  MatToolbarModule, MatSidenavModule, MatListModule, MatIconModule,
-  MatButtonModule, MatCardModule, MatTableModule, MatPaginatorModule,
-  MatSortModule, MatFormFieldModule, MatInputModule, MatSelectModule,
-  MatDatepickerModule, MatNativeDateModule, MatDialogModule, MatSnackBarModule,
-  MatProgressSpinnerModule, MatProgressBarModule, MatChipsModule, MatBadgeModule,
-  MatTooltipModule, MatMenuModule, MatTabsModule, MatExpansionModule,
-  MatDividerModule, MatStepperModule, MatCheckboxModule, MatRadioModule,
-  MatAutocompleteModule, MatButtonToggleModule, MatSlideToggleModule
-];
-
 @NgModule({
-  imports: MATERIAL_MODULES,
-  exports: MATERIAL_MODULES
+  imports: [
+    LayoutModule,
+    MatToolbarModule, MatSidenavModule, MatListModule, MatIconModule,
+    MatButtonModule, MatCardModule, MatTableModule, MatPaginatorModule,
+    MatSortModule, MatFormFieldModule, MatInputModule, MatSelectModule,
+    MatDatepickerModule, MatNativeDateModule, MatDialogModule, MatSnackBarModule,
+    MatProgressSpinnerModule, MatProgressBarModule, MatChipsModule, MatBadgeModule,
+    MatTooltipModule, MatMenuModule, MatTabsModule, MatExpansionModule,
+    MatDividerModule, MatStepperModule, MatCheckboxModule, MatRadioModule,
+    MatAutocompleteModule, MatButtonToggleModule, MatSlideToggleModule
+  ],
+  exports: [
+    LayoutModule,
+    MatToolbarModule, MatSidenavModule, MatListModule, MatIconModule,
+    MatButtonModule, MatCardModule, MatTableModule, MatPaginatorModule,
+    MatSortModule, MatFormFieldModule, MatInputModule, MatSelectModule,
+    MatDatepickerModule, MatNativeDateModule, MatDialogModule, MatSnackBarModule,
+    MatProgressSpinnerModule, MatProgressBarModule, MatChipsModule, MatBadgeModule,
+    MatTooltipModule, MatMenuModule, MatTabsModule, MatExpansionModule,
+    MatDividerModule, MatStepperModule, MatCheckboxModule, MatRadioModule,
+    MatAutocompleteModule, MatButtonToggleModule, MatSlideToggleModule
+  ]
 })
 export class MaterialModule {}
