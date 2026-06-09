@@ -155,6 +155,33 @@
         {{ selectedCount }} member{{ selectedCount > 1 ? 's' : '' }} selected
       </span>
 
+      <!-- Assign to Troop (same group, direct move) -->
+      <mat-form-field appearance="outline" class="bulk-troop-select">
+        <mat-label>Assign to Troop</mat-label>
+        <mat-icon matPrefix>group</mat-icon>
+        <mat-select [(ngModel)]="bulkTroopId">
+          <mat-option value="">— Select troop —</mat-option>
+          @for (t of troops; track t.id) {
+            <mat-option [value]="t.id">{{ t.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <button mat-raised-button color="accent"
+        [disabled]="!bulkTroopId || bulkAssigning"
+        (click)="confirmBulkAssignTroop()">
+        @if (bulkAssigning) {
+          <mat-progress-spinner mode="indeterminate" diameter="18"
+            style="display:inline-block;margin-right:6px"></mat-progress-spinner>
+        } @else {
+          <mat-icon>group_add</mat-icon>
+        }
+        {{ bulkAssigning ? 'Moving…' : 'Assign Troop' }}
+      </button>
+
+      <span style="width:1px;height:32px;background:#ddd;align-self:center;margin:0 4px"></span>
+
+      <!-- Transfer to another Group (creates pending request) -->
       <mat-form-field appearance="outline" class="bulk-troop-select">
         <mat-label>Transfer to Group</mat-label>
         <mat-icon matPrefix>swap_horiz</mat-icon>

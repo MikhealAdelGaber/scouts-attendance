@@ -56,9 +56,11 @@ export class MemberListComponent implements OnInit {
   }
 
   // ── Bulk selection state ────────────────────────────────────────────────────
-  selectedIds   = new Set<string>();
-  bulkGroupId   = '';
+  selectedIds    = new Set<string>();
+  bulkGroupId    = '';
   bulkRequesting = false;
+  bulkTroopId    = '';
+  bulkAssigning  = false;
   groups: Group[] = [];
 
   get selectedCount(): number { return this.selectedIds.size; }
@@ -264,6 +266,45 @@ export class MemberListComponent implements OnInit {
   clearSelection(): void {
     this.selectedIds.clear();
     this.bulkGroupId = '';
+    this.bulkTroopId = '';
+  }
+
+  // ── Bulk assign to troop (within same group) ───────────────────────────────
+
+  confirmBulkAssignTroop(): void {
+    if (!this.bulkTroopId || this.selectedIds.size === 0) return;
+    const troop = this.troops.find(t => t.id === this.bulkTroopId);
+    if (!troop) return;
+    const count = this.selectedIds.size;
+
+    this.dialog.open(ConfirmDialogComponent, {
+      data: {
+        title:       'Assign to Troop',
+        message:     `Move ${count} member${count > 1 ? 's' : ''} to troop "${troop.name}"?`,
+        confirmText: 'Assign'
+      }
+    }).afterClosed().subscribe(ok => {
+      if (!ok) return;
+      this.bulkAssigning = true;
+      this.memberService.bulkTransferTroop({
+        memberIds: Array.from(this.selectedIds).map(id => id),
+        troopId:   this.bulkTroopId
+      }).subscribe({
+        next: (res: any) => {
+          this.bulkAssigning = false;
+          this.snack.open(
+            `${res.count} member${res.count > 1 ? 's' : ''} moved to "${res.troopName}"`,
+            'Close', { duration: 4000, panelClass: ['success-snack'] }
+          );
+          this.clearSelection();
+          this.load();
+        },
+        error: (err: any) => {
+          this.bulkAssigning = false;
+          this.snack.open(err?.error?.message || 'Failed to assign troop', 'Close', { duration: 5000 });
+        }
+      });
+    });
   }
 
   // ── Bulk transfer request (to another group) ────────────────────────────────
