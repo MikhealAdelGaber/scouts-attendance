@@ -499,7 +499,9 @@
                   @if (examScores.length > 0) {
                     Latest ({{ examScores[0].year }}):
                     <strong [style.color]="getGrade(examScores[0].percentage ?? 0).color">
-                      {{ examScores[0].totalScore }} total
+                      Theory {{ examScores[0].theoreticalScore }} &nbsp;|&nbsp;
+                      Practical {{ examScores[0].practicalScore }} &nbsp;|&nbsp;
+                      Total {{ examScores[0].totalScore }}
                       @if (examScores[0].percentage != null) {
                         ({{ examScores[0].percentage | number:'1.1-1' }}%)
                       }
@@ -518,16 +520,28 @@
                         <th mat-header-cell *matHeaderCellDef>Year</th>
                         <td mat-cell *matCellDef="let s"><strong>{{ s.year }}</strong></td>
                       </ng-container>
-                      <ng-container matColumnDef="score">
-                        <th mat-header-cell *matHeaderCellDef>Score</th>
+                      <ng-container matColumnDef="theoretical">
+                        <th mat-header-cell *matHeaderCellDef>Theory</th>
+                        <td mat-cell *matCellDef="let s">
+                          <span class="score-cell">{{ s.theoreticalScore }}</span>
+                        </td>
+                      </ng-container>
+                      <ng-container matColumnDef="practical">
+                        <th mat-header-cell *matHeaderCellDef>Practical</th>
+                        <td mat-cell *matCellDef="let s">
+                          <span class="score-cell">{{ s.practicalScore }}</span>
+                        </td>
+                      </ng-container>
+                      <ng-container matColumnDef="total">
+                        <th mat-header-cell *matHeaderCellDef>Total</th>
                         <td mat-cell *matCellDef="let s">
                           <span class="score-badge"
                             [style.background]="getGrade(s.percentage ?? 0).color + '22'"
                             [style.color]="getGrade(s.percentage ?? 0).color">
                             {{ s.totalScore }}
-                            <span style="font-size:0.75rem" *ngIf="s.percentage != null">
-                              ({{ s.percentage | number:'1.0-1' }}%)
-                            </span>
+                            @if (s.percentage != null) {
+                              <span style="font-size:0.75rem">({{ s.percentage | number:'1.0-1' }}%)</span>
+                            }
                           </span>
                         </td>
                       </ng-container>

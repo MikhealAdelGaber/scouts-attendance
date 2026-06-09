@@ -36,7 +36,7 @@ export class MemberDetailComponent implements OnInit, OnDestroy {
 
   pointsColumns     = ['date', 'category', 'points', 'note', 'type'];
   attendanceColumns = ['date', 'event', 'status', 'points'];
-  examScoreColumns  = ['year', 'score', 'grade', 'notes'];
+  examScoreColumns  = ['year', 'theoretical', 'practical', 'total', 'grade', 'notes'];
   categoryKeys: string[] = [];
 
   AttendanceStatus = AttendanceStatus;
