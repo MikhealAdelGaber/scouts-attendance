@@ -51,8 +51,8 @@ export class EventFormComponent implements OnInit {
       presentPoints:  [100, [Validators.required, Validators.min(-10000), Validators.max(10000)]],
       latePoints:     [50,  [Validators.required, Validators.min(-10000), Validators.max(10000)]],
       tooLatePoints:  [0,   [Validators.required, Validators.min(-10000), Validators.max(10000)]],
+      excusedPoints:  [50,  [Validators.required, Validators.min(-10000), Validators.max(10000)]],
       absentPoints:   [-10, [Validators.required, Validators.min(-10000), Validators.max(10000)]]
-      // excusedPoints is not shown — backend always awards Present points for Excused
     }, { validators: pointsOrderValidator });
 
     this.troopService.getAll().subscribe(t => this.troops = t);
@@ -71,6 +71,7 @@ export class EventFormComponent implements OnInit {
           presentPoints:  e.presentPoints,
           latePoints:     e.latePoints,
           tooLatePoints:  e.tooLatePoints,
+          excusedPoints:  e.excusedPoints,
           absentPoints:   e.absentPoints
         })
       );
@@ -107,7 +108,7 @@ export class EventFormComponent implements OnInit {
       presentPoints:  val.presentPoints  ?? 100,
       latePoints:     val.latePoints     ?? 50,
       tooLatePoints:  val.tooLatePoints  ?? 0,
-      excusedPoints:  val.presentPoints  ?? 100,   // Excused = Present points
+      excusedPoints:  val.excusedPoints  ?? 50,
       absentPoints:   val.absentPoints   ?? -10
     };
     if (this.auth.isSystemAdmin() && val.groupId) {
