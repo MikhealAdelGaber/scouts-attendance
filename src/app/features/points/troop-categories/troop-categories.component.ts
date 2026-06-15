@@ -16,7 +16,7 @@ export class TroopCategoriesComponent implements OnInit {
   saving     = false;
   deletingId: string | null = null;
 
-  displayedColumns = ['name', 'description', 'global', 'actions'];
+  displayedColumns = ['name', 'description', 'actions'];
 
   constructor(
     private fb: FormBuilder,

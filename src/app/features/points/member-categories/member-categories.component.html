@@ -30,10 +30,6 @@
             <input matInput formControlName="description">
           </mat-form-field>
 
-          <mat-checkbox formControlName="isGlobal" class="mb-16">
-            Global (visible to all groups)
-          </mat-checkbox>
-
           <button mat-raised-button color="primary" type="submit" class="full-width mt-8"
             [disabled]="saving || form.invalid">
             <mat-icon>add</mat-icon> Create Category
@@ -59,15 +55,6 @@
           <ng-container matColumnDef="description">
             <th mat-header-cell *matHeaderCellDef>Description</th>
             <td mat-cell *matCellDef="let c" style="color:#666">{{ c.description || '—' }}</td>
-          </ng-container>
-
-          <ng-container matColumnDef="global">
-            <th mat-header-cell *matHeaderCellDef>Global</th>
-            <td mat-cell *matCellDef="let c">
-              <mat-icon [style.color]="c.isGlobal ? '#4caf50' : '#ccc'">
-                {{ c.isGlobal ? 'check_circle' : 'remove_circle' }}
-              </mat-icon>
-            </td>
           </ng-container>
 
           <ng-container matColumnDef="actions">
