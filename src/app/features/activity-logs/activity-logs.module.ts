@@ -12,7 +12,7 @@ import { RoleGuard } from '../../core/guards/role.guard';
       path: '',
       component: ActivityLogComponent,
       canActivate: [RoleGuard],
-      data: { roles: [UserRole.SystemAdmin, UserRole.GroupLeader, UserRole.GroupLeaderAdmin] }
+      data: { roles: [UserRole.SystemAdmin] }
     }
   ])]
 })

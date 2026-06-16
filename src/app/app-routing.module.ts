@@ -141,7 +141,7 @@ const routes: Routes = [
       {
         path: 'activity-logs',
         canActivate: [RoleGuard],
-        data: { roles: [UserRole.SystemAdmin, UserRole.GroupLeader, UserRole.GroupLeaderAdmin] },
+        data: { roles: [UserRole.SystemAdmin] },
         loadChildren: () => import('./features/activity-logs/activity-logs.module').then(m => m.ActivityLogsModule)
       }
     ]

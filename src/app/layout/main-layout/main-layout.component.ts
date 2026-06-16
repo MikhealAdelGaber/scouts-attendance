@@ -53,7 +53,7 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
     { label: 'Transfers',     icon: 'swap_horiz',    route: '/transfers',   roles: [UserRole.SystemAdmin, UserRole.GroupLeader] },
     { label: 'Projects',      icon: 'assignment',            route: '/projects',       permissionKey: 'canAccessProjects' },
     { label: 'Group Users',   icon: 'supervised_user_circle', route: '/group-users', groupUserManagement: true },
-    { label: 'Activity Log',  icon: 'history',              route: '/activity-logs',  roles: [UserRole.SystemAdmin, UserRole.GroupLeader, UserRole.GroupLeaderAdmin] },
+    { label: 'Activity Log',  icon: 'history',              route: '/activity-logs',  roles: [UserRole.SystemAdmin] },
     { label: 'Settings',      icon: 'admin_panel_settings', route: '/admin/settings', roles: [UserRole.SystemAdmin] },
   ];
 
