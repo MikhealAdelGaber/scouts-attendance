@@ -1,0 +1,62 @@
+.page-container {
+  padding: 24px;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+
+  .page-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    font-size: 24px;
+  }
+}
+
+.filter-card {
+  margin-bottom: 16px;
+
+  .filters-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+
+    mat-form-field {
+      min-width: 160px;
+      flex: 1;
+    }
+  }
+}
+
+.table-card {
+  position: relative;
+
+  .loading-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,0.7);
+    z-index: 10;
+  }
+
+  .table-wrapper {
+    overflow-x: auto;
+  }
+}
+
+.full-width-table {
+  width: 100%;
+}
+
+.no-data-row td {
+  text-align: center;
+  padding: 32px;
+  color: #888;
+}

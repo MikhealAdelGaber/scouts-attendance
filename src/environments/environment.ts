@@ -1,5 +1,5 @@
 export const environment = {
   production: false,
-  apiUrl: 'http://mikha.runasp.net/api',
+  apiUrl: 'https://api.azs-service.com/api',
   baseUrl: 'http://localhost:4200'
 };
