@@ -12,10 +12,24 @@ import { EditPermissionsDialogComponent } from '../edit-permissions-dialog/edit-
   styleUrls: ['./group-user-list.component.scss']
 })
 export class GroupUserListComponent implements OnInit {
-  users: GroupUserDto[] = [];
+  allUsers: GroupUserDto[] = [];
+  users:    GroupUserDto[] = [];
   loading = true;
 
+  searchQuery  = '';
+  selectedRole = '';
+
   displayedColumns = ['username', 'email', 'role', 'status', 'actions'];
+
+  readonly roleOptions = [
+    { value: '',                label: 'All Roles' },
+    { value: 'SystemAdmin',     label: 'System Admin' },
+    { value: 'GroupLeader',     label: 'Group Leader' },
+    { value: 'GroupLeaderAdmin',label: 'Group Leader Admin' },
+    { value: 'AttendanceOnly',  label: 'Attendance Only' },
+    { value: 'ExcuseOnly',      label: 'Excuse Only' },
+    { value: 'BadgeManager',    label: 'Badge Manager' },
+  ];
 
   constructor(
     private userService: UserService,
@@ -32,7 +46,8 @@ export class GroupUserListComponent implements OnInit {
     this.loading = true;
     this.userService.getGroupUsers().subscribe({
       next: users => {
-        this.users = users;
+        this.allUsers = users;
+        this.applyFilters();
         this.loading = false;
       },
       error: () => {
@@ -40,6 +55,23 @@ export class GroupUserListComponent implements OnInit {
         this.loading = false;
       }
     });
+  }
+
+  applyFilters(): void {
+    const q = this.searchQuery.toLowerCase().trim();
+    this.users = this.allUsers.filter(u => {
+      const matchesSearch = !q ||
+        u.username.toLowerCase().includes(q) ||
+        u.email.toLowerCase().includes(q);
+      const matchesRole = !this.selectedRole || u.roleName === this.selectedRole;
+      return matchesSearch && matchesRole;
+    });
+  }
+
+  clearFilters(): void {
+    this.searchQuery  = '';
+    this.selectedRole = '';
+    this.applyFilters();
   }
 
   openEditDialog(user: GroupUserDto): void {
@@ -58,7 +90,9 @@ export class GroupUserListComponent implements OnInit {
       SystemAdmin:      'System Admin',
       GroupLeader:      'Group Leader',
       GroupLeaderAdmin: 'Group Leader Admin',
-      AttendanceOnly:   'Attendance Only'
+      AttendanceOnly:   'Attendance Only',
+      ExcuseOnly:       'Excuse Only',
+      BadgeManager:     'Badge Manager',
     };
     return map[roleName] ?? roleName;
   }

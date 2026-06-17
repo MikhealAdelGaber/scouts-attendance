@@ -30,6 +30,38 @@
   }
 }
 
+// ── Filters bar ───────────────────────────────────────────────────────────────
+.filters-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+
+  .search-field {
+    flex: 1 1 200px;
+    min-width: 180px;
+  }
+
+  .role-field {
+    flex: 0 1 180px;
+    min-width: 150px;
+  }
+
+  .clear-btn {
+    height: 56px;
+    white-space: nowrap;
+    mat-icon { margin-right: 4px; font-size: 1.1rem; }
+  }
+
+  .results-count {
+    margin-left: auto;
+    font-size: 0.85rem;
+    color: var(--mat-sys-on-surface-variant, #666);
+    white-space: nowrap;
+  }
+}
+
 .content-card {
   border-radius: 12px !important;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
