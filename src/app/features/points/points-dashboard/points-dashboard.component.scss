@@ -32,22 +32,48 @@
     gap: 6px;
   }
 }
+
+// ── Points layout ─────────────────────────────────────────────────────────────
 .points-layout {
   display: grid;
-  grid-template-columns: 380px 1fr;
+  grid-template-columns: 400px 1fr;
   gap: 24px;
   @media (max-width: 900px) { grid-template-columns: 1fr; }
 }
-.total-card {
-  border-top: 4px solid #f9a825;
-  .total-layout { display: flex; align-items: center; justify-content: space-between; }
-  .member-name { font-size: 1.1rem; font-weight: 600; }
-  .troop { color: #666; font-size: 0.9rem; }
-  .total-points { display: flex; align-items: center; gap: 4px; font-size: 2rem; font-weight: 700; color: #f9a825; mat-icon { font-size: 2rem; width: 2rem; height: 2rem; } small { font-size: 1rem; font-weight: 400; color: #666; } }
-  .category-breakdown { display: flex; flex-direction: column; gap: 8px; }
-  .category-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; }
+
+// ── Award Points form card ────────────────────────────────────────────────────
+.form-card {
+  border-radius: 12px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+
+  mat-card-header {
+    margin-bottom: 16px;
+    padding-top: 4px;
+  }
+
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .full-width { width: 100%; }
 }
-.summary-panel { display: flex; flex-direction: column; gap: 16px; }
+
+// ── Submit button ─────────────────────────────────────────────────────────────
+.submit-btn {
+  margin-top: 8px;
+  min-height: 48px;
+  height: 48px;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  border-radius: 8px !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
 
 // ── Award / Deduct toggle ──────────────────────────────────────────────────────
 .mode-toggle-row {
@@ -60,16 +86,24 @@
   border-radius: 8px !important;
   overflow: hidden;
   width: 100%;
+  border: 1px solid rgba(0, 0, 0, 0.12);
 
-  mat-button-toggle { flex: 1; font-weight: 600; font-size: 0.95rem; }
+  mat-button-toggle {
+    flex: 1;
+    font-weight: 600;
+    font-size: 0.95rem;
+    height: 44px;
+  }
 
   .award-toggle.mat-button-toggle-checked {
     background: #e8f5e9 !important;
     color: #2e7d32 !important;
+    mat-icon { color: #2e7d32 !important; }
   }
   .deduct-toggle.mat-button-toggle-checked {
     background: #fce4ec !important;
     color: #c62828 !important;
+    mat-icon { color: #c62828 !important; }
   }
 }
 
@@ -77,5 +111,52 @@
 .btn-award  { background: #4caf50 !important; color: white !important; }
 .btn-deduct { background: #e53935 !important; color: white !important; }
 
+// ── Member summary panel ──────────────────────────────────────────────────────
+.summary-panel { display: flex; flex-direction: column; gap: 16px; }
+
+.total-card {
+  border-top: 4px solid #f9a825;
+  border-radius: 12px !important;
+
+  .total-layout { display: flex; align-items: center; justify-content: space-between; }
+  .member-name { font-size: 1.1rem; font-weight: 600; }
+  .troop { color: #666; font-size: 0.9rem; }
+  .total-points {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 2rem;
+    font-weight: 700;
+    color: #f9a825;
+    mat-icon { font-size: 2rem; width: 2rem; height: 2rem; }
+    small { font-size: 1rem; font-weight: 400; color: #666; }
+  }
+  .category-breakdown { display: flex; flex-direction: column; gap: 8px; }
+  .category-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; }
+}
+
 // ── Deduction row highlight ───────────────────────────────────────────────────
 .deduction-row td { background: rgba(229,57,53,.04) !important; }
+
+// ── Dark mode ────────────────────────────────────────────────────────────────
+@media (prefers-color-scheme: dark) {
+  .mode-toggle {
+    border-color: rgba(255, 255, 255, 0.15);
+
+    .award-toggle.mat-button-toggle-checked {
+      background: #1b3a22 !important;
+      color: #6fcf8a !important;
+      mat-icon { color: #6fcf8a !important; }
+    }
+    .deduct-toggle.mat-button-toggle-checked {
+      background: #3a1b1b !important;
+      color: #f28b82 !important;
+      mat-icon { color: #f28b82 !important; }
+    }
+  }
+
+  .total-card {
+    .troop { color: #aaa; }
+    .total-points small { color: #aaa; }
+  }
+}

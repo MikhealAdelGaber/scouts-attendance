@@ -402,7 +402,7 @@
           </table>
         </div>
 
-        <mat-paginator [length]="totalCount" [pageSize]="pageSize" [pageSizeOptions]="[10,20,50]"
+        <mat-paginator [length]="totalCount" [pageSize]="pageSize" [pageIndex]="page - 1" [pageSizeOptions]="[10,20,50]"
           (page)="onPage($event)" showFirstLastButtons></mat-paginator>
       }
     </mat-card-content>

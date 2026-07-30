@@ -4,7 +4,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { AttendanceService } from '../../../core/services/attendance.service';
 import { EventService } from '../../../core/services/event.service';
 import { ScoutEvent } from '../../../core/models/event.model';
-import { AttendanceRecord } from '../../../core/models/attendance.model';
+import { AttendanceRecord, QrAttendanceResult } from '../../../core/models/attendance.model';
 
 @Component({
   selector: 'app-qr-scanner',
@@ -72,15 +72,24 @@ export class QrScannerComponent implements OnInit, OnDestroy {
 
   onScanSuccess(qrToken: string): void {
     this.attendanceService.markByQr({ eventId: this.selectedEventId, qrToken }).subscribe({
-      next: (record) => {
-        this.lastScanned = record;
-        this.recentScans.unshift(record);
-        if (this.recentScans.length > 10) this.recentScans.pop();
-        this.playSuccessBeep();
-        this.snack.open(`✓ ${record.memberName} marked as ${record.statusName}`, 'Close', { duration: 2500 });
+      next: (result: QrAttendanceResult) => {
+        if (result.blocked) {
+          this.playWarningBeep();
+          this.snack.open(`⚠️ ${result.blockedReason}`, 'Dismiss', {
+            duration: 5000,
+            panelClass: ['snack-warning']
+          });
+          return;
+        }
+        if (result.record) {
+          this.lastScanned = result.record;
+          this.recentScans.unshift(result.record);
+          if (this.recentScans.length > 10) this.recentScans.pop();
+          this.playSuccessBeep();
+          this.snack.open(`✅ ${result.record.memberName} marked as Present`, 'Close', { duration: 2500 });
+        }
       },
       error: (err) => {
-        // Show the exact rejection message from the backend (e.g. wrong group)
         const msg: string = err?.error?.message || 'Member not found or QR code invalid.';
         this.playErrorBeep();
         this.snack.open(`❌ ${msg}`, 'Dismiss', {
@@ -104,6 +113,24 @@ export class QrScannerComponent implements OnInit, OnDestroy {
       gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
       osc.start(ctx.currentTime);
       osc.stop(ctx.currentTime + 0.3);
+    } catch { /* audio not supported */ }
+  }
+
+  /** Warning beep — medium pitch, double pulse */
+  private playWarningBeep(): void {
+    try {
+      const ctx = new AudioContext();
+      [0, 0.35].forEach(delay => {
+        const osc  = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.frequency.value = 440;
+        gain.gain.setValueAtTime(0.3, ctx.currentTime + delay);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + 0.25);
+        osc.start(ctx.currentTime + delay);
+        osc.stop(ctx.currentTime + delay + 0.25);
+      });
     } catch { /* audio not supported */ }
   }
 

@@ -7,6 +7,7 @@ import { TroopService } from '../../../core/services/troop.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { Troop } from '../../../core/models/troop.model';
 import { ACADEMIC_GRADES } from '../../../core/constants/academic-grades';
+import { toLocalDateString } from '../../../core/utils/date.utils';
 
 @Component({
   selector: 'app-member-form',
@@ -79,7 +80,7 @@ export class MemberFormComponent implements OnInit {
     this.loading = true;
     const val = {
       ...this.form.value,
-      dateOfBirth: new Date(this.form.value.dateOfBirth).toISOString()
+      dateOfBirth: toLocalDateString(new Date(this.form.value.dateOfBirth))
     };
     const req = this.isEdit
       ? this.memberService.update(this.memberId, val)

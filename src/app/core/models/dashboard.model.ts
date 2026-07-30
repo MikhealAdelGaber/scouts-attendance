@@ -13,7 +13,10 @@ export interface TroopAttendanceStats {
   memberCount: number;
   totalAttendanceRecords: number;
   presentCount: number;
+  excusedCount: number;
   absentCount: number;
   attendanceRate: number;
   absenceRate: number;
+  lastEventName?: string;
+  lastEventDate?: string;
 }

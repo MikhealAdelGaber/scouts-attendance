@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiService } from './api.service';
-import { AttendanceRecord, EventMemberStatus, MarkAttendance, BulkAttendance, QrAttendance, AttendanceSummary } from '../models/attendance.model';
+import { AttendanceRecord, EventMemberStatus, MarkAttendance, BulkAttendance, QrAttendance, QrAttendanceResult, AttendanceSummary } from '../models/attendance.model';
 
 @Injectable({ providedIn: 'root' })
 export class AttendanceService {
@@ -32,7 +32,7 @@ export class AttendanceService {
     return this.api.post<AttendanceRecord[]>('attendance/bulk', dto);
   }
 
-  markByQr(dto: QrAttendance): Observable<AttendanceRecord> {
-    return this.api.post<AttendanceRecord>('attendance/qr', dto);
+  markByQr(dto: QrAttendance): Observable<QrAttendanceResult> {
+    return this.api.post<QrAttendanceResult>('attendance/qr', dto);
   }
 }

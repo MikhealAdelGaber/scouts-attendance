@@ -34,6 +34,12 @@ export interface MemberAttendanceItem {
 
 export interface QrAttendance { eventId: string; qrToken: string; }
 
+export interface QrAttendanceResult {
+  blocked: boolean;
+  blockedReason?: string;
+  record?: AttendanceRecord;
+}
+
 /**
  * A member's effective attendance status for a specific event.
  * Returned by GET /api/attendance/event/{id}/members.

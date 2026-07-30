@@ -126,11 +126,38 @@
       <!-- Confirmed bookings -->
       <div class="bookings-section">
         <h3 class="section-title"><mat-icon>check_circle</mat-icon> Confirmed ({{ confirmedBookings.length }})</h3>
+
+        <!-- Search & filter bar -->
+        <div class="booking-filter-bar" *ngIf="confirmedBookings.length > 0">
+          <div class="booking-search-wrap">
+            <mat-icon class="search-icon">search</mat-icon>
+            <input class="booking-search-input"
+                   [(ngModel)]="bookingSearch"
+                   placeholder="Search in bookings..."
+                   autocomplete="off">
+            <button class="clear-search-btn" *ngIf="bookingSearch" (click)="bookingSearch = ''">
+              <mat-icon>close</mat-icon>
+            </button>
+          </div>
+          <div class="payment-filters">
+            <button class="pay-filter-btn" [class.active]="bookingPaymentFilter === 'all'"    (click)="bookingPaymentFilter = 'all'">All</button>
+            <button class="pay-filter-btn" [class.active]="bookingPaymentFilter === 'paid'"   (click)="bookingPaymentFilter = 'paid'">✅ Paid</button>
+            <button class="pay-filter-btn" [class.active]="bookingPaymentFilter === 'partial'" (click)="bookingPaymentFilter = 'partial'">🟡 Partial</button>
+            <button class="pay-filter-btn" [class.active]="bookingPaymentFilter === 'unpaid'" (click)="bookingPaymentFilter = 'unpaid'">❌ Not Paid</button>
+          </div>
+          <span class="filter-count" *ngIf="bookingSearch || bookingPaymentFilter !== 'all'">
+            Showing {{ filteredConfirmedBookings.length }} of {{ confirmedBookings.length }}
+          </span>
+        </div>
+
         <div class="empty-state" *ngIf="confirmedBookings.length === 0">
           <p>No confirmed bookings yet</p>
         </div>
-        <div class="booking-list" *ngIf="confirmedBookings.length > 0">
-          <ng-container *ngFor="let b of confirmedBookings">
+        <div class="empty-state" *ngIf="confirmedBookings.length > 0 && filteredConfirmedBookings.length === 0">
+          <p>No bookings match your search</p>
+        </div>
+        <div class="booking-list" *ngIf="filteredConfirmedBookings.length > 0">
+          <ng-container *ngFor="let b of filteredConfirmedBookings">
             <div class="booking-row">
               <div class="booking-info">
                 <span class="member-name">{{ b.memberName }}</span>

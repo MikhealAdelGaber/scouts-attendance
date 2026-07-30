@@ -5,6 +5,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { ExcuseService } from '../../../core/services/excuse.service';
 import { MemberService } from '../../../core/services/member.service';
 import { Member } from '../../../core/models/member.model';
+import { toLocalDateString } from '../../../core/utils/date.utils';
 
 @Component({
   selector: 'app-excuse-form',
@@ -176,9 +177,7 @@ export class ExcuseFormComponent implements OnInit {
 
     const toUtcDateIso = (d: Date | null): string | undefined => {
       if (!d) return undefined;
-      const date = new Date(d);
-      // Send as UTC midnight of that calendar date to avoid timezone day-shift
-      return new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())).toISOString();
+      return toLocalDateString(new Date(d));
     };
 
     const dto = {

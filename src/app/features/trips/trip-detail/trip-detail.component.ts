@@ -64,6 +64,10 @@ export class TripDetailComponent implements OnInit {
 
   attendanceSearch = '';
 
+  // Booking search & filter
+  bookingSearch = '';
+  bookingPaymentFilter: 'all' | 'paid' | 'partial' | 'unpaid' = 'all';
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -178,6 +182,26 @@ export class TripDetailComponent implements OnInit {
 
   get confirmedBookings(): TripBookingDto[] {
     return this.bookings.filter(b => b.bookingStatus === BookingStatus.Confirmed);
+  }
+
+  get filteredConfirmedBookings(): TripBookingDto[] {
+    const q = this.bookingSearch.trim().toLowerCase();
+    return this.confirmedBookings.filter(b => {
+      if (q && !b.memberName.toLowerCase().includes(q)) return false;
+      if (this.bookingPaymentFilter === 'paid') {
+        if (b.allowInstallments) return b.totalPaid >= b.amountDue && b.amountDue > 0;
+        return b.isPaid;
+      }
+      if (this.bookingPaymentFilter === 'partial') {
+        if (b.allowInstallments) return b.totalPaid > 0 && b.totalPaid < b.amountDue;
+        return false;
+      }
+      if (this.bookingPaymentFilter === 'unpaid') {
+        if (b.allowInstallments) return b.totalPaid === 0;
+        return !b.isPaid;
+      }
+      return true;
+    });
   }
 
   get waitingBookings(): TripBookingDto[] {

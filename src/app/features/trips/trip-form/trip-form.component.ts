@@ -7,6 +7,7 @@ import { GroupService } from '../../../core/services/group.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { TripStatus } from '../../../core/models/trip.model';
 import { Group } from '../../../core/models/group.model';
+import { toLocalDateString } from '../../../core/utils/date.utils';
 
 @Component({
   selector: 'app-trip-form',
@@ -97,9 +98,7 @@ export class TripFormComponent implements OnInit {
 
     this.loading = true;
 
-    const tripDate = val.tripDate instanceof Date
-      ? val.tripDate.toISOString()
-      : new Date(val.tripDate).toISOString();
+    const tripDate = toLocalDateString(val.tripDate instanceof Date ? val.tripDate : new Date(val.tripDate));
 
     const base = {
       name:             val.name,
